@@ -1,0 +1,345 @@
+<script setup lang="ts">
+import type { Entry, Annotation } from '~/shared/types'
+import { ENTRY_TYPE_LABELS, ANNOTATION_TYPE_LABELS } from '~/shared/types'
+
+definePageMeta({
+  layout: 'app',
+  middleware: 'auth',
+})
+
+const route = useRoute()
+const router = useRouter()
+
+const entryId = computed(() => route.params.id as string)
+
+const { data: entry, pending, refresh } = await useFetch<Entry>(`/api/entries/${entryId.value}`)
+
+const isEditModalOpen = ref(false)
+const isAddAnnotationOpen = ref(false)
+const isDeleteModalOpen = ref(false)
+
+function formatAuthors(authors: any[]) {
+  if (!authors || authors.length === 0) return 'Unknown Author'
+  return authors.map(a => `${a.lastName}, ${a.firstName}${a.middleName ? ` ${a.middleName}` : ''}`).join('; ')
+}
+
+async function toggleFavorite() {
+  if (!entry.value) return
+
+  await $fetch(`/api/entries/${entryId.value}`, {
+    method: 'PUT',
+    body: { isFavorite: !entry.value.isFavorite },
+  })
+  await refresh()
+}
+
+async function handleDelete() {
+  await $fetch(`/api/entries/${entryId.value}`, {
+    method: 'DELETE',
+  })
+  await router.push('/app/library')
+}
+
+async function handleEntryUpdated() {
+  isEditModalOpen.value = false
+  await refresh()
+}
+
+async function handleAnnotationCreated() {
+  isAddAnnotationOpen.value = false
+  await refresh()
+}
+</script>
+
+<template>
+  <div>
+    <!-- Loading state -->
+    <div v-if="pending" class="flex justify-center py-12">
+      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-gray-400" />
+    </div>
+
+    <!-- Not found -->
+    <UCard v-else-if="!entry" class="text-center py-12">
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-16 h-16 mx-auto text-gray-300" />
+      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+        Entry not found
+      </h3>
+      <UButton to="/app/library" class="mt-4">
+        Back to Library
+      </UButton>
+    </UCard>
+
+    <!-- Entry detail -->
+    <div v-else class="space-y-6">
+      <!-- Breadcrumb -->
+      <nav class="flex items-center gap-2 text-sm text-gray-500">
+        <NuxtLink to="/app/library" class="hover:text-gray-700 dark:hover:text-gray-300">
+          Library
+        </NuxtLink>
+        <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
+        <span class="text-gray-900 dark:text-white truncate">{{ entry.title }}</span>
+      </nav>
+
+      <!-- Header -->
+      <div class="flex flex-col lg:flex-row lg:items-start gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-2">
+            <UBadge variant="subtle">
+              {{ ENTRY_TYPE_LABELS[entry.entryType as keyof typeof ENTRY_TYPE_LABELS] }}
+            </UBadge>
+            <UButton
+              :icon="entry.isFavorite ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+              :color="entry.isFavorite ? 'yellow' : 'gray'"
+              variant="ghost"
+              size="xs"
+              @click="toggleFavorite"
+            />
+          </div>
+          <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+            {{ entry.title }}
+          </h1>
+          <p class="text-lg text-gray-600 dark:text-gray-400 mt-2">
+            {{ formatAuthors(entry.authors) }}
+          </p>
+          <p v-if="entry.year" class="text-gray-500 dark:text-gray-500">
+            {{ entry.year }}
+          </p>
+        </div>
+
+        <div class="flex gap-2">
+          <UButton
+            icon="i-heroicons-pencil"
+            variant="outline"
+            color="gray"
+            @click="isEditModalOpen = true"
+          >
+            Edit
+          </UButton>
+          <UDropdown
+            :items="[
+              [
+                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', click: () => {} },
+                { label: 'Share', icon: 'i-heroicons-share', click: () => {} },
+                { label: 'Copy citation', icon: 'i-heroicons-clipboard-document', click: () => {} },
+              ],
+              [
+                { label: 'Delete', icon: 'i-heroicons-trash', click: () => isDeleteModalOpen = true },
+              ],
+            ]"
+            :popper="{ placement: 'bottom-end' }"
+          >
+            <UButton
+              icon="i-heroicons-ellipsis-vertical"
+              variant="outline"
+              color="gray"
+            />
+          </UDropdown>
+        </div>
+      </div>
+
+      <!-- Veritas Score -->
+      <UCard v-if="entry.veritasScore">
+        <template #header>
+          <h2 class="font-semibold text-gray-900 dark:text-white">Veritas Score</h2>
+        </template>
+        <div class="flex items-center gap-4">
+          <VeritasVeritasScoreBadge :score="entry.veritasScore.overallScore" size="lg" />
+          <div class="flex-1">
+            <UProgress :value="entry.veritasScore.overallScore" />
+            <p class="text-sm text-gray-500 mt-1">
+              Confidence: {{ Math.round(entry.veritasScore.confidence * 100) }}%
+            </p>
+          </div>
+        </div>
+      </UCard>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Metadata -->
+        <UCard class="lg:col-span-2">
+          <template #header>
+            <h2 class="font-semibold text-gray-900 dark:text-white">Details</h2>
+          </template>
+
+          <dl class="grid grid-cols-2 gap-4">
+            <div v-if="entry.metadata?.publisher">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">Publisher</dt>
+              <dd class="text-gray-900 dark:text-white">{{ entry.metadata.publisher }}</dd>
+            </div>
+            <div v-if="entry.metadata?.journal">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">Journal</dt>
+              <dd class="text-gray-900 dark:text-white">{{ entry.metadata.journal }}</dd>
+            </div>
+            <div v-if="entry.metadata?.volume || entry.metadata?.issue">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">Volume/Issue</dt>
+              <dd class="text-gray-900 dark:text-white">
+                {{ entry.metadata.volume }}{{ entry.metadata.issue ? `(${entry.metadata.issue})` : '' }}
+              </dd>
+            </div>
+            <div v-if="entry.metadata?.pages">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">Pages</dt>
+              <dd class="text-gray-900 dark:text-white">{{ entry.metadata.pages }}</dd>
+            </div>
+            <div v-if="entry.metadata?.doi">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">DOI</dt>
+              <dd>
+                <a
+                  :href="`https://doi.org/${entry.metadata.doi}`"
+                  target="_blank"
+                  class="text-primary-500 hover:underline"
+                >
+                  {{ entry.metadata.doi }}
+                </a>
+              </dd>
+            </div>
+            <div v-if="entry.metadata?.isbn">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">ISBN</dt>
+              <dd class="text-gray-900 dark:text-white">{{ entry.metadata.isbn }}</dd>
+            </div>
+            <div v-if="entry.metadata?.url" class="col-span-2">
+              <dt class="text-sm text-gray-500 dark:text-gray-400">URL</dt>
+              <dd>
+                <a
+                  :href="entry.metadata.url"
+                  target="_blank"
+                  class="text-primary-500 hover:underline truncate block"
+                >
+                  {{ entry.metadata.url }}
+                </a>
+              </dd>
+            </div>
+          </dl>
+
+          <div v-if="entry.metadata?.abstract" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-medium text-gray-900 dark:text-white mb-2">Abstract</h3>
+            <p class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+              {{ entry.metadata.abstract }}
+            </p>
+          </div>
+        </UCard>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Projects -->
+          <UCard>
+            <template #header>
+              <h2 class="font-semibold text-gray-900 dark:text-white">Projects</h2>
+            </template>
+
+            <div v-if="entry.projects?.length" class="space-y-2">
+              <NuxtLink
+                v-for="project in entry.projects"
+                :key="project.id"
+                :to="`/app/projects/${project.id}`"
+                class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <div
+                  class="w-3 h-3 rounded-full"
+                  :style="{ backgroundColor: project.color }"
+                />
+                <span class="text-gray-900 dark:text-white">{{ project.name }}</span>
+              </NuxtLink>
+            </div>
+            <p v-else class="text-gray-500 dark:text-gray-400 text-sm">
+              Not in any projects
+            </p>
+          </UCard>
+
+          <!-- Tags -->
+          <UCard>
+            <template #header>
+              <h2 class="font-semibold text-gray-900 dark:text-white">Tags</h2>
+            </template>
+
+            <div v-if="entry.tags?.length" class="flex flex-wrap gap-2">
+              <span
+                v-for="tag in entry.tags"
+                :key="tag.id"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm"
+                :style="{ backgroundColor: `${tag.color}20`, color: tag.color }"
+              >
+                {{ tag.name }}
+              </span>
+            </div>
+            <p v-else class="text-gray-500 dark:text-gray-400 text-sm">
+              No tags
+            </p>
+          </UCard>
+        </div>
+      </div>
+
+      <!-- Annotations -->
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-gray-900 dark:text-white">
+              Annotations ({{ entry.annotations?.length || 0 }})
+            </h2>
+            <UButton
+              icon="i-heroicons-plus"
+              size="sm"
+              @click="isAddAnnotationOpen = true"
+            >
+              Add Annotation
+            </UButton>
+          </div>
+        </template>
+
+        <div v-if="entry.annotations?.length" class="space-y-4">
+          <div
+            v-for="annotation in entry.annotations"
+            :key="annotation.id"
+            class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <UBadge variant="subtle" size="xs">
+                {{ ANNOTATION_TYPE_LABELS[annotation.annotationType as keyof typeof ANNOTATION_TYPE_LABELS] }}
+              </UBadge>
+              <span class="text-xs text-gray-400">
+                {{ new Date(annotation.createdAt).toLocaleDateString() }}
+              </span>
+            </div>
+            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {{ annotation.content }}
+            </p>
+          </div>
+        </div>
+        <p v-else class="text-gray-500 dark:text-gray-400 text-center py-8">
+          No annotations yet. Add one to record your thoughts about this source.
+        </p>
+      </UCard>
+    </div>
+
+    <!-- Edit Modal -->
+    <LazyAppEntryFormModal
+      v-model:open="isEditModalOpen"
+      :entry="entry"
+      @updated="handleEntryUpdated"
+    />
+
+    <!-- Delete Confirmation -->
+    <UModal v-model="isDeleteModalOpen">
+      <UCard>
+        <template #header>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            Delete Entry
+          </h2>
+        </template>
+
+        <p class="text-gray-600 dark:text-gray-400">
+          Are you sure you want to delete "{{ entry?.title }}"? This action cannot be undone.
+        </p>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton variant="outline" color="gray" @click="isDeleteModalOpen = false">
+              Cancel
+            </UButton>
+            <UButton color="red" @click="handleDelete">
+              Delete
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+  </div>
+</template>

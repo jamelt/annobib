@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bibanna-postgres
+    environment:
+      POSTGRES_USER: bibanna
+      POSTGRES_PASSWORD: bibanna
+      POSTGRES_DB: bibanna
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bibanna -d bibanna"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-test:
+    image: pgvector/pgvector:pg16
+    container_name: bibanna-postgres-test
+    environment:
+      POSTGRES_USER: bibanna_test
+      POSTGRES_PASSWORD: bibanna_test
+      POSTGRES_DB: bibanna_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+
+volumes:
+  postgres_data:
