@@ -1,2 +1,11 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Ensure Nuxt UI modals are fully clickable and above page content */
+[data-slot="overlay"] {
+  z-index: 40 !important;
+}
+
+[data-slot="content"] {
+  z-index: 50 !important;
+}

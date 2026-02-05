@@ -124,6 +124,7 @@ async function handleSubmit() {
           <UInput
             v-model="form.name"
             placeholder="Enter project name"
+            data-testid="project-modal-name"
             autofocus
           />
         </UFormField>
@@ -163,6 +164,7 @@ async function handleSubmit() {
           <UButton
             color="primary"
             :loading="isSubmitting"
+            data-testid="project-modal-submit"
             @click="handleSubmit"
           >
             {{ isEditing ? 'Save Changes' : 'Create Project' }}
