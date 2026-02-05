@@ -1,8 +1,8 @@
 import { initTelemetry, recordHttpRequest } from '~/server/utils/telemetry'
 
-export default defineNitroPlugin((nitroApp) => {
+export default defineNitroPlugin(async (nitroApp) => {
   if (process.env.NODE_ENV === 'production') {
-    initTelemetry()
+    await initTelemetry()
   }
 
   nitroApp.hooks.hook('request', (event) => {

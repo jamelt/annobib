@@ -80,6 +80,12 @@ export default defineNuxtConfig({
       },
     },
     rollupConfig: {
+      external: (id) => {
+        if (id.startsWith('@opentelemetry/') || id.startsWith('@google-cloud/opentelemetry-')) {
+          return true
+        }
+        return false
+      },
       onwarn(warning, warn) {
         if (
           warning.code === 'THIS_IS_UNDEFINED' &&

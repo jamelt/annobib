@@ -1,6 +1,5 @@
 import { NodeSDK } from '@opentelemetry/sdk-node'
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
-import { Resource } from '@opentelemetry/resources'
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION, SEMRESATTRS_DEPLOYMENT_ENVIRONMENT } from '@opentelemetry/semantic-conventions'
 import { TraceExporter } from '@google-cloud/opentelemetry-cloud-trace-exporter'
 import { MetricExporter } from '@google-cloud/opentelemetry-cloud-monitoring-exporter'
@@ -19,10 +18,12 @@ if (isProduction && process.env.OTEL_DEBUG === 'true') {
 
 let sdk: NodeSDK | null = null
 
-export function initTelemetry() {
+export async function initTelemetry() {
   if (sdk) return
 
-  const resource = new Resource({
+  const { resourceFromAttributes } = await import('@opentelemetry/resources')
+
+  const resource = resourceFromAttributes({
     [SEMRESATTRS_SERVICE_NAME]: 'bibanna-app',
     [SEMRESATTRS_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
     [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
