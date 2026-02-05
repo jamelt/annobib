@@ -142,8 +142,8 @@ const tiers = [
             :key="feature.title"
             class="p-6"
           >
-            <div class="flex items-start gap-4">
-              <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+              <div class="flex items-start gap-4">
+              <div class="shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
                 <UIcon :name="feature.icon" class="w-6 h-6 text-primary-500" />
               </div>
               <div>
@@ -203,7 +203,7 @@ const tiers = [
                 :key="feature"
                 class="flex items-center gap-2 text-gray-600 dark:text-gray-300"
               >
-                <UIcon name="i-heroicons-check" class="w-5 h-5 text-green-500 flex-shrink-0" />
+                <UIcon name="i-heroicons-check" class="w-5 h-5 text-green-500 shrink-0" />
                 {{ feature }}
               </li>
             </ul>

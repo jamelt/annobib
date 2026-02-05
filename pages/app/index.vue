@@ -28,14 +28,14 @@ const recentProjects = ref<any[]>([])
     </div>
 
     <!-- Stats grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <UCard
         v-for="stat in stats"
         :key="stat.label"
         class="p-4"
       >
         <div class="flex items-center gap-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
+          <div class="shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
             <UIcon :name="stat.icon" class="w-6 h-6 text-primary-500" />
           </div>
           <div>

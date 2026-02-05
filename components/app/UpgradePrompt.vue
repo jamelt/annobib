@@ -57,8 +57,8 @@ const tierInfo = computed(() => ({
 
     <!-- Full card version -->
     <UCard v-else :ui="{ body: { padding: 'p-4' } }">
-      <div class="flex items-start gap-4">
-        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+        <div class="flex items-start gap-4">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
           <UIcon name="i-heroicons-lock-closed" class="w-5 h-5 text-primary-500" />
         </div>
         <div class="flex-1 min-w-0">

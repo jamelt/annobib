@@ -85,7 +85,7 @@ const userNavigation = [
             class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
           >
-            <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
             <span v-if="isSidebarOpen" class="truncate">{{ item.name }}</span>
           </NuxtLink>
         </UTooltip>
@@ -103,7 +103,7 @@ const userNavigation = [
             class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
           >
-            <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
             <span v-if="isSidebarOpen" class="truncate">{{ item.name }}</span>
           </NuxtLink>
         </UTooltip>

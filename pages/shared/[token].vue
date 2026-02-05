@@ -98,7 +98,7 @@ function formatAuthors(authors: any[]): string {
               >
                 <div class="flex items-start gap-3">
                   <div
-                    class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                     :class="[
                       entry.entryType === 'book' ? 'bg-blue-100 text-blue-600' :
                       entry.entryType === 'journal_article' ? 'bg-green-100 text-green-600' :

@@ -236,7 +236,7 @@ function toggleCitations(messageId: string) {
         >
           <div
             v-if="message.role === 'assistant'"
-            class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0"
           >
             <UIcon name="i-heroicons-academic-cap" class="w-4 h-4 text-primary-600" />
           </div>
@@ -299,7 +299,7 @@ function toggleCitations(messageId: string) {
 
           <div
             v-if="message.role === 'user'"
-            class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0"
+            class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0"
           >
             <UIcon name="i-heroicons-user" class="w-4 h-4 text-gray-600" />
           </div>

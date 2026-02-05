@@ -217,7 +217,7 @@ const stats = computed(() => {
         >
           <div class="flex items-start gap-2">
             <div
-              class="w-3 h-3 rounded-full flex-shrink-0 mt-1"
+              class="w-3 h-3 rounded-full shrink-0 mt-1"
               :style="{ backgroundColor: legend.find(l => l.type === hoveredNode.type)?.color }"
             />
             <div>

@@ -84,9 +84,9 @@ async function handleProjectCreated() {
           class="p-4 hover:ring-2 hover:ring-primary-500/50 transition-all cursor-pointer group"
           @click="router.push(`/app/projects/${project.id}`)"
         >
-          <div class="flex items-start gap-3">
+            <div class="flex items-start gap-3">
             <div
-              class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+              class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
               :style="{ backgroundColor: project.color + '20' }"
             >
               <UIcon
@@ -152,7 +152,7 @@ async function handleProjectCreated() {
             @click="router.push(`/app/projects/${project.id}`)"
           >
             <div class="flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+              <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center shrink-0">
                 <UIcon name="i-heroicons-archive-box" class="w-5 h-5 text-gray-400" />
               </div>
               <div class="flex-1 min-w-0">

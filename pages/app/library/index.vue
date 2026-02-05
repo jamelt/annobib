@@ -149,9 +149,9 @@ async function handleEntryCreated() {
           label-key="name"
           class="w-full lg:w-48"
         >
-          <template #item-leading="{ item }">
+            <template #item-leading="{ item }">
             <span
-              class="w-3 h-3 rounded-full flex-shrink-0"
+              class="w-3 h-3 rounded-full shrink-0"
               :style="{ backgroundColor: item.color ?? 'transparent' }"
             />
           </template>
@@ -244,7 +244,7 @@ async function handleEntryCreated() {
               <UIcon
                 v-if="entry.isFavorite"
                 name="i-heroicons-star-solid"
-                class="w-4 h-4 text-yellow-500 flex-shrink-0"
+                class="w-4 h-4 text-yellow-500 shrink-0"
               />
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -271,7 +271,7 @@ async function handleEntryCreated() {
               </span>
             </div>
           </div>
-          <div class="text-right text-sm text-gray-400 flex-shrink-0">
+          <div class="text-right text-sm text-gray-400 shrink-0">
             <p v-if="entry.annotationCount" class="flex items-center gap-1 justify-end">
               <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
               {{ entry.annotationCount }}

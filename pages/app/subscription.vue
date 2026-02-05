@@ -315,7 +315,7 @@ async function handleManageBilling() {
               :key="feature"
               class="flex items-start gap-2 text-sm"
             >
-              <UIcon name="i-heroicons-check" class="w-5 h-5 text-green-500 flex-shrink-0" />
+              <UIcon name="i-heroicons-check" class="w-5 h-5 text-green-500 shrink-0" />
               <span class="text-gray-600 dark:text-gray-300">{{ feature }}</span>
             </li>
             <li
@@ -323,7 +323,7 @@ async function handleManageBilling() {
               :key="limitation"
               class="flex items-start gap-2 text-sm"
             >
-              <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-400 shrink-0" />
               <span class="text-gray-400">{{ limitation }}</span>
             </li>
           </ul>

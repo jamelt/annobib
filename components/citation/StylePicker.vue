@@ -128,7 +128,7 @@ function getCategoryColor(category: string): string {
         ]"
         @click="selectStyle(style.id)"
       >
-        <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start justify-between gap-2">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-medium text-gray-900 dark:text-white truncate">
@@ -167,7 +167,7 @@ function getCategoryColor(category: string): string {
           <UIcon
             v-if="props.modelValue === style.id"
             name="i-heroicons-check-circle-solid"
-            class="w-5 h-5 text-primary-500 flex-shrink-0"
+            class="w-5 h-5 text-primary-500 shrink-0"
           />
         </div>
       </button>
