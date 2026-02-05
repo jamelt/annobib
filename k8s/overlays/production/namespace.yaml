@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bibanna-production
+  labels:
+    app: bibanna
+    environment: production
