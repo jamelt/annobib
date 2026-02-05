@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, boolean, jsonb, index, uniqueIndex, real, pgEnum } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, integer, boolean, jsonb, index, uniqueIndex, real, pgEnum, customType } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 export const entryTypeEnum = pgEnum('entry_type', [
@@ -57,6 +57,18 @@ export const veritasLabelEnum = pgEnum('veritas_label', [
   'limited',
   'low',
 ])
+
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return 'vector(1536)'
+  },
+  toDriver(value: number[]): string {
+    return `[${value.join(',')}]`
+  },
+  fromDriver(value: string): number[] {
+    return value.slice(1, -1).split(',').map(Number)
+  },
+})
 
 // Users
 export const users = pgTable('users', {
@@ -246,6 +258,7 @@ export const documentChunks = pgTable('document_chunks', {
   annotationId: uuid('annotation_id').references(() => annotations.id, { onDelete: 'cascade' }),
   uploadId: uuid('upload_id').references(() => projectUploads.id, { onDelete: 'cascade' }),
   content: text('content').notNull(),
+  embedding: vector('embedding'),
   chunkIndex: integer('chunk_index').notNull(),
   tokenCount: integer('token_count').notNull(),
   metadata: jsonb('metadata').$type<ChunkMetadata>(),

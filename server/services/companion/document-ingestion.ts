@@ -4,28 +4,28 @@ import { documentChunks, entries, annotations } from '~/server/database/schema'
 import { eq, and, sql } from 'drizzle-orm'
 import type { Entry, Annotation } from '~/shared/types'
 
-let openai: OpenAI | null = null
-let textSplitter: any = null
+let openaiClient: OpenAI | null = null
+let textSplitterInstance: any = null
 
 async function getOpenAI() {
-  if (!openai) {
-    openai = new OpenAI({
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
       apiKey: process.env.NUXT_OPENAI_API_KEY,
     })
   }
-  return openai
+  return openaiClient
 }
 
 async function getTextSplitter() {
-  if (!textSplitter) {
+  if (!textSplitterInstance) {
     const { RecursiveCharacterTextSplitter } = await import('@langchain/textsplitters')
-    textSplitter = new RecursiveCharacterTextSplitter({
+    textSplitterInstance = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
       chunkOverlap: 200,
       separators: ['\n\n', '\n', '. ', ', ', ' ', ''],
     })
   }
-  return textSplitter
+  return textSplitterInstance
 }
 
 async function parsePDF(buffer: Buffer): Promise<string> {
@@ -40,18 +40,8 @@ async function parseDocx(buffer: Buffer): Promise<string> {
   return result.value
 }
 
-export interface ChunkMetadata {
-  sourceType: 'entry' | 'annotation' | 'upload'
-  sourceId: string
-  entryId?: string
-  title?: string
-  authors?: string[]
-  year?: number
-  chunkIndex: number
-  totalChunks: number
-}
-
 export async function generateEmbedding(text: string): Promise<number[]> {
+  const openai = await getOpenAI()
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
@@ -61,7 +51,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   return response.data[0].embedding
 }
 
-export async function ingestEntry(entry: Entry, projectId: string): Promise<number> {
+export async function ingestEntry(entry: Entry, projectId: string, userId: string): Promise<number> {
+  const splitter = await getTextSplitter()
   let textContent = `Title: ${entry.title}\n`
 
   if (entry.authors?.length) {
@@ -76,10 +67,6 @@ export async function ingestEntry(entry: Entry, projectId: string): Promise<numb
     textContent += `\nAbstract:\n${entry.metadata.abstract}\n`
   }
 
-  if (entry.metadata?.keywords?.length) {
-    textContent += `Keywords: ${entry.metadata.keywords.join(', ')}\n`
-  }
-
   const entryAnnotations = await db.query.annotations.findMany({
     where: eq(annotations.entryId, entry.id),
   })
@@ -91,7 +78,7 @@ export async function ingestEntry(entry: Entry, projectId: string): Promise<numb
     }
   }
 
-  const chunks = await textSplitter.splitText(textContent)
+  const chunks = await splitter.splitText(textContent)
 
   let insertedCount = 0
 
@@ -99,22 +86,19 @@ export async function ingestEntry(entry: Entry, projectId: string): Promise<numb
     const chunk = chunks[i]
     const embedding = await generateEmbedding(chunk)
 
-    const metadata: ChunkMetadata = {
-      sourceType: 'entry',
-      sourceId: entry.id,
-      entryId: entry.id,
-      title: entry.title,
-      authors: entry.authors?.map(a => `${a.firstName || ''} ${a.lastName}`.trim()),
-      year: entry.year,
-      chunkIndex: i,
-      totalChunks: chunks.length,
-    }
-
     await db.insert(documentChunks).values({
       projectId,
+      userId,
+      entryId: entry.id,
       content: chunk,
-      embedding: sql`${JSON.stringify(embedding)}::vector`,
-      metadata,
+      embedding,
+      chunkIndex: i,
+      tokenCount: Math.ceil(chunk.length / 4),
+      metadata: {
+        sourceType: 'entry',
+        title: entry.title,
+        authors: entry.authors?.map(a => `${a.firstName || ''} ${a.lastName}`.trim()).join(', '),
+      },
     }).onConflictDoNothing()
 
     insertedCount++
@@ -123,27 +107,26 @@ export async function ingestEntry(entry: Entry, projectId: string): Promise<numb
   return insertedCount
 }
 
-export async function ingestAnnotation(annotation: Annotation, projectId: string): Promise<number> {
+export async function ingestAnnotation(annotation: Annotation, projectId: string, userId: string): Promise<number> {
   const embedding = await generateEmbedding(annotation.content)
 
   const entry = await db.query.entries.findFirst({
     where: eq(entries.id, annotation.entryId),
   })
 
-  const metadata: ChunkMetadata = {
-    sourceType: 'annotation',
-    sourceId: annotation.id,
-    entryId: annotation.entryId,
-    title: entry?.title,
-    chunkIndex: 0,
-    totalChunks: 1,
-  }
-
   await db.insert(documentChunks).values({
     projectId,
+    userId,
+    entryId: annotation.entryId,
+    annotationId: annotation.id,
     content: annotation.content,
-    embedding: sql`${JSON.stringify(embedding)}::vector`,
-    metadata,
+    embedding,
+    chunkIndex: 0,
+    tokenCount: Math.ceil(annotation.content.length / 4),
+    metadata: {
+      sourceType: 'annotation',
+      title: entry?.title,
+    },
   }).onConflictDoNothing()
 
   return 1
@@ -154,11 +137,12 @@ export async function ingestPDF(
   filename: string,
   projectId: string,
   uploadId: string,
+  userId: string,
 ): Promise<number> {
-  const data = await pdf(buffer)
-  const text = data.text
+  const splitter = await getTextSplitter()
+  const data = await parsePDF(buffer)
 
-  const chunks = await textSplitter.splitText(text)
+  const chunks = await splitter.splitText(data)
 
   let insertedCount = 0
 
@@ -166,19 +150,18 @@ export async function ingestPDF(
     const chunk = chunks[i]
     const embedding = await generateEmbedding(chunk)
 
-    const metadata: ChunkMetadata = {
-      sourceType: 'upload',
-      sourceId: uploadId,
-      title: filename,
-      chunkIndex: i,
-      totalChunks: chunks.length,
-    }
-
     await db.insert(documentChunks).values({
       projectId,
+      userId,
+      uploadId,
       content: chunk,
-      embedding: sql`${JSON.stringify(embedding)}::vector`,
-      metadata,
+      embedding,
+      chunkIndex: i,
+      tokenCount: Math.ceil(chunk.length / 4),
+      metadata: {
+        sourceType: 'upload',
+        title: filename,
+      },
     })
 
     insertedCount++
@@ -192,11 +175,12 @@ export async function ingestDOCX(
   filename: string,
   projectId: string,
   uploadId: string,
+  userId: string,
 ): Promise<number> {
-  const result = await mammoth.extractRawText({ buffer })
-  const text = result.value
+  const splitter = await getTextSplitter()
+  const text = await parseDocx(buffer)
 
-  const chunks = await textSplitter.splitText(text)
+  const chunks = await splitter.splitText(text)
 
   let insertedCount = 0
 
@@ -204,19 +188,18 @@ export async function ingestDOCX(
     const chunk = chunks[i]
     const embedding = await generateEmbedding(chunk)
 
-    const metadata: ChunkMetadata = {
-      sourceType: 'upload',
-      sourceId: uploadId,
-      title: filename,
-      chunkIndex: i,
-      totalChunks: chunks.length,
-    }
-
     await db.insert(documentChunks).values({
       projectId,
+      userId,
+      uploadId,
       content: chunk,
-      embedding: sql`${JSON.stringify(embedding)}::vector`,
-      metadata,
+      embedding,
+      chunkIndex: i,
+      tokenCount: Math.ceil(chunk.length / 4),
+      metadata: {
+        sourceType: 'upload',
+        title: filename,
+      },
     })
 
     insertedCount++
@@ -230,8 +213,10 @@ export async function ingestPlainText(
   title: string,
   projectId: string,
   uploadId: string,
+  userId: string,
 ): Promise<number> {
-  const chunks = await textSplitter.splitText(text)
+  const splitter = await getTextSplitter()
+  const chunks = await splitter.splitText(text)
 
   let insertedCount = 0
 
@@ -239,19 +224,18 @@ export async function ingestPlainText(
     const chunk = chunks[i]
     const embedding = await generateEmbedding(chunk)
 
-    const metadata: ChunkMetadata = {
-      sourceType: 'upload',
-      sourceId: uploadId,
-      title,
-      chunkIndex: i,
-      totalChunks: chunks.length,
-    }
-
     await db.insert(documentChunks).values({
       projectId,
+      userId,
+      uploadId,
       content: chunk,
-      embedding: sql`${JSON.stringify(embedding)}::vector`,
-      metadata,
+      embedding,
+      chunkIndex: i,
+      tokenCount: Math.ceil(chunk.length / 4),
+      metadata: {
+        sourceType: 'upload',
+        title,
+      },
     })
 
     insertedCount++

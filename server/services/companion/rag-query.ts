@@ -1,8 +1,8 @@
 import { OpenAI } from 'openai'
 import { db } from '~/server/database/client'
-import { documentChunks, researchPersonas } from '~/server/database/schema'
+import { researchPersonas, type ChunkMetadata } from '~/server/database/schema'
 import { eq, sql, desc } from 'drizzle-orm'
-import { generateEmbedding, type ChunkMetadata } from './document-ingestion'
+import { generateEmbedding } from './document-ingestion'
 
 const openai = new OpenAI({
   apiKey: process.env.NUXT_OPENAI_API_KEY,
@@ -11,7 +11,7 @@ const openai = new OpenAI({
 export interface RetrievedChunk {
   id: string
   content: string
-  metadata: ChunkMetadata
+  metadata: ChunkMetadata | null
   similarity: number
 }
 
@@ -50,7 +50,7 @@ export async function retrieveRelevantChunks(
   return results.rows.map((row: any) => ({
     id: row.id,
     content: row.content,
-    metadata: row.metadata as ChunkMetadata,
+    metadata: row.metadata as ChunkMetadata | null,
     similarity: row.similarity,
   }))
 }
@@ -64,7 +64,7 @@ export async function generateRAGResponse(
   const relevantChunks = await retrieveRelevantChunks(query, projectId, 8, 0.65)
 
   const contextText = relevantChunks
-    .map((chunk, i) => `[Source ${i + 1}: ${chunk.metadata.title || 'Unknown'}]\n${chunk.content}`)
+    .map((chunk, i) => `[Source ${i + 1}: ${chunk.metadata?.title || 'Unknown'}]\n${chunk.content}`)
     .join('\n\n')
 
   const persona = await db.query.researchPersonas.findFirst({
@@ -82,7 +82,7 @@ export async function generateRAGResponse(
 
   const systemPrompt = `You are a Research Companion AI assistant helping with academic research.
 
-${persona ? `Research Persona: ${persona.name}\nExpertise: ${persona.expertise?.join(', ')}\nFocus: ${persona.researchFocus}\n` : ''}
+${persona ? `Research Persona: ${persona.name}\nExpertise: ${persona.expertise?.join(', ')}\nTopics: ${persona.dominantTopics?.join(', ')}\n` : ''}
 
 Mode: ${mode.toUpperCase()}
 Instructions: ${modeInstructions[mode]}
@@ -126,9 +126,9 @@ Guidelines:
     .map((i) => {
       const chunk = relevantChunks[i]
       return {
-        sourceId: chunk.metadata.sourceId,
-        sourceType: chunk.metadata.sourceType,
-        title: chunk.metadata.title,
+        sourceId: chunk.id,
+        sourceType: chunk.metadata?.sourceType || 'unknown',
+        title: chunk.metadata?.title,
         excerpt: chunk.content.slice(0, 200) + (chunk.content.length > 200 ? '...' : ''),
       }
     })
