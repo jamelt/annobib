@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { user } = useAuth()
+const { user, logout } = useAuth()
 
 const colorMode = useColorMode()
 const isDark = computed({
@@ -180,12 +180,13 @@ const userNavigation = [
               { label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/app/settings' },
             ],
             [
-              { label: 'Sign out', icon: 'i-heroicons-arrow-right-on-rectangle', onClick: () => {} },
+              { label: 'Sign out', icon: 'i-heroicons-arrow-right-on-rectangle', onClick: () => logout() },
             ],
           ]"
           :content="{ side: 'bottom', align: 'end' }"
         >
           <UAvatar
+            data-testid="user-menu-trigger"
             :text="(user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
             size="sm"
             class="cursor-pointer"

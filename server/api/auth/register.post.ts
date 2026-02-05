@@ -33,16 +33,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const normalizedEmail = email.toLowerCase()
   const hashedPassword = await hashPassword(password)
 
   const [newUser] = await db
     .insert(users)
     .values({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       name,
-      // In production, use a separate table for credentials or use Auth0/Clerk
-      // For now, we store a placeholder
-      auth0Id: `local:${hashedPassword}`,
+      auth0Id: `local:${normalizedEmail}:${hashedPassword}`,
       subscriptionTier: 'free',
     })
     .returning()

@@ -3,7 +3,7 @@ definePageMeta({
   layout: 'default',
 })
 
-const { loggedIn } = useUserSession()
+const { loggedIn, fetch: fetchSession } = useUserSession()
 
 const name = ref('')
 const email = ref('')
@@ -42,6 +42,7 @@ async function handleSignup() {
         password: password.value,
       },
     })
+    await fetchSession()
     await navigateTo('/app')
   }
   catch (e: any) {

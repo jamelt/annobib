@@ -20,12 +20,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const { email, password } = parsed.data
+  const normalizedEmail = email.toLowerCase()
   const hashedPassword = await hashPassword(password)
+  const auth0Id = `local:${normalizedEmail}:${hashedPassword}`
 
   const user = await db.query.users.findFirst({
     where: and(
-      eq(users.email, email.toLowerCase()),
-      like(users.auth0Id, `local:${hashedPassword}`),
+      eq(users.email, normalizedEmail),
+      eq(users.auth0Id, auth0Id),
     ),
   })
 

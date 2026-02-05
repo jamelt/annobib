@@ -4,7 +4,7 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { loggedIn } = useUserSession()
+const { loggedIn, fetch: fetchSession } = useUserSession()
 
 const email = ref('')
 const password = ref('')
@@ -28,6 +28,7 @@ async function handleLogin() {
       method: 'POST',
       body: { email: email.value, password: password.value },
     })
+    await fetchSession()
     await navigateTo(redirectTo.value)
   }
   catch (e: any) {
