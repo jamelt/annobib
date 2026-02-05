@@ -97,80 +97,82 @@ async function handleSubmit() {
 
 <template>
   <UModal v-model:open="isOpen">
-    <UCard>
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ isEditing ? 'Edit Project' : 'Create Project' }}
-          </h2>
-          <UButton
-            icon="i-heroicons-x-mark"
-            variant="ghost"
-            color="neutral"
-            @click="isOpen = false"
-          />
-        </div>
-      </template>
-
-      <form class="space-y-4" @submit.prevent="handleSubmit">
-        <UAlert
-          v-if="error"
-          color="error"
-          icon="i-heroicons-exclamation-triangle"
-          :title="error"
-        />
-
-        <UFormField label="Name" required>
-          <UInput
-            v-model="form.name"
-            placeholder="Enter project name"
-            data-testid="project-modal-name"
-            autofocus
-          />
-        </UFormField>
-
-        <UFormField label="Description">
-          <UTextarea
-            v-model="form.description"
-            :rows="3"
-            placeholder="What is this project about?"
-          />
-        </UFormField>
-
-        <UFormField label="Color">
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-for="color in colors"
-              :key="color"
-              type="button"
-              class="w-8 h-8 rounded-lg transition-transform hover:scale-110"
-              :class="form.color === color ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-white' : ''"
-              :style="{ backgroundColor: color }"
-              @click="form.color = color"
+    <template #content>
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ isEditing ? 'Edit Project' : 'Create Project' }}
+            </h2>
+            <UButton
+              icon="i-heroicons-x-mark"
+              variant="ghost"
+              color="neutral"
+              @click="isOpen = false"
             />
           </div>
-        </UFormField>
-      </form>
+        </template>
 
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <UButton
-            variant="outline"
-            color="neutral"
-            @click="isOpen = false"
-          >
-            Cancel
-          </UButton>
-          <UButton
-            color="primary"
-            :loading="isSubmitting"
-            data-testid="project-modal-submit"
-            @click="handleSubmit"
-          >
-            {{ isEditing ? 'Save Changes' : 'Create Project' }}
-          </UButton>
-        </div>
-      </template>
-    </UCard>
+        <form class="space-y-4" @submit.prevent="handleSubmit">
+          <UAlert
+            v-if="error"
+            color="error"
+            icon="i-heroicons-exclamation-triangle"
+            :title="error"
+          />
+
+          <UFormField label="Name" required>
+            <UInput
+              v-model="form.name"
+              placeholder="Enter project name"
+              data-testid="project-modal-name"
+              autofocus
+            />
+          </UFormField>
+
+          <UFormField label="Description">
+            <UTextarea
+              v-model="form.description"
+              :rows="3"
+              placeholder="What is this project about?"
+            />
+          </UFormField>
+
+          <UFormField label="Color">
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="color in colors"
+                :key="color"
+                type="button"
+                class="w-8 h-8 rounded-lg transition-transform hover:scale-110"
+                :class="form.color === color ? 'ring-2 ring-offset-2 ring-gray-900 dark:ring-white' : ''"
+                :style="{ backgroundColor: color }"
+                @click="form.color = color"
+              />
+            </div>
+          </UFormField>
+        </form>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton
+              variant="outline"
+              color="neutral"
+              @click="isOpen = false"
+            >
+              Cancel
+            </UButton>
+            <UButton
+              color="primary"
+              :loading="isSubmitting"
+              data-testid="project-modal-submit"
+              @click="handleSubmit"
+            >
+              {{ isEditing ? 'Save Changes' : 'Create Project' }}
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </template>
   </UModal>
 </template>
