@@ -113,14 +113,14 @@ export function identifyEntryType(text: string): EntryType | null {
     { patterns: ['conference', 'proceeding', 'symposium'], type: 'conference_paper' },
     { patterns: ['thesis', 'dissertation', 'phd', 'masters'], type: 'thesis' },
     { patterns: ['website', 'webpage', 'web page', 'online', 'url'], type: 'website' },
-    { patterns: ['newspaper', 'news article'], type: 'newspaper' },
-    { patterns: ['magazine'], type: 'magazine' },
+    { patterns: ['newspaper', 'news article'], type: 'newspaper_article' },
+    { patterns: ['magazine'], type: 'magazine_article' },
     { patterns: ['video', 'youtube', 'film', 'movie', 'documentary'], type: 'video' },
     { patterns: ['podcast', 'audio', 'episode'], type: 'podcast' },
     { patterns: ['report', 'technical report', 'white paper'], type: 'report' },
-    { patterns: ['chapter', 'book chapter', 'section'], type: 'chapter' },
+    { patterns: ['chapter', 'book chapter', 'section'], type: 'book' },
     { patterns: ['patent'], type: 'patent' },
-    { patterns: ['case', 'legal', 'court', 'ruling'], type: 'legal_case' },
+    { patterns: ['case', 'legal', 'court', 'ruling'], type: 'legal_document' },
   ]
 
   for (const { patterns, type } of typePatterns) {

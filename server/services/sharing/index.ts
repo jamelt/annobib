@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { projectShares, projects, users } from '~/server/database/schema'
-import { eq, and, or } from 'drizzle-orm'
+import { eq, and, or, isNotNull } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import type { SharePermission } from '~/shared/types'
 
@@ -14,7 +14,6 @@ export interface ShareInfo {
   publicToken?: string
   isPublic: boolean
   createdAt: Date
-  expiresAt?: Date
 }
 
 export async function shareProjectWithUser(
@@ -42,8 +41,8 @@ export async function shareProjectWithUser(
     where: and(
       eq(projectShares.projectId, projectId),
       targetUser
-        ? eq(projectShares.userId, targetUser.id)
-        : eq(projectShares.invitedEmail, targetEmail.toLowerCase()),
+        ? eq(projectShares.sharedWithUserId, targetUser.id)
+        : eq(projectShares.sharedWithEmail, targetEmail.toLowerCase()),
     ),
   })
 
@@ -52,15 +51,16 @@ export async function shareProjectWithUser(
       .update(projectShares)
       .set({
         permission,
-        updatedAt: new Date(),
       })
       .where(eq(projectShares.id, existingShare.id))
       .returning()
 
+    if (!updated) throw new Error('Failed to update share')
+
     return {
       id: updated.id,
       projectId: updated.projectId,
-      userId: updated.userId || undefined,
+      userId: updated.sharedWithUserId || undefined,
       userEmail: targetEmail,
       userName: targetUser?.name || undefined,
       permission: updated.permission as SharePermission,
@@ -73,16 +73,19 @@ export async function shareProjectWithUser(
     .insert(projectShares)
     .values({
       projectId,
-      userId: targetUser?.id || null,
-      invitedEmail: targetUser ? null : targetEmail.toLowerCase(),
+      sharedWithUserId: targetUser?.id || null,
+      sharedWithEmail: targetUser ? null : targetEmail.toLowerCase(),
       permission,
+      isPublicLink: false,
     })
     .returning()
+
+  if (!share) throw new Error('Failed to create share')
 
   return {
     id: share.id,
     projectId: share.projectId,
-    userId: share.userId || undefined,
+    userId: share.sharedWithUserId || undefined,
     userEmail: targetEmail,
     userName: targetUser?.name || undefined,
     permission: share.permission as SharePermission,
@@ -95,8 +98,7 @@ export async function createPublicLink(
   projectId: string,
   ownerUserId: string,
   permission: 'view' | 'comment' = 'view',
-  expiresInDays?: number,
-): Promise<{ token: string; url: string; expiresAt?: Date }> {
+): Promise<{ token: string; url: string }> {
   const project = await db.query.projects.findFirst({
     where: and(
       eq(projects.id, projectId),
@@ -111,31 +113,27 @@ export async function createPublicLink(
   const existingPublicShare = await db.query.projectShares.findFirst({
     where: and(
       eq(projectShares.projectId, projectId),
-      eq(projectShares.isPublic, true),
+      eq(projectShares.isPublicLink, true),
     ),
   })
 
   const token = nanoid(24)
-  const expiresAt = expiresInDays
-    ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000)
-    : undefined
 
   if (existingPublicShare) {
     const [updated] = await db
       .update(projectShares)
       .set({
-        publicToken: token,
+        publicLinkToken: token,
         permission,
-        expiresAt,
-        updatedAt: new Date(),
       })
       .where(eq(projectShares.id, existingPublicShare.id))
       .returning()
 
+    if (!updated) throw new Error('Failed to update public link')
+
     return {
-      token: updated.publicToken!,
-      url: `/shared/${updated.publicToken}`,
-      expiresAt: updated.expiresAt || undefined,
+      token: updated.publicLinkToken!,
+      url: `/shared/${updated.publicLinkToken}`,
     }
   }
 
@@ -143,17 +141,17 @@ export async function createPublicLink(
     .insert(projectShares)
     .values({
       projectId,
-      isPublic: true,
-      publicToken: token,
+      isPublicLink: true,
+      publicLinkToken: token,
       permission,
-      expiresAt,
     })
     .returning()
 
+  if (!share) throw new Error('Failed to create public link')
+
   return {
-    token: share.publicToken!,
-    url: `/shared/${share.publicToken}`,
-    expiresAt: share.expiresAt || undefined,
+    token: share.publicLinkToken!,
+    url: `/shared/${share.publicLinkToken}`,
   }
 }
 
@@ -174,7 +172,7 @@ export async function revokePublicLink(projectId: string, ownerUserId: string): 
     .where(
       and(
         eq(projectShares.projectId, projectId),
-        eq(projectShares.isPublic, true),
+        eq(projectShares.isPublicLink, true),
       ),
     )
 }
@@ -218,7 +216,7 @@ export async function getProjectShares(projectId: string, ownerUserId: string): 
     where: eq(projectShares.projectId, projectId),
   })
 
-  const userIds = shares.filter(s => s.userId).map(s => s.userId!)
+  const userIds = shares.filter(s => s.sharedWithUserId).map(s => s.sharedWithUserId!)
   const sharedUsers = userIds.length > 0
     ? await db.query.users.findMany({
         where: or(...userIds.map(id => eq(users.id, id))),
@@ -228,19 +226,18 @@ export async function getProjectShares(projectId: string, ownerUserId: string): 
   const userMap = new Map(sharedUsers.map(u => [u.id, u]))
 
   return shares.map((share) => {
-    const user = share.userId ? userMap.get(share.userId) : undefined
+    const user = share.sharedWithUserId ? userMap.get(share.sharedWithUserId) : undefined
 
     return {
       id: share.id,
       projectId: share.projectId,
-      userId: share.userId || undefined,
-      userEmail: user?.email || share.invitedEmail || undefined,
+      userId: share.sharedWithUserId || undefined,
+      userEmail: user?.email || share.sharedWithEmail || undefined,
       userName: user?.name || undefined,
       permission: share.permission as SharePermission,
-      publicToken: share.publicToken || undefined,
-      isPublic: share.isPublic,
+      publicToken: share.publicLinkToken || undefined,
+      isPublic: share.isPublicLink ?? false,
       createdAt: share.createdAt,
-      expiresAt: share.expiresAt || undefined,
     }
   })
 }
@@ -251,16 +248,12 @@ export async function getSharedProjectByToken(token: string): Promise<{
 } | null> {
   const share = await db.query.projectShares.findFirst({
     where: and(
-      eq(projectShares.publicToken, token),
-      eq(projectShares.isPublic, true),
+      eq(projectShares.publicLinkToken, token),
+      eq(projectShares.isPublicLink, true),
     ),
   })
 
   if (!share) return null
-
-  if (share.expiresAt && share.expiresAt < new Date()) {
-    return null
-  }
 
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, share.projectId),
@@ -287,8 +280,8 @@ export async function getUserSharedProjects(userId: string): Promise<Array<{
 
   const shares = await db.query.projectShares.findMany({
     where: or(
-      eq(projectShares.userId, userId),
-      eq(projectShares.invitedEmail, user.email.toLowerCase()),
+      eq(projectShares.sharedWithUserId, userId),
+      eq(projectShares.sharedWithEmail, user.email.toLowerCase()),
     ),
   })
 
@@ -343,17 +336,13 @@ export async function checkProjectAccess(
     where: and(
       eq(projectShares.projectId, projectId),
       or(
-        eq(projectShares.userId, userId),
-        eq(projectShares.invitedEmail, user.email.toLowerCase()),
+        eq(projectShares.sharedWithUserId, userId),
+        eq(projectShares.sharedWithEmail, user.email.toLowerCase()),
       ),
     ),
   })
 
   if (!share) {
-    return { hasAccess: false, permission: null }
-  }
-
-  if (share.expiresAt && share.expiresAt < new Date()) {
     return { hasAccess: false, permission: null }
   }
 

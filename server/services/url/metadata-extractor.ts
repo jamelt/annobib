@@ -264,11 +264,11 @@ function extractSiteSpecific(url: string, root: any, html: string): Partial<Extr
 
   if (hostname.includes('nytimes.com') || hostname.includes('washingtonpost.com')
     || hostname.includes('theguardian.com') || hostname.includes('bbc.')) {
-    return { entryType: 'newspaper' }
+    return { entryType: 'newspaper_article' }
   }
 
   if (hostname.includes('medium.com') || hostname.includes('substack.com')) {
-    return { entryType: 'magazine' }
+    return { entryType: 'magazine_article' }
   }
 
   return null
@@ -307,12 +307,12 @@ function inferEntryType(url: string, metadata: Partial<ExtractedMetadata>): Entr
   if (hostname.includes('nytimes.com') || hostname.includes('washingtonpost.com')
     || hostname.includes('bbc.') || hostname.includes('cnn.com')
     || hostname.includes('reuters.com') || hostname.includes('apnews.com')) {
-    return 'newspaper'
+    return 'newspaper_article'
   }
 
   if (hostname.includes('medium.com') || hostname.includes('forbes.com')
     || hostname.includes('wired.com') || hostname.includes('techcrunch.com')) {
-    return 'magazine'
+    return 'magazine_article'
   }
 
   return 'website'

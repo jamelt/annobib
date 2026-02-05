@@ -38,7 +38,7 @@ export async function formatEntriesWithStyle(
 
   const styleXml = await fetchStyleXml(styleId)
   const cslItems = entries.map(entryToCSLItem)
-  const engine = createCitationProcessor(styleXml, EN_US_LOCALE, cslItems)
+  const engine = await createCitationProcessor(styleXml, EN_US_LOCALE, cslItems)
 
   const itemIds = cslItems.map(item => item.id)
   const bibliographies = formatBibliography(engine, itemIds)
@@ -72,7 +72,7 @@ export async function previewStyleWithEntry(
   styleXml: string,
 ): Promise<FormattedCitation> {
   const cslItem = entryToCSLItem(entry)
-  const engine = createCitationProcessor(styleXml, EN_US_LOCALE, [cslItem])
+  const engine = await createCitationProcessor(styleXml, EN_US_LOCALE, [cslItem])
 
   const [bibliography] = formatBibliography(engine, [entry.id])
   const inText = formatInTextCitation(engine, entry.id)
@@ -90,7 +90,7 @@ export async function formatWithCustomStyle(
   styleName: string,
 ): Promise<BibliographyResult> {
   const cslItems = entries.map(entryToCSLItem)
-  const engine = createCitationProcessor(styleXml, EN_US_LOCALE, cslItems)
+  const engine = await createCitationProcessor(styleXml, EN_US_LOCALE, cslItems)
 
   const itemIds = cslItems.map(item => item.id)
   const bibliographies = formatBibliography(engine, itemIds)

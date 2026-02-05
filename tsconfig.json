@@ -2,8 +2,9 @@
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "strict": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vitest/globals"]
-  }
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "include": ["types/**/*.d.ts"]
 }

@@ -1,21 +1,44 @@
 import { OpenAI } from 'openai'
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
-import pdf from 'pdf-parse'
-import mammoth from 'mammoth'
 import { db } from '~/server/database/client'
 import { documentChunks, entries, annotations } from '~/server/database/schema'
 import { eq, and, sql } from 'drizzle-orm'
 import type { Entry, Annotation } from '~/shared/types'
 
-const openai = new OpenAI({
-  apiKey: process.env.NUXT_OPENAI_API_KEY,
-})
+let openai: OpenAI | null = null
+let textSplitter: any = null
 
-const textSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: 1000,
-  chunkOverlap: 200,
-  separators: ['\n\n', '\n', '. ', ', ', ' ', ''],
-})
+async function getOpenAI() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.NUXT_OPENAI_API_KEY,
+    })
+  }
+  return openai
+}
+
+async function getTextSplitter() {
+  if (!textSplitter) {
+    const { RecursiveCharacterTextSplitter } = await import('@langchain/textsplitters')
+    textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 200,
+      separators: ['\n\n', '\n', '. ', ', ', ' ', ''],
+    })
+  }
+  return textSplitter
+}
+
+async function parsePDF(buffer: Buffer): Promise<string> {
+  const pdfParse = (await import('pdf-parse')).default
+  const result = await pdfParse(buffer)
+  return result.text
+}
+
+async function parseDocx(buffer: Buffer): Promise<string> {
+  const mammoth = await import('mammoth')
+  const result = await mammoth.extractRawText({ buffer })
+  return result.value
+}
 
 export interface ChunkMetadata {
   sourceType: 'entry' | 'annotation' | 'upload'

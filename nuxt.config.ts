@@ -46,6 +46,7 @@ export default defineNuxtConfig({
   },
 
   image: {
+    provider: 'ipx',
     quality: 80,
     screens: {
       xs: 320,
@@ -54,6 +55,7 @@ export default defineNuxtConfig({
       lg: 1024,
       xl: 1280,
     },
+    sharp: {},
   },
 
   routeRules: {
@@ -65,6 +67,23 @@ export default defineNuxtConfig({
     preset: 'node-server',
     experimental: {
       openAPI: true,
+    },
+    externals: {
+      inline: ['pdf-parse', 'mammoth', 'citeproc'],
+    },
+    esbuild: {
+      options: {
+        target: 'esnext',
+      },
+    },
+  },
+
+  vite: {
+    optimizeDeps: {
+      include: ['pdf-parse', 'mammoth', 'citeproc'],
+    },
+    build: {
+      sourcemap: false,
     },
   },
 

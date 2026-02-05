@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { db } from '~/server/database/client'
 import { entries, entryTags, tags, annotations } from '~/server/database/schema'
 import { generatePdf } from '~/server/services/export'
@@ -7,8 +8,8 @@ import { pdfExportOptionsSchema } from '~/shared/validation'
 import type { Entry } from '~/shared/types'
 
 const exportSchema = pdfExportOptionsSchema.extend({
-  entryIds: require('zod').z.array(require('zod').z.string().uuid()).optional(),
-  projectId: require('zod').z.string().uuid().optional(),
+  entryIds: z.array(z.string().uuid()).optional(),
+  projectId: z.string().uuid().optional(),
 })
 
 export default defineEventHandler(async (event) => {

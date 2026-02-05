@@ -52,11 +52,11 @@ export default defineEventHandler(async (event) => {
       .where(
         and(
           eq(projectShares.projectId, projectId),
-          eq(projectShares.isPublic, false),
+          eq(projectShares.isPublicLink, false),
         ),
       )
 
-    if (existingCount.count >= limits.collaboratorsPerProject) {
+    if (existingCount && existingCount.count >= limits.collaboratorsPerProject) {
       throw createError({
         statusCode: 403,
         message: `You have reached the limit of ${limits.collaboratorsPerProject} collaborators per project for your plan`,
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event) => {
     }
 
     try {
-      const result = await createPublicLink(projectId, user.id, permission, expiresInDays)
+      const result = await createPublicLink(projectId, user.id, permission)
       return result
     }
     catch (error: any) {

@@ -1,5 +1,13 @@
-import CSL from 'citeproc'
 import type { Entry, Author } from '~/shared/types'
+
+let CSL: any = null
+
+async function getCSL() {
+  if (!CSL) {
+    CSL = (await import('citeproc')).default
+  }
+  return CSL
+}
 
 export interface CitationItem {
   id: string
@@ -102,33 +110,35 @@ export function entryToCSLItem(entry: Entry): CitationItem {
   return item
 }
 
-export function createCitationProcessor(
+export async function createCitationProcessor(
   styleXml: string,
   localeXml: string,
   items: CitationItem[],
-): CSL.Engine {
+): Promise<any> {
+  const CSLModule = await getCSL()
+  
   const itemsById: Record<string, CitationItem> = {}
   for (const item of items) {
     itemsById[item.id] = item
   }
 
-  const sys: CSL.SystemOptions = {
+  const sys = {
     retrieveLocale: () => localeXml,
     retrieveItem: (id: string) => itemsById[id],
   }
 
-  const engine = new CSL.Engine(sys, styleXml)
+  const engine = new CSLModule(sys, styleXml)
   return engine
 }
 
 export function formatBibliography(
-  engine: CSL.Engine,
+  engine: any,
   itemIds: string[],
 ): string[] {
   engine.updateItems(itemIds)
   const [params, entries] = engine.makeBibliography()
 
-  if (!entries) {
+  if (!entries || !Array.isArray(entries)) {
     return []
   }
 
@@ -136,7 +146,7 @@ export function formatBibliography(
 }
 
 export function formatCitation(
-  engine: CSL.Engine,
+  engine: any,
   itemIds: string[],
 ): string {
   const citation = {
@@ -154,7 +164,7 @@ export function formatCitation(
 }
 
 export function formatInTextCitation(
-  engine: CSL.Engine,
+  engine: any,
   itemId: string,
 ): string {
   return formatCitation(engine, [itemId])
