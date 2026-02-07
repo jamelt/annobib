@@ -1,14 +1,17 @@
 export function useQuickAdd() {
   const isOpen = useState('quick-add-open', () => false)
+  const defaultProjectId = useState<string | undefined>('quick-add-project-id', () => undefined)
   const route = useRoute()
   const router = useRouter()
 
-  function open() {
+  function open(projectId?: string) {
+    defaultProjectId.value = projectId
     isOpen.value = true
   }
 
   function close() {
     isOpen.value = false
+    defaultProjectId.value = undefined
   }
 
   watch(() => route.query.action, (action) => {
@@ -21,5 +24,5 @@ export function useQuickAdd() {
     }
   })
 
-  return { isOpen, open, close }
+  return { isOpen, defaultProjectId, open, close }
 }

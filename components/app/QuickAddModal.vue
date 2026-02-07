@@ -661,6 +661,7 @@ watch(isOpen, (open) => {
   if (!open) {
     resetForm();
   } else {
+    selectedProjectId.value = props.defaultProjectId ?? null;
     nextTick(() => {
       const el = inputRef.value;
       if (el) {

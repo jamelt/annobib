@@ -9,6 +9,8 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { open: openQuickAdd } = useQuickAdd()
+const { onEntryCreated } = useEntryEvents()
 
 const projectIdentifier = computed(() => route.params.id as string)
 
@@ -166,6 +168,11 @@ async function addSelectedEntriesToProject() {
   }
 }
 
+function quickAddToProject() {
+  if (!project.value) return
+  openQuickAdd(project.value.id)
+}
+
 function openAddEntryModal() {
   selectedEntryIds.value.clear()
   searchQuery.value = ''
@@ -221,6 +228,10 @@ function formatAuthors(authors: any[]) {
   }
   return `${authors[0].lastName} et al.`
 }
+
+onEntryCreated(() => {
+  refresh()
+})
 </script>
 
 <template>
@@ -339,31 +350,52 @@ function formatAuthors(authors: any[]) {
               >
                 Refresh
               </UButton>
-              <UButton
-                icon="i-heroicons-plus"
-                size="sm"
-                @click="openAddEntryModal"
+              <UDropdown
+                :items="[
+                  [
+                    { label: 'New Entry', icon: 'i-heroicons-plus-circle', onSelect: quickAddToProject },
+                    { label: 'From Library', icon: 'i-heroicons-book-open', onSelect: openAddEntryModal },
+                  ],
+                ]"
               >
-                Add Entry
-              </UButton>
+                <UButton
+                  icon="i-heroicons-plus"
+                  size="sm"
+                  trailing-icon="i-heroicons-chevron-down"
+                >
+                  Add Entry
+                </UButton>
+              </UDropdown>
             </div>
           </div>
         </template>
 
         <div v-if="entries.length === 0" class="text-center py-10">
           <UIcon name="i-heroicons-book-open" class="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600" />
-          <p class="mt-2 text-gray-500 dark:text-gray-400">
-            No entries have been added to this project yet.
+          <p class="mt-2 font-medium text-gray-700 dark:text-gray-300">
+            No entries in this project yet
           </p>
-          <UButton
-            icon="i-heroicons-plus"
-            variant="soft"
-            color="primary"
-            class="mt-4"
-            @click="openAddEntryModal"
-          >
-            Add from Library
-          </UButton>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Add a new source or pull in entries from your library.
+          </p>
+          <div class="flex justify-center gap-3 mt-5">
+            <UButton
+              icon="i-heroicons-plus-circle"
+              variant="soft"
+              color="primary"
+              @click="quickAddToProject"
+            >
+              New Entry
+            </UButton>
+            <UButton
+              icon="i-heroicons-book-open"
+              variant="soft"
+              color="neutral"
+              @click="openAddEntryModal"
+            >
+              From Library
+            </UButton>
+          </div>
         </div>
 
         <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
