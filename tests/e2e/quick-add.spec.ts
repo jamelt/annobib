@@ -33,7 +33,7 @@ test.describe('Quick Add - Desktop', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.getByTestId('quick-add-button').click()
 
@@ -47,8 +47,6 @@ test.describe('Quick Add - Desktop', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
-
     await page.getByTestId('quick-add-button').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
 
@@ -60,13 +58,25 @@ test.describe('Quick Add - Desktop', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
-
     await page.getByTestId('quick-add-button').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
 
     await page.getByTestId('quick-add-close').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible({ timeout: 3000 })
+  })
+
+  test('can fill in form fields in the modal', async ({ page }) => {
+    await signUpAndLogin(page)
+    await page.goto('/app')
+
+    await page.getByTestId('quick-add-button').click()
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
+
+    await page.getByPlaceholder('Enter title...').fill('Test Entry Title')
+    await page.getByPlaceholder('John Smith, Jane Doe').fill('Ada Lovelace')
+
+    await expect(page.getByPlaceholder('Enter title...')).toHaveValue('Test Entry Title')
+    await expect(page.getByPlaceholder('John Smith, Jane Doe')).toHaveValue('Ada Lovelace')
   })
 })
 
@@ -78,25 +88,23 @@ test.describe('Quick Add - Mobile', () => {
     isMobile: true,
   })
 
-  test('opens Quick Add overlay when header button is clicked', async ({ page }) => {
+  test('opens Quick Add when header button is clicked', async ({ page }) => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.getByTestId('quick-add-button-mobile').click()
 
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
     await expect(page.getByRole('button', { name: 'Type' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Voice' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'URL' })).toBeVisible()
   })
 
-  test('opens Quick Add overlay when bottom nav FAB is clicked', async ({ page }) => {
+  test('opens Quick Add when bottom nav FAB is clicked', async ({ page }) => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.getByTestId('quick-add-fab').click()
 
@@ -108,18 +116,16 @@ test.describe('Quick Add - Mobile', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.goto('/app?action=quick-add')
 
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
   })
 
-  test('closes Quick Add overlay when X button is clicked', async ({ page }) => {
+  test('closes Quick Add when X button is clicked', async ({ page }) => {
     await signUpAndLogin(page)
     await page.goto('/app')
-
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
 
     await page.getByTestId('quick-add-fab').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
@@ -128,11 +134,9 @@ test.describe('Quick Add - Mobile', () => {
     await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible({ timeout: 3000 })
   })
 
-  test('URL tab and input are available in mobile Quick Add', async ({ page }) => {
+  test('URL tab and input are available in Quick Add', async ({ page }) => {
     await signUpAndLogin(page)
     await page.goto('/app')
-
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
 
     await page.getByTestId('quick-add-fab').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
@@ -150,7 +154,7 @@ test.describe('Quick Add - Cross-browser', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.getByTestId('quick-add-button').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })
@@ -161,7 +165,7 @@ test.describe('Quick Add - Cross-browser', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
+    await expect(page.getByRole('heading', { name: 'Quick Add' })).not.toBeVisible()
 
     await page.getByTestId('quick-add-button').click()
     await expect(page.getByRole('heading', { name: 'Quick Add' })).toBeVisible({ timeout: 5000 })

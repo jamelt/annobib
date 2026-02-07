@@ -9,17 +9,10 @@ export function useQuickAdd() {
 
   function close() {
     isOpen.value = false
-    if (route.query.action === 'quick-add') {
-      router.replace({ path: route.path, query: {} })
-    }
   }
 
   watch(() => route.query.action, (action) => {
-    if (action === 'quick-add') {
-      isOpen.value = true
-    } else {
-      isOpen.value = false
-    }
+    isOpen.value = action === 'quick-add'
   }, { immediate: true })
 
   watch(isOpen, (open) => {

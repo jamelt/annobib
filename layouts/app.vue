@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { user, logout } = useAuth()
-const { open: openQuickAdd, isOpen: isQuickAddOpen } = useQuickAdd()
+const { open: openQuickAdd, close: closeQuickAdd, isOpen: isQuickAddOpen } = useQuickAdd()
 
 const colorMode = useColorMode()
 const isDark = computed({
@@ -14,7 +14,7 @@ const isSidebarOpen = ref(true)
 const isMobileMenuOpen = ref(false)
 
 const navigation = [
-  { name: 'Dashboard', to: '/app', icon: 'i-heroicons-home' },
+  { name: 'Dashboard', to: '/app', icon: 'i-heroicons-home', exact: true },
   { name: 'Library', to: '/app/library', icon: 'i-heroicons-book-open' },
   { name: 'Projects', to: '/app/projects', icon: 'i-heroicons-folder' },
   { name: 'Tags', to: '/app/tags', icon: 'i-heroicons-tag' },
@@ -243,6 +243,10 @@ const userNavigation = [
       </div>
     </nav>
 
+    <AppQuickAddModal
+      v-model:open="isQuickAddOpen"
+      @update:open="(val: boolean) => { if (!val) closeQuickAdd() }"
+    />
   </div>
 </template>
 

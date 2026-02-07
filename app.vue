@@ -1,7 +1,3 @@
-<script setup lang="ts">
-const { isOpen, close } = useQuickAdd()
-</script>
-
 <template>
   <UApp>
     <NuxtLayout>
@@ -10,11 +6,6 @@ const { isOpen, close } = useQuickAdd()
 
     <UModals />
     <USlideovers />
-
-    <AppQuickAddModal
-      v-model="isOpen"
-      @update:model-value="(val: boolean) => { if (!val) close() }"
-    />
   </UApp>
 </template>
 

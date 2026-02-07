@@ -3,17 +3,17 @@ import type { EntryType } from '~/shared/types'
 import { ENTRY_TYPE_LABELS } from '~/shared/types'
 
 const props = defineProps<{
-  modelValue: boolean
+  open: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'created', entry: any): void
+  'update:open': [value: boolean]
+  created: [entry: any]
 }>()
 
 const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
+  get: () => props.open,
+  set: (value) => emit('update:open', value),
 })
 
 const { hasFeature } = useSubscription()
@@ -159,170 +159,158 @@ watch(isOpen, (open) => {
 </script>
 
 <template>
-  <UModal
-    v-model="isOpen"
-    :ui="{
-      width: 'max-w-lg',
-      overlay: '!z-[100]',
-    }"
-  >
-    <UCard
-      data-testid="quick-add-modal"
-      :data-state="isOpen ? 'open' : 'closed'"
-    >
-      <template #header>
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Quick Add
-          </h2>
-          <UButton
-            variant="ghost"
-            icon="i-heroicons-x-mark"
-            data-testid="quick-add-close"
-            aria-label="Close"
-            @click="isOpen = false"
-          />
-        </div>
-      </template>
-
-      <div class="space-y-4">
-        <!-- Input mode tabs -->
-        <div class="flex border-b border-gray-200 dark:border-gray-700">
-          <button
-            type="button"
-            class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-            :class="inputMode === 'text'
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'"
-            @click="inputMode = 'text'"
-          >
-            <UIcon name="i-heroicons-pencil" class="w-4 h-4 inline mr-1" />
-            Type
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-            :class="inputMode === 'voice'
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'"
-            @click="inputMode = 'voice'"
-          >
-            <UIcon name="i-heroicons-microphone" class="w-4 h-4 inline mr-1" />
-            Voice
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-            :class="inputMode === 'url'
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'"
-            @click="inputMode = 'url'"
-          >
-            <UIcon name="i-heroicons-link" class="w-4 h-4 inline mr-1" />
-            URL
-          </button>
-        </div>
-
-        <!-- Voice input -->
-        <div v-if="inputMode === 'voice'" class="py-4">
-          <AppVoiceInput
-            :use-whisper="hasFeature('whisperVoice')"
-            placeholder="Say the title, author, and year..."
-            @transcript="handleVoiceTranscript"
-            @parsed="handleVoiceParsed"
-          />
-
-          <!-- Confidence indicator -->
-          <div v-if="voiceConfidence > 0" class="mt-4 flex items-center gap-2">
-            <span class="text-sm text-gray-500">Parsing confidence:</span>
-            <UProgress :value="voiceConfidence" size="sm" class="w-32" />
-            <span class="text-sm font-medium">{{ voiceConfidence }}%</span>
+  <UModal v-model:open="isOpen">
+    <template #content>
+      <UCard data-testid="quick-add-modal">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Quick Add
+            </h2>
+            <UButton
+              variant="ghost"
+              icon="i-heroicons-x-mark"
+              color="neutral"
+              data-testid="quick-add-close"
+              aria-label="Close"
+              @click="isOpen = false"
+            />
           </div>
-        </div>
+        </template>
 
-        <!-- URL input -->
-        <div v-else-if="inputMode === 'url'" class="space-y-3">
-          <UFormGroup label="Enter URL">
-            <UInput
-              v-model="entryData.url"
-              placeholder="https://..."
-              icon="i-heroicons-link"
+        <div class="space-y-4">
+          <div class="flex border-b border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+              :class="inputMode === 'text'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'"
+              @click="inputMode = 'text'"
+            >
+              <UIcon name="i-heroicons-pencil" class="w-4 h-4 inline mr-1" />
+              Type
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+              :class="inputMode === 'voice'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'"
+              @click="inputMode = 'voice'"
+            >
+              <UIcon name="i-heroicons-microphone" class="w-4 h-4 inline mr-1" />
+              Voice
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+              :class="inputMode === 'url'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'"
+              @click="inputMode = 'url'"
+            >
+              <UIcon name="i-heroicons-link" class="w-4 h-4 inline mr-1" />
+              URL
+            </button>
+          </div>
+
+          <div v-if="inputMode === 'voice'" class="py-4">
+            <AppVoiceInput
+              :use-whisper="hasFeature('whisperVoice')"
+              placeholder="Say the title, author, and year..."
+              @transcript="handleVoiceTranscript"
+              @parsed="handleVoiceParsed"
             />
-          </UFormGroup>
-          <UButton
-            :loading="isSubmitting"
-            :disabled="!entryData.url"
-            @click="handleUrlLookup"
-          >
-            Fetch Metadata
-          </UButton>
-        </div>
 
-        <!-- Form fields (shown for text mode or after voice/URL) -->
-        <div v-if="inputMode === 'text' || voiceParsedData || entryData.title" class="space-y-4">
-          <UFormGroup label="Title" required>
-            <UInput
-              v-model="entryData.title"
-              placeholder="Enter title..."
-              autofocus
-            />
-          </UFormGroup>
+            <div v-if="voiceConfidence > 0" class="mt-4 flex items-center gap-2">
+              <span class="text-sm text-gray-500">Parsing confidence:</span>
+              <UProgress :value="voiceConfidence" size="sm" class="w-32" />
+              <span class="text-sm font-medium">{{ voiceConfidence }}%</span>
+            </div>
+          </div>
 
-          <UFormGroup label="Author(s)">
-            <UInput
-              v-model="entryData.authors"
-              placeholder="John Smith, Jane Doe"
-            />
-            <template #hint>
-              Separate multiple authors with commas
-            </template>
-          </UFormGroup>
-
-          <div class="grid grid-cols-2 gap-4">
-            <UFormGroup label="Year">
+          <div v-else-if="inputMode === 'url'" class="space-y-3">
+            <UFormGroup label="Enter URL">
               <UInput
-                v-model.number="entryData.year"
-                type="number"
-                :min="1000"
-                :max="2100"
+                v-model="entryData.url"
+                placeholder="https://..."
+                icon="i-heroicons-link"
               />
             </UFormGroup>
-
-            <UFormGroup label="Type">
-              <USelectMenu
-                v-model="entryData.entryType"
-                :options="entryTypeOptions"
-                value-attribute="value"
-                option-attribute="label"
-              />
-            </UFormGroup>
+            <UButton
+              :loading="isSubmitting"
+              :disabled="!entryData.url"
+              @click="handleUrlLookup"
+            >
+              Fetch Metadata
+            </UButton>
           </div>
+
+          <div v-if="inputMode === 'text' || voiceParsedData || entryData.title" class="space-y-4">
+            <UFormGroup label="Title" required>
+              <UInput
+                v-model="entryData.title"
+                placeholder="Enter title..."
+                autofocus
+              />
+            </UFormGroup>
+
+            <UFormGroup label="Author(s)">
+              <UInput
+                v-model="entryData.authors"
+                placeholder="John Smith, Jane Doe"
+              />
+              <template #hint>
+                Separate multiple authors with commas
+              </template>
+            </UFormGroup>
+
+            <div class="grid grid-cols-2 gap-4">
+              <UFormGroup label="Year">
+                <UInput
+                  v-model.number="entryData.year"
+                  type="number"
+                  :min="1000"
+                  :max="2100"
+                />
+              </UFormGroup>
+
+              <UFormGroup label="Type">
+                <USelectMenu
+                  v-model="entryData.entryType"
+                  :options="entryTypeOptions"
+                  value-attribute="value"
+                  option-attribute="label"
+                />
+              </UFormGroup>
+            </div>
+          </div>
+
+          <UAlert
+            v-if="error"
+            color="red"
+            icon="i-heroicons-exclamation-circle"
+            :title="error"
+          />
         </div>
 
-        <!-- Error message -->
-        <UAlert
-          v-if="error"
-          color="red"
-          icon="i-heroicons-exclamation-circle"
-          :title="error"
-        />
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <UButton variant="outline" color="gray" @click="isOpen = false">
-            Cancel
-          </UButton>
-          <UButton
-            color="primary"
-            :loading="isSubmitting"
-            :disabled="!entryData.title"
-            @click="handleSubmit"
-          >
-            Add Entry
-          </UButton>
-        </div>
-      </template>
-    </UCard>
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton variant="outline" color="neutral" @click="isOpen = false">
+              Cancel
+            </UButton>
+            <UButton
+              color="primary"
+              :loading="isSubmitting"
+              :disabled="!entryData.title"
+              @click="handleSubmit"
+            >
+              Add Entry
+            </UButton>
+          </div>
+        </template>
+      </UCard>
+    </template>
   </UModal>
 </template>
