@@ -213,26 +213,30 @@ function generateBibliographyHtml(entries: Entry[], opts: PdfExportOptions): str
 `
 
     if (opts.includeAnnotations && entry.annotations?.length) {
-      const annotation = entry.annotations[0]
-      if (!annotation) continue
-      let content = annotation.content
+      const sortedAnnotations = [...entry.annotations].sort(
+        (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0),
+      )
 
-      if (opts.annotationMaxLength && content.length > opts.annotationMaxLength) {
-        content = content.substring(0, opts.annotationMaxLength) + '...'
-      }
+      for (const annotation of sortedAnnotations) {
+        let content = annotation.content
 
-      if (opts.annotationStyle === 'bullets') {
-        const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim())
-        html += `
+        if (opts.annotationMaxLength && content.length > opts.annotationMaxLength) {
+          content = content.substring(0, opts.annotationMaxLength) + '...'
+        }
+
+        if (opts.annotationStyle === 'bullets') {
+          const sentences = content.split(/(?<=[.!?])\s+/).filter(s => s.trim())
+          html += `
       <ul class="annotation-bullets">
         ${sentences.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
       </ul>
 `
-      }
-      else {
-        html += `
+        }
+        else {
+          html += `
       <div class="annotation">${escapeHtml(content)}</div>
 `
+        }
       }
     }
 
@@ -320,7 +324,6 @@ function formatAuthors(authors: Author[]): string {
   const firstAuthors = authors.slice(0, -1).map(formatSingleAuthor).join(', ')
   const lastAuthor = authors[authors.length - 1]
   return lastAuthor ? `${firstAuthors}, & ${formatSingleAuthor(lastAuthor)}` : firstAuthors
-  return `${firstAuthors}, & ${lastAuthor}`
 }
 
 function formatSingleAuthor(author: Author): string {

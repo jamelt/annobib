@@ -16,7 +16,7 @@ const isOpen = computed({
   set: (value) => emit('update:open', value),
 })
 
-const exportFormat = ref<'excel' | 'pdf' | 'bibtex'>('excel')
+const exportFormat = ref<'excel' | 'pdf' | 'docx' | 'bibtex'>('excel')
 const isExporting = ref(false)
 const error = ref('')
 
@@ -108,6 +108,14 @@ async function handleExport() {
         }
         break
 
+      case 'docx':
+        endpoint = '/api/export/docx'
+        body = {
+          ...body,
+          ...pdfOptions,
+        }
+        break
+
       case 'bibtex':
         endpoint = '/api/export/bibtex'
         break
@@ -124,7 +132,7 @@ async function handleExport() {
     const link = document.createElement('a')
     link.href = url
 
-    const extensions = { excel: 'xlsx', pdf: 'pdf', bibtex: 'bib' }
+    const extensions = { excel: 'xlsx', pdf: 'pdf', docx: 'docx', bibtex: 'bib' }
     link.download = `bibliography-${Date.now()}.${extensions[exportFormat.value]}`
 
     document.body.appendChild(link)
@@ -170,7 +178,7 @@ async function handleExport() {
 
         <!-- Format Selection -->
         <UFormField label="Export Format">
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-4 gap-3">
             <UButton
               icon="i-heroicons-table-cells"
               :variant="exportFormat === 'excel' ? 'solid' : 'outline'"
@@ -188,6 +196,15 @@ async function handleExport() {
               @click="exportFormat = 'pdf'"
             >
               PDF
+            </UButton>
+            <UButton
+              icon="i-heroicons-document-text"
+              :variant="exportFormat === 'docx' ? 'solid' : 'outline'"
+              :color="exportFormat === 'docx' ? 'primary' : 'neutral'"
+              block
+              @click="exportFormat = 'docx'"
+            >
+              DOCX
             </UButton>
             <UButton
               icon="i-heroicons-code-bracket"
@@ -268,8 +285,8 @@ async function handleExport() {
           </div>
         </template>
 
-        <!-- PDF Options -->
-        <template v-if="exportFormat === 'pdf'">
+        <!-- PDF / DOCX Options -->
+        <template v-if="exportFormat === 'pdf' || exportFormat === 'docx'">
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Paper Size">
               <USelectMenu

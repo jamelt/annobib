@@ -9,7 +9,7 @@ const suggestSchema = z.object({
 
 interface EntrySuggestion {
   id: string
-  source: 'crossref' | 'openlibrary' | 'url'
+  source: 'crossref' | 'openlibrary' | 'url' | 'pubmed'
   title: string
   authors: Author[]
   year?: number
@@ -56,6 +56,15 @@ export default defineEventHandler(async (event) => {
     const isbnSuggestion = await lookupByIsbn(trimmed)
     if (isbnSuggestion) {
       suggestions.push(isbnSuggestion)
+    }
+  }
+  else if (looksLikePmid(trimmed)) {
+    const pmid = extractPmid(trimmed)
+    if (pmid) {
+      const pmidSuggestion = await lookupByPmid(pmid)
+      if (pmidSuggestion) {
+        suggestions.push(pmidSuggestion)
+      }
     }
   }
   else {
@@ -296,6 +305,76 @@ function extractYearFromCrossref(work: any): number | undefined {
   }
 
   return undefined
+}
+
+function looksLikePmid(value: string): boolean {
+  if (/^\d{5,12}$/.test(value)) return true
+  return /pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/i.test(value)
+}
+
+function extractPmid(value: string): string | null {
+  const urlMatch = value.match(/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/i)
+  if (urlMatch) return urlMatch[1]!
+  if (/^\d{5,12}$/.test(value)) return value
+  return null
+}
+
+async function lookupByPmid(pmid: string): Promise<EntrySuggestion | null> {
+  try {
+    const response = await fetch(
+      `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${encodeURIComponent(pmid)}&retmode=json`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+
+    if (!response.ok) return null
+
+    const data: any = await response.json()
+    const record = data?.result?.[pmid]
+    if (!record || record.error) return null
+
+    const title: string | undefined = record.title?.replace(/<[^>]*>/g, '').replace(/\.$/, '')
+    if (!title) return null
+
+    const authors: Author[] = Array.isArray(record.authors)
+      ? record.authors.map((a: any) => {
+          const name = String(a.name ?? '').trim()
+          const parts = name.split(' ')
+          const lastName = parts[0] || 'Unknown'
+          const firstName = parts.slice(1).join(' ')
+          return { firstName, lastName }
+        })
+      : []
+
+    const pubDate = String(record.pubdate ?? '')
+    const year = parseYear(pubDate)
+
+    const doi: string | undefined = Array.isArray(record.articleids)
+      ? record.articleids.find((id: any) => id.idtype === 'doi')?.value
+      : undefined
+
+    const metadata: EntryMetadata = {
+      doi,
+      url: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
+      journal: record.fulljournalname || record.source,
+      volume: record.volume || undefined,
+      issue: record.issue || undefined,
+      pages: record.pages || undefined,
+      language: record.lang?.[0] || undefined,
+    }
+
+    return {
+      id: pmid,
+      source: 'pubmed',
+      title,
+      authors,
+      year,
+      entryType: 'journal_article',
+      metadata,
+    }
+  }
+  catch {
+    return null
+  }
 }
 
 function parseYear(value: string): number | undefined {

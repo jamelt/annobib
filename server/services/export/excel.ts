@@ -117,6 +117,27 @@ export async function generateExcel(
 }
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  if (path === 'annotations_all_content') {
+    const annotations = obj.annotations as Array<{ content?: string; sortOrder?: number }> | undefined
+    if (!Array.isArray(annotations) || annotations.length === 0) return ''
+    return [...annotations]
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map(a => a.content ?? '')
+      .filter(Boolean)
+      .join('\n\n---\n\n')
+  }
+
+  if (path === 'annotations_all_types') {
+    const annotations = obj.annotations as Array<{ annotationType?: string; sortOrder?: number }> | undefined
+    if (!Array.isArray(annotations) || annotations.length === 0) return ''
+    const types = [...annotations]
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map(a => a.annotationType ?? '')
+      .filter(Boolean)
+    const unique = [...new Set(types)]
+    return unique.join(', ')
+  }
+
   const parts = path.split('.')
   let value: unknown = obj
 

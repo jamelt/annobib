@@ -117,7 +117,16 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
-      include: ['pdf-parse', 'mammoth', 'citeproc'],
+      include: [
+        'pdf-parse',
+        'mammoth',
+        'citeproc',
+        '@nuxt/ui > prosemirror-state',
+        '@nuxt/ui > prosemirror-transform',
+        '@nuxt/ui > prosemirror-model',
+        '@nuxt/ui > prosemirror-view',
+        '@nuxt/ui > prosemirror-gapcursor',
+      ],
     },
     build: {
       sourcemap: false,

@@ -17,6 +17,17 @@ const { data: entry, pending, refresh } = await useFetch<Entry>(`/api/entries/${
 const isEditModalOpen = ref(false)
 const isAddAnnotationOpen = ref(false)
 const isDeleteModalOpen = ref(false)
+const editingAnnotation = ref<Annotation | undefined>(undefined)
+
+function openAddAnnotation() {
+  editingAnnotation.value = undefined
+  isAddAnnotationOpen.value = true
+}
+
+function openEditAnnotation(annotation: Annotation) {
+  editingAnnotation.value = annotation
+  isAddAnnotationOpen.value = true
+}
 
 function formatAuthors(authors: any[]) {
   if (!authors || authors.length === 0) return 'Unknown Author'
@@ -269,7 +280,7 @@ async function handleAnnotationCreated() {
             <UButton
               icon="i-heroicons-plus"
               size="sm"
-              @click="isAddAnnotationOpen = true"
+              @click="openAddAnnotation"
             >
               Add Annotation
             </UButton>
@@ -282,17 +293,26 @@ async function handleAnnotationCreated() {
             :key="annotation.id"
             class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
           >
-            <div class="flex items-center gap-2 mb-2">
-              <UBadge variant="subtle" size="xs">
-                {{ ANNOTATION_TYPE_LABELS[annotation.annotationType as keyof typeof ANNOTATION_TYPE_LABELS] }}
-              </UBadge>
-              <span class="text-xs text-gray-400">
-                {{ new Date(annotation.createdAt).toLocaleDateString() }}
-              </span>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <UBadge variant="subtle" size="xs">
+                  {{ ANNOTATION_TYPE_LABELS[annotation.annotationType as keyof typeof ANNOTATION_TYPE_LABELS] }}
+                </UBadge>
+                <span class="text-xs text-gray-400">
+                  {{ new Date(annotation.createdAt).toLocaleDateString() }}
+                </span>
+              </div>
+              <UButton
+                variant="ghost"
+                icon="i-heroicons-pencil"
+                color="neutral"
+                size="xs"
+                @click="openEditAnnotation(annotation)"
+              />
             </div>
-            <p class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+            <div class="text-gray-700 dark:text-gray-300 prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
               {{ annotation.content }}
-            </p>
+            </div>
           </div>
         </div>
         <p v-else class="text-gray-500 dark:text-gray-400 text-center py-8">
@@ -300,6 +320,14 @@ async function handleAnnotationCreated() {
         </p>
       </UCard>
     </div>
+
+    <!-- Annotation Editor Modal -->
+    <LazyAppAnnotationEditorModal
+      v-model:open="isAddAnnotationOpen"
+      :entry-id="entryId"
+      :annotation="editingAnnotation"
+      @saved="handleAnnotationCreated"
+    />
 
     <!-- Edit Modal -->
     <LazyAppEntryFormModal

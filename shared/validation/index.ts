@@ -202,5 +202,7 @@ export type UpdateProjectInput = z.infer<typeof updateProjectSchema>
 export type CreateTagInput = z.infer<typeof createTagSchema>
 export type UpdateTagInput = z.infer<typeof updateTagSchema>
 export type SearchQueryInput = z.infer<typeof searchQuerySchema>
+export const docxExportOptionsSchema = pdfExportOptionsSchema
 export type PdfExportOptions = z.infer<typeof pdfExportOptionsSchema>
+export type DocxExportOptionsInput = z.infer<typeof docxExportOptionsSchema>
 export type ExcelExportOptionsInput = z.infer<typeof excelExportOptionsSchema>
