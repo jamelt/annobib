@@ -30,6 +30,7 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
   })
 
   if (!user) {
+    await clearUserSession(event)
     throw createError({
       statusCode: 401,
       message: 'User not found',
