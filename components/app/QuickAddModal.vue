@@ -68,7 +68,6 @@ const errorMessage = ref<string | null>(null);
 const isCreating = ref(false);
 
 const selectedProjectId = ref<string | null>(props.defaultProjectId ?? null);
-const showOptions = ref(false);
 
 const { data: projects } = useFetch("/api/projects", { lazy: true });
 
@@ -563,7 +562,6 @@ function resetForm() {
   errorMessage.value = null;
   isCreating.value = false;
   selectedProjectId.value = props.defaultProjectId ?? null;
-  showOptions.value = false;
   activeQualifier.value = "any";
   showSlashDropdown.value = false;
   slashFilterText.value = "";
@@ -1139,41 +1137,38 @@ onMounted(() => {
               </div>
             </UCard>
 
-            <!-- Optional project -->
-            <div>
-              <button
-                type="button"
-                class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1"
-                @click="showOptions = !showOptions"
-              >
-                <UIcon
-                  :name="
-                    showOptions
-                      ? 'i-heroicons-chevron-down'
-                      : 'i-heroicons-chevron-right'
+            <!-- Project selection -->
+            <UCard :ui="{ body: { padding: 'p-4' } }">
+              <UFormField label="Add to project (optional)" :help="selectedProjectId ? 'Entry will be added to your library and this project' : 'Entry will be added to your library only'">
+                <USelectMenu
+                  v-model="selectedProjectId"
+                  :items="
+                    (projects || []).map((p) => ({
+                      ...p,
+                      description: p.description ?? undefined,
+                    }))
                   "
-                  class="w-3.5 h-3.5"
-                />
-                Options
-              </button>
-              <div v-if="showOptions" class="mt-2 space-y-3">
-                <UFormField label="Add to project">
-                  <USelectMenu
-                    v-model="selectedProjectId"
-                    :items="
-                      (projects || []).map((p) => ({
-                        ...p,
-                        description: p.description ?? undefined,
-                      }))
-                    "
-                    placeholder="None (library only)"
-                    value-key="id"
-                    label-key="name"
-                    :ui="{ trigger: 'w-full' }"
-                  />
-                </UFormField>
-              </div>
-            </div>
+                  placeholder="Select a project..."
+                  value-key="id"
+                  label-key="name"
+                  searchable
+                  :ui="{ trigger: 'w-full' }"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-folder" class="w-4 h-4" />
+                  </template>
+                  <template #trailing>
+                    <UButton
+                      v-if="selectedProjectId"
+                      icon="i-heroicons-x-mark"
+                      variant="ghost"
+                      size="xs"
+                      @click.stop="selectedProjectId = null"
+                    />
+                  </template>
+                </USelectMenu>
+              </UFormField>
+            </UCard>
           </div>
 
           <!-- Duplicate warning -->

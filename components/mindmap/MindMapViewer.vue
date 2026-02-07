@@ -139,8 +139,8 @@ const stats = computed(() => {
         <UDropdown
           :items="[
             [
-              { label: 'Export SVG', icon: 'i-heroicons-arrow-down-tray', click: handleExportSVG },
-              { label: 'Copy SVG', icon: 'i-heroicons-clipboard', click: copyToClipboard },
+              { label: 'Export SVG', icon: 'i-heroicons-arrow-down-tray', onSelect: handleExportSVG },
+              { label: 'Copy SVG', icon: 'i-heroicons-clipboard', onSelect: copyToClipboard },
             ],
           ]"
         >

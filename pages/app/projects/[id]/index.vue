@@ -23,6 +23,9 @@ const isDeleteModalOpen = ref(false)
 const isAddEntryModalOpen = ref(false)
 const isDeleting = ref(false)
 const isRemovingEntry = ref<string | null>(null)
+const isAddingEntries = ref(false)
+const selectedEntryIds = ref<Set<string>>(new Set())
+const searchQuery = ref('')
 
 const { data: libraryEntries } = await useFetch<{ data: Entry[]; total: number }>('/api/entries', {
   query: { pageSize: 100 },
@@ -33,6 +36,31 @@ const availableEntries = computed(() => {
   if (!libraryEntries.value?.data) return []
   const projectEntryIds = new Set(entries.value.map((e: any) => e.id))
   return libraryEntries.value.data.filter(e => !projectEntryIds.has(e.id))
+})
+
+const filteredAvailableEntries = computed(() => {
+  if (!searchQuery.value) return availableEntries.value
+
+  const query = searchQuery.value.toLowerCase()
+  return availableEntries.value.filter(entry => {
+    const titleMatch = entry.title?.toLowerCase().includes(query)
+    const authorsMatch = entry.authors?.some((a: any) =>
+      `${a.firstName} ${a.lastName}`.toLowerCase().includes(query)
+    )
+    const yearMatch = entry.year?.toString().includes(query)
+    return titleMatch || authorsMatch || yearMatch
+  })
+})
+
+const allSelected = computed({
+  get: () => filteredAvailableEntries.value.length > 0 && filteredAvailableEntries.value.every(e => selectedEntryIds.value.has(e.id)),
+  set: (value: boolean) => {
+    if (value) {
+      filteredAvailableEntries.value.forEach(e => selectedEntryIds.value.add(e.id))
+    } else {
+      filteredAvailableEntries.value.forEach(e => selectedEntryIds.value.delete(e.id))
+    }
+  }
 })
 
 function projectSlugOrId(p: Project | null | undefined) {
@@ -103,26 +131,58 @@ async function deleteProject() {
   }
 }
 
-async function addEntryToProject(entryId: string) {
-  if (!project.value) return
+async function addSelectedEntriesToProject() {
+  if (!project.value || selectedEntryIds.value.size === 0) return
+
+  isAddingEntries.value = true
   try {
-    await $fetch(`/api/projects/${project.value.id}/entries`, {
-      method: 'POST',
-      body: { entryId },
-    })
+    await Promise.all(
+      Array.from(selectedEntryIds.value).map(entryId =>
+        $fetch(`/api/projects/${project.value.id}/entries`, {
+          method: 'POST',
+          body: { entryId },
+        })
+      )
+    )
+
+    const count = selectedEntryIds.value.size
     toast.add({
-      title: 'Entry added to project',
+      title: `${count} ${count === 1 ? 'entry' : 'entries'} added to project`,
       color: 'success',
     })
-    isAddEntryModalOpen.value = false
+
+    closeAddEntryModal()
     await refresh()
   }
   catch (e: any) {
     toast.add({
-      title: 'Failed to add entry',
+      title: 'Failed to add entries',
       description: e.data?.message || 'An error occurred',
       color: 'error',
     })
+  }
+  finally {
+    isAddingEntries.value = false
+  }
+}
+
+function openAddEntryModal() {
+  selectedEntryIds.value.clear()
+  searchQuery.value = ''
+  isAddEntryModalOpen.value = true
+}
+
+function closeAddEntryModal() {
+  selectedEntryIds.value.clear()
+  searchQuery.value = ''
+  isAddEntryModalOpen.value = false
+}
+
+function toggleEntrySelection(entryId: string) {
+  if (selectedEntryIds.value.has(entryId)) {
+    selectedEntryIds.value.delete(entryId)
+  } else {
+    selectedEntryIds.value.add(entryId)
   }
 }
 
@@ -240,16 +300,16 @@ function formatAuthors(authors: any[]) {
           <UDropdown
             :items="[
               [
-                { label: 'Edit', icon: 'i-heroicons-pencil', click: () => isEditModalOpen = true },
-                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', click: () => {} },
+                { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => isEditModalOpen = true },
+                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => {} },
               ],
               [
                 {
                   label: project?.isArchived ? 'Restore' : 'Archive',
                   icon: project?.isArchived ? 'i-heroicons-arrow-uturn-up' : 'i-heroicons-archive-box',
-                  click: toggleArchive,
+                  onSelect: toggleArchive,
                 },
-                { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, click: () => isDeleteModalOpen = true },
+                { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, onSelect: () => isDeleteModalOpen = true },
               ],
             ]"
           >
@@ -282,7 +342,7 @@ function formatAuthors(authors: any[]) {
               <UButton
                 icon="i-heroicons-plus"
                 size="sm"
-                @click="isAddEntryModalOpen = true"
+                @click="openAddEntryModal"
               >
                 Add Entry
               </UButton>
@@ -300,7 +360,7 @@ function formatAuthors(authors: any[]) {
             variant="soft"
             color="primary"
             class="mt-4"
-            @click="isAddEntryModalOpen = true"
+            @click="openAddEntryModal"
           >
             Add from Library
           </UButton>
@@ -395,64 +455,133 @@ function formatAuthors(authors: any[]) {
     </UModal>
 
     <!-- Add Entry Modal -->
-    <UModal v-model:open="isAddEntryModalOpen">
+    <UModal v-model:open="isAddEntryModalOpen" :ui="{ width: 'sm:max-w-3xl' }">
       <template #content>
         <UCard>
           <template #header>
             <div class="flex items-center justify-between">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                Add Entry to Project
-              </h2>
+              <div>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                  Add Entries to Project
+                </h2>
+                <p v-if="availableEntries.length > 0" class="text-sm text-gray-500 mt-1">
+                  {{ selectedEntryIds.size }} of {{ availableEntries.length }} selected
+                </p>
+              </div>
               <UButton
                 icon="i-heroicons-x-mark"
                 variant="ghost"
                 color="neutral"
-                @click="isAddEntryModalOpen = false"
+                size="sm"
+                @click="closeAddEntryModal"
               />
             </div>
           </template>
 
-          <div v-if="availableEntries.length === 0" class="text-center py-8">
-            <UIcon name="i-heroicons-check-circle" class="w-12 h-12 mx-auto text-green-500" />
-            <p class="mt-2 text-gray-500 dark:text-gray-400">
-              All your library entries are already in this project!
+          <div v-if="availableEntries.length === 0" class="text-center py-12">
+            <UIcon name="i-heroicons-check-circle" class="w-16 h-16 mx-auto text-green-500" />
+            <p class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+              All entries added!
+            </p>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">
+              All your library entries are already in this project.
             </p>
             <UButton
               to="/app/library"
               variant="soft"
               color="primary"
-              class="mt-4"
+              class="mt-6"
             >
               Go to Library
             </UButton>
           </div>
 
-          <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
-            <li
-              v-for="entry in availableEntries"
-              :key="entry.id"
-              class="py-3 first:pt-0 last:pb-0"
-            >
-              <div class="flex items-center gap-3">
-                <div class="flex-1 min-w-0">
-                  <p class="font-medium text-gray-900 dark:text-white truncate">
-                    {{ entry.title }}
-                  </p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ formatAuthors(entry.authors) }}{{ entry.authors?.length && entry.year ? ', ' : '' }}{{ entry.year || 'n.d.' }}
-                  </p>
+          <div v-else class="space-y-4">
+            <!-- Search bar -->
+            <div class="w-full">
+              <UInput
+                v-model="searchQuery"
+                icon="i-heroicons-magnifying-glass"
+                placeholder="Search entries by title, author, or year..."
+                size="lg"
+                class="w-full"
+              />
+            </div>
+
+            <!-- Select all -->
+            <div class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+              <UCheckbox
+                v-model="allSelected"
+                :label="`Select all ${filteredAvailableEntries.length > 0 ? `(${filteredAvailableEntries.length})` : ''}`"
+              />
+              <UButton
+                v-if="selectedEntryIds.size > 0"
+                variant="ghost"
+                size="xs"
+                @click="selectedEntryIds.clear()"
+              >
+                Clear selection
+              </UButton>
+            </div>
+
+            <!-- Entries list -->
+            <div v-if="filteredAvailableEntries.length === 0" class="text-center py-8">
+              <UIcon name="i-heroicons-magnifying-glass" class="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600" />
+              <p class="mt-2 text-gray-500 dark:text-gray-400">
+                No entries found matching "{{ searchQuery }}"
+              </p>
+            </div>
+
+            <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+              <li
+                v-for="entry in filteredAvailableEntries"
+                :key="entry.id"
+                class="py-3 first:pt-0 hover:bg-gray-50 dark:hover:bg-gray-800 -mx-4 px-4 rounded-lg transition-colors cursor-pointer"
+                @click="toggleEntrySelection(entry.id)"
+              >
+                <div class="flex items-start gap-3">
+                  <UCheckbox
+                    :model-value="selectedEntryIds.has(entry.id)"
+                    class="mt-1"
+                    @click.stop
+                    @update:model-value="toggleEntrySelection(entry.id)"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-gray-900 dark:text-white">
+                      {{ entry.title }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {{ formatAuthors(entry.authors) }}{{ entry.authors?.length && entry.year ? ', ' : '' }}{{ entry.year || 'n.d.' }}
+                    </p>
+                    <div v-if="entry.entryType" class="mt-1">
+                      <UBadge size="xs" variant="subtle" color="neutral">
+                        {{ entry.entryType.replace(/_/g, ' ') }}
+                      </UBadge>
+                    </div>
+                  </div>
                 </div>
-                <UButton
-                  icon="i-heroicons-plus"
-                  size="sm"
-                  variant="soft"
-                  @click="addEntryToProject(entry.id)"
-                >
-                  Add
-                </UButton>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </div>
+
+          <template v-if="availableEntries.length > 0" #footer>
+            <div class="flex justify-end gap-3">
+              <UButton
+                variant="outline"
+                color="neutral"
+                @click="closeAddEntryModal"
+              >
+                Cancel
+              </UButton>
+              <UButton
+                :disabled="selectedEntryIds.size === 0"
+                :loading="isAddingEntries"
+                @click="addSelectedEntriesToProject"
+              >
+                Add {{ selectedEntryIds.size > 0 ? `(${selectedEntryIds.size})` : '' }} {{ selectedEntryIds.size === 1 ? 'Entry' : 'Entries' }}
+              </UButton>
+            </div>
+          </template>
         </UCard>
       </template>
     </UModal>
