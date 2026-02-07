@@ -159,8 +159,15 @@ watch(isOpen, (open) => {
 </script>
 
 <template>
-  <UModal v-model="isOpen" :ui="{ width: 'max-w-lg' }">
-    <UCard>
+  <UModal
+    v-model="isOpen"
+    scrollable
+    :ui="{ width: 'max-w-lg' }"
+  >
+    <UCard
+      data-testid="quick-add-modal"
+      :data-state="isOpen ? 'open' : 'closed'"
+    >
       <template #header>
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -169,6 +176,8 @@ watch(isOpen, (open) => {
           <UButton
             variant="ghost"
             icon="i-heroicons-x-mark"
+            data-testid="quick-add-close"
+            aria-label="Close"
             @click="isOpen = false"
           />
         </div>

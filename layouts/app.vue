@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { user, logout } = useAuth()
+const route = useRoute()
+const router = useRouter()
 
 const colorMode = useColorMode()
 const isDark = computed({
@@ -11,6 +13,32 @@ const isDark = computed({
 
 const isSidebarOpen = ref(true)
 const isMobileMenuOpen = ref(false)
+const isQuickAddOpen = ref(false)
+
+function openQuickAdd() {
+  isQuickAddOpen.value = true
+}
+
+function closeQuickAdd() {
+  isQuickAddOpen.value = false
+  if (route.query.action === 'quick-add') {
+    router.replace({ path: route.path, query: {} })
+  }
+}
+
+watch(() => route.query.action, (action) => {
+  if (action === 'quick-add') {
+    isQuickAddOpen.value = true
+  } else {
+    isQuickAddOpen.value = false
+  }
+}, { immediate: true })
+
+watch(isQuickAddOpen, (open) => {
+  if (!open && route.query.action === 'quick-add') {
+    router.replace({ path: route.path, query: {} })
+  }
+})
 
 const navigation = [
   { name: 'Dashboard', to: '/app', icon: 'i-heroicons-home' },
@@ -150,11 +178,15 @@ const userNavigation = [
           label="Quick Add"
           color="primary"
           class="hidden sm:flex"
+          data-testid="quick-add-button"
+          @click="openQuickAdd"
         />
         <UButton
           icon="i-heroicons-plus"
           color="primary"
           class="sm:hidden"
+          data-testid="quick-add-button-mobile"
+          @click="openQuickAdd"
         />
 
         <!-- Theme toggle -->
@@ -200,11 +232,33 @@ const userNavigation = [
       </main>
     </div>
 
-    <!-- Mobile bottom navigation -->
-    <nav class="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 safe-area-pb">
-      <div class="flex justify-around py-2">
+    <!-- Mobile bottom navigation (hidden when Quick Add is open to prevent overlap) -->
+    <nav
+      class="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 safe-area-pb transition-opacity"
+      :class="{ 'opacity-0 pointer-events-none': isQuickAddOpen }"
+    >
+      <div class="flex justify-around items-center py-2">
         <NuxtLink
-          v-for="item in navigation.slice(0, 5)"
+          v-for="item in navigation.slice(0, 2)"
+          :key="item.name"
+          :to="item.to"
+          class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
+          active-class="text-primary-500 dark:text-primary-400"
+        >
+          <UIcon :name="item.icon" class="w-6 h-6" />
+          <span class="text-xs">{{ item.name }}</span>
+        </NuxtLink>
+        <button
+          type="button"
+          class="flex flex-col items-center justify-center -mt-4 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg"
+          data-testid="quick-add-fab"
+          aria-label="Quick Add"
+          @click="openQuickAdd"
+        >
+          <UIcon name="i-heroicons-plus" class="w-6 h-6" />
+        </button>
+        <NuxtLink
+          v-for="item in navigation.slice(2, 5)"
           :key="item.name"
           :to="item.to"
           class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
@@ -215,6 +269,8 @@ const userNavigation = [
         </NuxtLink>
       </div>
     </nav>
+
+    <AppQuickAddModal v-model="isQuickAddOpen" />
   </div>
 </template>
 
