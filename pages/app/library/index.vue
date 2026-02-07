@@ -51,6 +51,11 @@ const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
 const { data: tags } = await useFetch<Tag[]>('/api/tags')
 const { data: projects } = await useFetch<Project[]>('/api/projects', { lazy: true })
 
+const { onEntryCreated } = useEntryEvents()
+onEntryCreated(() => {
+  refresh()
+})
+
 const entries = computed(() => entriesData.value?.data || [])
 const totalEntries = computed(() => entriesData.value?.total || 0)
 const totalPages = computed(() => entriesData.value?.totalPages || 1)

@@ -5,6 +5,7 @@ const {
   close: closeQuickAdd,
   isOpen: isQuickAddOpen,
 } = useQuickAdd();
+const { notifyEntryCreated } = useEntryEvents();
 
 const colorMode = useColorMode();
 const isDark = computed({
@@ -541,6 +542,7 @@ const announcementBannerColors: Record<string, string> = {
           if (!val) closeQuickAdd();
         }
       "
+      @created="notifyEntryCreated"
     />
 
     <!-- Feedback Modal -->
