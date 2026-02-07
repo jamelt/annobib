@@ -402,7 +402,7 @@ onUnmounted(() => {
           :items="[
             (tags || []).map(t => ({
               label: t.name,
-              onClick: () => bulkAction('addTags', { tagIds: [t.id] }),
+              onSelect: () => bulkAction('addTags', { tagIds: [t.id] }),
             })),
           ]"
           :content="{ align: 'start' }"
@@ -421,7 +421,7 @@ onUnmounted(() => {
           :items="[
             (projects || []).map(p => ({
               label: p.name,
-              onClick: () => bulkAction('addToProject', { projectId: p.id }),
+              onSelect: () => bulkAction('addToProject', { projectId: p.id }),
             })),
           ]"
           :content="{ align: 'start' }"

@@ -118,6 +118,23 @@ async function handleAnnotationCreated() {
   isAddAnnotationOpen.value = false
   await refresh()
 }
+
+const dropdownItems = computed(() => [
+  [
+    { 
+      label: 'Copy citation', 
+      icon: 'i-heroicons-clipboard-document',
+      click: copyCitation,
+    },
+  ],
+  [
+    { 
+      label: 'Delete', 
+      icon: 'i-heroicons-trash',
+      click: () => { isDeleteModalOpen.value = true },
+    },
+  ],
+])
 </script>
 
 <template>
@@ -185,14 +202,7 @@ async function handleAnnotationCreated() {
             Edit
           </UButton>
           <UDropdown
-            :items="[
-              [
-                { label: 'Copy citation', icon: 'i-heroicons-clipboard-document', click: copyCitation },
-              ],
-              [
-                { label: 'Delete', icon: 'i-heroicons-trash', click: () => isDeleteModalOpen = true },
-              ],
-            ]"
+            :items="dropdownItems"
           >
             <UButton
               icon="i-heroicons-ellipsis-vertical"
@@ -392,29 +402,31 @@ async function handleAnnotationCreated() {
     />
 
     <!-- Delete Confirmation -->
-    <UModal v-model="isDeleteModalOpen">
-      <UCard>
-        <template #header>
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Delete Entry
-          </h2>
-        </template>
+    <UModal v-model:open="isDeleteModalOpen">
+      <template #content>
+        <UCard>
+          <template #header>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Delete Entry
+            </h2>
+          </template>
 
-        <p class="text-gray-600 dark:text-gray-400">
-          Are you sure you want to delete "{{ entry?.title }}"? This action cannot be undone.
-        </p>
+          <p class="text-gray-600 dark:text-gray-400">
+            Are you sure you want to delete "{{ entry?.title }}"? This action cannot be undone.
+          </p>
 
-        <template #footer>
-          <div class="flex justify-end gap-3">
-            <UButton variant="outline" color="neutral" @click="isDeleteModalOpen = false">
-              Cancel
-            </UButton>
-            <UButton color="error" @click="handleDelete">
-              Delete
-            </UButton>
-          </div>
-        </template>
-      </UCard>
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton variant="outline" color="neutral" @click="isDeleteModalOpen = false">
+                Cancel
+              </UButton>
+              <UButton color="error" @click="handleDelete">
+                Delete
+              </UButton>
+            </div>
+          </template>
+        </UCard>
+      </template>
     </UModal>
   </div>
 </template>

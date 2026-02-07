@@ -108,17 +108,17 @@ async function deleteProject() {
 function getDropdownItems(project: Project) {
   return [
     [
-      { label: 'Edit', icon: 'i-heroicons-pencil', click: () => openEditModal(project) },
-      { label: 'Share', icon: 'i-heroicons-share', click: () => router.push(`/app/projects/${projectSlugOrId(project)}?share=true`) },
-      { label: 'Export', icon: 'i-heroicons-arrow-down-tray', click: () => router.push(`/app/projects/${projectSlugOrId(project)}?export=true`) },
+      { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => openEditModal(project) },
+      { label: 'Share', icon: 'i-heroicons-share', onSelect: () => router.push(`/app/projects/${projectSlugOrId(project)}?share=true`) },
+      { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => router.push(`/app/projects/${projectSlugOrId(project)}?export=true`) },
     ],
     [
       {
         label: project.isArchived ? 'Restore' : 'Archive',
         icon: project.isArchived ? 'i-heroicons-arrow-uturn-up' : 'i-heroicons-archive-box',
-        click: () => toggleArchive(project),
+        onSelect: () => toggleArchive(project),
       },
-      { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, click: () => openDeleteModal(project) },
+      { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, onSelect: () => openDeleteModal(project) },
     ],
   ]
 }

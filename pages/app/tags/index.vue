@@ -76,11 +76,11 @@ async function deleteTag() {
 function getDropdownItems(tag: Tag) {
   return [
     [
-      { label: 'Edit', icon: 'i-heroicons-pencil', click: () => openEditModal(tag) },
-      { label: 'View entries', icon: 'i-heroicons-book-open', click: () => viewEntries(tag) },
+      { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => openEditModal(tag) },
+      { label: 'View entries', icon: 'i-heroicons-book-open', onSelect: () => viewEntries(tag) },
     ],
     [
-      { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, click: () => openDeleteModal(tag) },
+      { label: 'Delete', icon: 'i-heroicons-trash', color: 'error' as const, onSelect: () => openDeleteModal(tag) },
     ],
   ]
 }
