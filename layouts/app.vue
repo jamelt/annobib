@@ -17,6 +17,12 @@ const isDark = computed({
 const isSidebarOpen = ref(true);
 const isMobileMenuOpen = ref(false);
 const isFeedbackOpen = ref(false);
+const isUserMenuOpen = ref(false);
+const userMenuRef = ref(null);
+
+onClickOutside(userMenuRef, () => {
+  isUserMenuOpen.value = false;
+});
 
 const navigation = [
   { name: "Dashboard", to: "/app", icon: "i-heroicons-home", exact: true },
@@ -53,6 +59,15 @@ const isAdmin = computed(
   () =>
     adminCheck.value?.role === "admin" || adminCheck.value?.role === "support",
 );
+
+const { data: sessionData } = useFetch('/api/auth/session', { default: () => null })
+const isImpersonating = computed(() => !!(sessionData.value as any)?.impersonatedBy)
+const impersonator = computed(() => (sessionData.value as any)?.impersonatedBy)
+
+async function stopImpersonation() {
+  await $fetch('/api/admin/stop-impersonation', { method: 'POST' })
+  window.location.href = '/admin/users'
+}
 
 const feedbackForm = ref({ type: "general", subject: "", content: "" });
 const feedbackSubmitting = ref(false);

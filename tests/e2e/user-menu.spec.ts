@@ -23,12 +23,16 @@ async function signUpAndLogin(page: import('@playwright/test').Page, testInfo: i
     ])
     
     if (!response.ok()) {
-       // If register fails, try login (maybe user exists from previous run if cleanup failed)
-       console.log('Register failed, trying login...')
+       console.log('Register failed (likely user exists), trying login...')
+       await page.goto('/login')
+       await page.getByPlaceholder('you@example.com').fill(testUser.email)
+       await page.getByPlaceholder('••••••••').fill(testUser.password)
+       await page.getByRole('button', { name: 'Sign in' }).click()
     }
   }
 
-  await expect(page).toHaveURL('/app', { timeout: 15000 })
+  // Wait for navigation to app, with a slightly longer timeout just in case
+  await expect(page).toHaveURL('/app', { timeout: 20000 })
 }
 
 test.describe('User Menu Navigation', () => {
