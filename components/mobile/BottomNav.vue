@@ -13,6 +13,10 @@ function isActive(to: string) {
   if (to.includes('?')) {
     return route.path === to.split('?')[0]
   }
+  // Exact match for root paths (e.g., '/app') to prevent highlighting on child routes
+  if (to === '/app') {
+    return route.path === '/app'
+  }
   return route.path === to || route.path.startsWith(to + '/')
 }
 </script>
