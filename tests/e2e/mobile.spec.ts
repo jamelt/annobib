@@ -1,5 +1,13 @@
 import { test, expect, devices } from '@playwright/test'
 
+async function login(page: import('@playwright/test').Page) {
+  await page.goto('/login')
+  await page.getByPlaceholder('you@example.com').fill('test@example.com')
+  await page.locator('input[type="password"]').fill('testpassword123')
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).toHaveURL('/app', { timeout: 10000 })
+}
+
 const mobileDevices = [
   { name: 'Pixel 5', ...devices['Pixel 5'] },
   { name: 'iPhone 12', ...devices['iPhone 12'] },
@@ -28,24 +36,26 @@ for (const device of mobileDevices) {
         const bottomNav = page.locator('nav.fixed.bottom-0')
         await expect(bottomNav).toBeVisible()
         
-        await expect(page.locator('nav.fixed.bottom-0').getByText('Home')).toBeVisible()
+        await expect(page.locator('nav.fixed.bottom-0').getByText('Dashboard')).toBeVisible()
         await expect(page.locator('nav.fixed.bottom-0').getByText('Library')).toBeVisible()
         await expect(page.locator('nav.fixed.bottom-0').getByText('Projects')).toBeVisible()
+        await expect(page.getByTestId('quick-add-fab')).toBeVisible()
       }
     })
 
     test('opens Quick Add modal from FAB', async ({ page }) => {
+      await login(page)
       await page.goto('/app')
       
       if (device.isMobile) {
-        const addButton = page.locator('nav.fixed.bottom-0 a:has-text("Add")')
-        await addButton.click()
+        await page.getByTestId('quick-add-fab').click()
         
         await expect(page.getByText('Quick Add')).toBeVisible()
       }
     })
 
     test('navigates between tabs', async ({ page }) => {
+      await login(page)
       await page.goto('/app')
       
       if (device.isMobile) {
@@ -55,12 +65,13 @@ for (const device of mobileDevices) {
         await page.locator('nav.fixed.bottom-0').getByText('Projects').click()
         await expect(page).toHaveURL(/\/app\/projects/)
         
-        await page.locator('nav.fixed.bottom-0').getByText('Home').click()
+        await page.locator('nav.fixed.bottom-0').getByText('Dashboard').click()
         await expect(page).toHaveURL('/app')
       }
     })
 
     test('responsive layout adjusts correctly', async ({ page }) => {
+      await login(page)
       await page.goto('/app')
       
       const viewportWidth = device.viewport?.width || 0
@@ -75,6 +86,7 @@ for (const device of mobileDevices) {
     })
 
     test('touch scroll works on entry list', async ({ page }) => {
+      await login(page)
       await page.goto('/app/library')
       
       if (device.hasTouch) {
@@ -90,10 +102,11 @@ for (const device of mobileDevices) {
     })
 
     test('form inputs work on mobile', async ({ page }) => {
+      await login(page)
       await page.goto('/app')
       
       if (device.isMobile) {
-        await page.locator('nav.fixed.bottom-0 a:has-text("Add")').click()
+        await page.getByTestId('quick-add-fab').click()
         
         const urlInput = page.getByPlaceholder('https://example.com/article')
         await urlInput.tap()
@@ -104,10 +117,10 @@ for (const device of mobileDevices) {
     })
 
     test('modal closes on back gesture', async ({ page }) => {
-      await page.goto('/app')
+      await login(page)
+      await page.goto('/app?action=quick-add')
       
       if (device.isMobile) {
-        await page.locator('nav.fixed.bottom-0 a:has-text("Add")').click()
         await expect(page.getByText('Quick Add')).toBeVisible()
         
         await page.goBack()
@@ -117,6 +130,7 @@ for (const device of mobileDevices) {
     })
 
     test('handles orientation change', async ({ page }) => {
+      await login(page)
       await page.goto('/app')
       
       const originalViewport = page.viewportSize()

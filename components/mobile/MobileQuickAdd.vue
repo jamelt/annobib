@@ -167,6 +167,8 @@ onUnmounted(() => {
       <UButton
         variant="ghost"
         icon="i-heroicons-x-mark"
+        data-testid="quick-add-close"
+        aria-label="Close"
         @click="$emit('close')"
       />
     </div>
