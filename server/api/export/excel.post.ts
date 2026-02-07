@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { entries, entryTags, tags, annotations, veritasScores, excelPresets } from '~/server/database/schema'
+import { entries, entryTags, tags, annotations, veritasScores, excelPresets, entryProjects } from '~/server/database/schema'
 import { generateExcel, getPresetById, systemPresets } from '~/server/services/export'
 import { eq, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
@@ -89,9 +89,27 @@ export default defineEventHandler(async (event) => {
     preset = { ...preset, options: customOptions }
   }
 
-  let userEntries = await db.query.entries.findMany({
-    where: eq(entries.userId, user.id),
-  })
+  let userEntries
+
+  if (projectId) {
+    const projectEntryRows = await db
+      .select({ entryId: entryProjects.entryId })
+      .from(entryProjects)
+      .where(eq(entryProjects.projectId, projectId))
+
+    const projectEntryIds = projectEntryRows.map(r => r.entryId)
+    if (projectEntryIds.length === 0) {
+      userEntries = []
+    } else {
+      userEntries = await db.query.entries.findMany({
+        where: and(eq(entries.userId, user.id), inArray(entries.id, projectEntryIds)),
+      })
+    }
+  } else {
+    userEntries = await db.query.entries.findMany({
+      where: eq(entries.userId, user.id),
+    })
+  }
 
   if (entryIds && entryIds.length > 0) {
     userEntries = userEntries.filter(e => entryIds.includes(e.id))

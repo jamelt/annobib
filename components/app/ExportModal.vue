@@ -358,7 +358,7 @@ async function handleExport() {
       <template #footer>
         <div class="flex justify-between items-center">
           <span class="text-sm text-gray-500">
-            {{ props.entryIds?.length || 'All' }} entries will be exported
+            {{ props.entryIds?.length ? `${props.entryIds.length} entries` : props.projectId ? 'All project entries' : 'All library entries' }} will be exported
           </span>
           <div class="flex gap-3">
             <UButton variant="outline" color="neutral" @click="isOpen = false">

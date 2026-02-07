@@ -1,7 +1,7 @@
 import { db } from '~/server/database/client'
-import { entries } from '~/server/database/schema'
+import { entries, entryProjects } from '~/server/database/schema'
 import { generateBibtex } from '~/server/services/export'
-import { eq } from 'drizzle-orm'
+import { eq, and, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Entry } from '~/shared/types'
 
@@ -23,11 +23,29 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { entryIds } = parsed.data
+  const { entryIds, projectId } = parsed.data
 
-  let userEntries = await db.query.entries.findMany({
-    where: eq(entries.userId, user.id),
-  })
+  let userEntries
+
+  if (projectId) {
+    const projectEntryRows = await db
+      .select({ entryId: entryProjects.entryId })
+      .from(entryProjects)
+      .where(eq(entryProjects.projectId, projectId))
+
+    const projectEntryIds = projectEntryRows.map(r => r.entryId)
+    if (projectEntryIds.length === 0) {
+      userEntries = []
+    } else {
+      userEntries = await db.query.entries.findMany({
+        where: and(eq(entries.userId, user.id), inArray(entries.id, projectEntryIds)),
+      })
+    }
+  } else {
+    userEntries = await db.query.entries.findMany({
+      where: eq(entries.userId, user.id),
+    })
+  }
 
   if (entryIds && entryIds.length > 0) {
     userEntries = userEntries.filter(e => entryIds.includes(e.id))

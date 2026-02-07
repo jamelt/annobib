@@ -22,6 +22,7 @@ const entries = computed(() => project.value?.entries ?? [])
 
 const isEditModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
+const isExportModalOpen = ref(false)
 const isAddEntryModalOpen = ref(false)
 const isDeleting = ref(false)
 const isRemovingEntry = ref<string | null>(null)
@@ -312,7 +313,7 @@ onEntryCreated(() => {
             :items="[
               [
                 { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => isEditModalOpen = true },
-                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => {} },
+                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => isExportModalOpen.value = true },
               ],
               [
                 {
@@ -350,22 +351,28 @@ onEntryCreated(() => {
               >
                 Refresh
               </UButton>
-              <UDropdown
-                :items="[
-                  [
-                    { label: 'New Entry', icon: 'i-heroicons-plus-circle', onSelect: quickAddToProject },
-                    { label: 'From Library', icon: 'i-heroicons-book-open', onSelect: openAddEntryModal },
-                  ],
-                ]"
-              >
+              <UFieldGroup size="sm">
                 <UButton
                   icon="i-heroicons-plus"
-                  size="sm"
-                  trailing-icon="i-heroicons-chevron-down"
+                  @click="quickAddToProject"
                 >
                   Add Entry
                 </UButton>
-              </UDropdown>
+                <UDropdown
+                  :items="[
+                    [
+                      { label: 'New Entry', icon: 'i-heroicons-plus-circle', onSelect: quickAddToProject },
+                      { label: 'From Library', icon: 'i-heroicons-book-open', onSelect: openAddEntryModal },
+                    ],
+                  ]"
+                  :popper="{ placement: 'bottom-end' }"
+                >
+                  <UButton
+                    icon="i-heroicons-chevron-down"
+                    square
+                  />
+                </UDropdown>
+              </UFieldGroup>
             </div>
           </div>
         </template>
@@ -442,6 +449,12 @@ onEntryCreated(() => {
       v-model:open="isEditModalOpen"
       :project="project ?? undefined"
       @updated="handleProjectUpdated"
+    />
+
+    <!-- Export Modal -->
+    <LazyAppExportModal
+      v-model:open="isExportModalOpen"
+      :project-id="project?.id"
     />
 
     <!-- Delete Confirmation Modal -->

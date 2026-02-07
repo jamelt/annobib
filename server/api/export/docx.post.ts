@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { db } from '~/server/database/client'
-import { entries, entryTags, tags, annotations } from '~/server/database/schema'
+import { entries, entryTags, tags, annotations, entryProjects } from '~/server/database/schema'
 import { generateDocx } from '~/server/services/export'
 import { requireLightOrProTier } from '~/server/utils/auth'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, and, inArray } from 'drizzle-orm'
 import { docxExportOptionsSchema } from '~/shared/validation'
 import type { Entry } from '~/shared/types'
 
@@ -29,9 +29,27 @@ export default defineEventHandler(async (event) => {
 
   const { entryIds, projectId, ...options } = parsed.data
 
-  let userEntries = await db.query.entries.findMany({
-    where: eq(entries.userId, user.id),
-  })
+  let userEntries
+
+  if (projectId) {
+    const projectEntryRows = await db
+      .select({ entryId: entryProjects.entryId })
+      .from(entryProjects)
+      .where(eq(entryProjects.projectId, projectId))
+
+    const projectEntryIds = projectEntryRows.map(r => r.entryId)
+    if (projectEntryIds.length === 0) {
+      userEntries = []
+    } else {
+      userEntries = await db.query.entries.findMany({
+        where: and(eq(entries.userId, user.id), inArray(entries.id, projectEntryIds)),
+      })
+    }
+  } else {
+    userEntries = await db.query.entries.findMany({
+      where: eq(entries.userId, user.id),
+    })
+  }
 
   if (entryIds && entryIds.length > 0) {
     userEntries = userEntries.filter(e => entryIds.includes(e.id))
