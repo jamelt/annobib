@@ -13,9 +13,9 @@ const error = ref('')
 
 const redirectTo = computed(() => (route.query.redirect as string) || '/app')
 
-watch(loggedIn, (value) => {
+watch(loggedIn, async (value) => {
   if (value) {
-    navigateTo(redirectTo.value)
+    await navigateTo(redirectTo.value, { external: true })
   }
 }, { immediate: true })
 
@@ -29,7 +29,7 @@ async function handleLogin() {
       body: { email: email.value, password: password.value },
     })
     await fetchSession()
-    await navigateTo(redirectTo.value)
+    await navigateTo(redirectTo.value, { external: true })
   }
   catch (e: any) {
     error.value = e.data?.message || 'Invalid email or password'

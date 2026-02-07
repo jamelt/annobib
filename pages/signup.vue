@@ -12,9 +12,9 @@ const confirmPassword = ref('')
 const isLoading = ref(false)
 const error = ref('')
 
-watch(loggedIn, (value) => {
+watch(loggedIn, async (value) => {
   if (value) {
-    navigateTo('/app')
+    await navigateTo('/app', { external: true })
   }
 }, { immediate: true })
 
@@ -43,7 +43,7 @@ async function handleSignup() {
       },
     })
     await fetchSession()
-    await navigateTo('/app')
+    await navigateTo('/app', { external: true })
   }
   catch (e: any) {
     error.value = e.data?.message || 'Failed to create account'

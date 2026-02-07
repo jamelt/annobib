@@ -14,6 +14,12 @@ export default defineNuxtConfig({
 
 
   runtimeConfig: {
+    session: {
+      maxAge: 60 * 60 * 24 * 7,
+      cookie: {
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
     databaseUrl: process.env.DATABASE_URL,
     auth0Domain: process.env.NUXT_AUTH0_DOMAIN,
     auth0ClientId: process.env.NUXT_AUTH0_CLIENT_ID,
