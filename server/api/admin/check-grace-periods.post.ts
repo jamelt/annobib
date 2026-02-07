@@ -2,6 +2,7 @@ import { db } from '~/server/database/client'
 import { subscriptions, users, adminAuditLogs } from '~/server/database/schema'
 import { eq, and, lte, isNotNull } from 'drizzle-orm'
 import { requireAdmin } from '~/server/utils/auth'
+import { DEFAULT_TIER } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -45,7 +46,7 @@ export async function processExpiredGracePeriods() {
 
   for (const sub of expiredSubscriptions) {
     await db.update(users).set({
-      subscriptionTier: 'free',
+      subscriptionTier: DEFAULT_TIER,
       updatedAt: now,
     }).where(eq(users.id, sub.userId))
 

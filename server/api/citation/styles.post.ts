@@ -1,7 +1,8 @@
 import { db } from '~/server/database/client'
 import { citationStyles } from '~/server/database/schema'
 import { eq, and, count } from 'drizzle-orm'
-import { requireLightOrProTier, TIER_LIMITS } from '~/server/utils/auth'
+import { requireLightOrProTier } from '~/server/utils/auth'
+import { getTierLimits } from '~/shared/subscriptions'
 import { z } from 'zod'
 
 const createStyleSchema = z.object({
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const limits = TIER_LIMITS[user.subscriptionTier]
+  const limits = getTierLimits(user.subscriptionTier)
   const [existingCount] = await db
     .select({ count: count() })
     .from(citationStyles)

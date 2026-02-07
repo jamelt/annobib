@@ -24,7 +24,7 @@ export type AnnotationType =
   | 'critical'
   | 'custom'
 
-export type SubscriptionTier = 'free' | 'light' | 'pro'
+export type { SubscriptionTier } from '~/shared/subscriptions'
 
 export type SubscriptionStatus = 'active' | 'past_due' | 'canceled' | 'trialing' | 'incomplete'
 

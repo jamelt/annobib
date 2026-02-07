@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getAllPlansForDisplay, getTierUI, getTierDisplayName, type SubscriptionTier } from '~/shared/subscriptions'
+
 definePageMeta({
   layout: 'app',
   middleware: 'admin',
@@ -27,14 +29,16 @@ const statCards = computed(() => {
   ]
 })
 
+const allPlans = getAllPlansForDisplay()
+
 const tierData = computed(() => {
   if (!stats.value) return []
   const tiers = stats.value.subscriptions.byTier as Record<string, number>
-  return [
-    { label: 'Free', value: tiers.free ?? 0, color: 'bg-gray-500' },
-    { label: 'Light', value: tiers.light ?? 0, color: 'bg-blue-500' },
-    { label: 'Pro', value: tiers.pro ?? 0, color: 'bg-amber-500' },
-  ]
+  return allPlans.map(plan => ({
+    label: plan.name,
+    value: tiers[plan.id] ?? 0,
+    color: plan.ui.chartClass,
+  }))
 })
 
 const totalTierUsers = computed(() => tierData.value.reduce((sum, t) => sum + t.value, 0) || 1)

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getAllPlansForDisplay } from '~/shared/subscriptions'
+
 definePageMeta({
   layout: 'app',
   middleware: 'admin',
@@ -6,13 +8,7 @@ definePageMeta({
 
 const { data: flagsData, pending } = useFetch('/api/admin/feature-flags')
 
-const tiers = ['free', 'light', 'pro'] as const
-
-const tierColors: Record<string, string> = {
-  free: 'text-gray-500 dark:text-gray-400',
-  light: 'text-blue-500 dark:text-blue-400',
-  pro: 'text-amber-500 dark:text-amber-400',
-}
+const allPlans = getAllPlansForDisplay()
 
 function flagNames() {
   if (!flagsData.value) return []
@@ -49,8 +45,8 @@ function flagNames() {
             <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
               <th class="pb-3 font-medium">Flag Name</th>
               <th class="pb-3 font-medium text-center">Default</th>
-              <th v-for="tier in tiers" :key="tier" class="pb-3 font-medium text-center">
-                <span :class="tierColors[tier]">{{ tier }}</span>
+              <th v-for="plan in allPlans" :key="plan.id" class="pb-3 font-medium text-center">
+                <span :class="plan.ui.textClass">{{ plan.name }}</span>
               </th>
             </tr>
           </thead>
@@ -70,11 +66,11 @@ function flagNames() {
                   :class="flagsData?.flags[name] ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'"
                 />
               </td>
-              <td v-for="tier in tiers" :key="tier" class="py-3 text-center">
+              <td v-for="plan in allPlans" :key="plan.id" class="py-3 text-center">
                 <UIcon
-                  :name="flagsData?.flagsByTier[tier]?.[name] ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'"
+                  :name="flagsData?.flagsByTier[plan.id]?.[name] ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'"
                   class="w-5 h-5"
-                  :class="flagsData?.flagsByTier[tier]?.[name] ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'"
+                  :class="flagsData?.flagsByTier[plan.id]?.[name] ? 'text-green-500' : 'text-gray-300 dark:text-gray-600'"
                 />
               </td>
             </tr>

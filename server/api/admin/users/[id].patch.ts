@@ -3,10 +3,11 @@ import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { requireAdmin, logAdminAction } from '~/server/utils/auth'
 import { z } from 'zod'
+import { tierZodSchema } from '~/shared/subscriptions'
 
 const updateSchema = z.object({
   role: z.enum(['user', 'admin', 'support']).optional(),
-  subscriptionTier: z.enum(['free', 'light', 'pro']).optional(),
+  subscriptionTier: z.enum(tierZodSchema()).optional(),
   isBanned: z.boolean().optional(),
   bannedReason: z.string().optional(),
   name: z.string().optional(),

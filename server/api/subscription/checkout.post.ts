@@ -3,9 +3,10 @@ import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { createCheckoutSession } from '~/server/services/stripe'
 import { z } from 'zod'
+import { paidTierZodSchema } from '~/shared/subscriptions'
 
 const checkoutSchema = z.object({
-  tier: z.enum(['light', 'pro']),
+  tier: z.enum(paidTierZodSchema()),
   interval: z.enum(['month', 'year']),
 })
 

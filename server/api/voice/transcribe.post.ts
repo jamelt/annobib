@@ -1,5 +1,6 @@
 import { OpenAI } from 'openai'
-import { requireLightOrProTier, TIER_LIMITS } from '~/server/utils/auth'
+import { requireLightOrProTier } from '~/server/utils/auth'
+import { getTierLimits } from '~/shared/subscriptions'
 import { db } from '~/server/database/client'
 import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const limits = TIER_LIMITS[user.subscriptionTier]
+  const limits = getTierLimits(user.subscriptionTier)
   const currentMonth = new Date().toISOString().slice(0, 7)
 
   const monthlyUsage = (dbUser.preferences as any)?.voiceMinutesUsed?.[currentMonth] || 0

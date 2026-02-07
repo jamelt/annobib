@@ -3,6 +3,7 @@ import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { enforceRateLimit } from '~/server/utils/rate-limit'
+import { DEFAULT_TIER } from '~/shared/subscriptions'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
       email: normalizedEmail,
       name,
       auth0Id: `local:${normalizedEmail}:${hashedPassword}`,
-      subscriptionTier: 'free',
+      subscriptionTier: DEFAULT_TIER,
     })
     .returning()
 

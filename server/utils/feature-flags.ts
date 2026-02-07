@@ -1,4 +1,5 @@
 import { Unleash, initialize } from 'unleash-client'
+import { DEFAULT_TIER } from '~/shared/subscriptions'
 
 let unleashClient: Unleash | null = null
 
@@ -83,7 +84,7 @@ export function isFeatureEnabled(
     sessionId: context.sessionId,
     environment: context.environment || process.env.NODE_ENV,
     properties: {
-      subscriptionTier: context.subscriptionTier || 'free',
+      subscriptionTier: context.subscriptionTier || DEFAULT_TIER,
       ...context.properties,
     },
   } : undefined
@@ -104,7 +105,7 @@ export function getFeatureVariant(
     sessionId: context.sessionId,
     environment: context.environment || process.env.NODE_ENV,
     properties: {
-      subscriptionTier: context.subscriptionTier || 'free',
+      subscriptionTier: context.subscriptionTier || DEFAULT_TIER,
       ...context.properties,
     },
   } : undefined

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { getTier, getDisplayPrice, type SubscriptionTier } from '~/shared/subscriptions'
+
 const props = defineProps<{
   feature: string
-  requiredTier: 'light' | 'pro'
+  requiredTier: SubscriptionTier
   inline?: boolean
 }>()
 
@@ -21,18 +23,8 @@ async function handleUpgrade() {
   }
 }
 
-const tierInfo = computed(() => ({
-  light: {
-    name: 'Light',
-    price: '$9/month',
-    color: 'blue',
-  },
-  pro: {
-    name: 'Pro',
-    price: '$19/month',
-    color: 'primary',
-  },
-}[props.requiredTier]))
+const plan = computed(() => getTier(props.requiredTier))
+const price = computed(() => getDisplayPrice(props.requiredTier, 'monthly'))
 </script>
 
 <template>
@@ -43,10 +35,10 @@ const tierInfo = computed(() => ({
       class="flex items-center gap-2 text-sm text-gray-500"
     >
       <UIcon name="i-heroicons-lock-closed" class="w-4 h-4" />
-      <span>Requires {{ tierInfo.name }}</span>
+      <span>Requires {{ plan.name }}</span>
       <UButton
         size="xs"
-        :color="tierInfo.color"
+        :color="plan.ui.color"
         variant="link"
         :loading="isLoading"
         @click="handleUpgrade"
@@ -63,19 +55,19 @@ const tierInfo = computed(() => ({
         </div>
         <div class="flex-1 min-w-0">
           <h3 class="font-medium text-gray-900 dark:text-white">
-            Upgrade to {{ tierInfo.name }}
+            Upgrade to {{ plan.name }}
           </h3>
           <p class="text-sm text-gray-500 mt-1">
-            <slot>This feature is available on the {{ tierInfo.name }} plan.</slot>
+            <slot>This feature is available on the {{ plan.name }} plan.</slot>
           </p>
           <div class="flex items-center gap-3 mt-3">
             <UButton
-              :color="tierInfo.color"
+              :color="plan.ui.color"
               size="sm"
               :loading="isLoading"
               @click="handleUpgrade"
             >
-              Upgrade for {{ tierInfo.price }}
+              Upgrade for {{ price }}/month
             </UButton>
             <NuxtLink
               to="/app/subscription"

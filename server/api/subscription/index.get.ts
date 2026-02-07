@@ -1,8 +1,7 @@
 import { db } from '~/server/database/client'
 import { users, subscriptions } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
-import { STRIPE_PRODUCTS } from '~/server/services/stripe'
-import { TIER_LIMITS } from '~/server/utils/auth'
+import { getTierLimits, getPaidPlansForDisplay } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
@@ -16,7 +15,20 @@ export default defineEventHandler(async (event) => {
     orderBy: (subs, { desc }) => [desc(subs.createdAt)],
   })
 
-  const limits = TIER_LIMITS[user.subscriptionTier]
+  const limits = getTierLimits(user.subscriptionTier)
+
+  const paidPlans = getPaidPlansForDisplay()
+  const products: Record<string, { name: string; description: string; priceMonthly: number; priceYearly: number }> = {}
+  for (const plan of paidPlans) {
+    if (plan.pricing) {
+      products[plan.id] = {
+        name: plan.name,
+        description: plan.description,
+        priceMonthly: plan.pricing.monthly / 100,
+        priceYearly: plan.pricing.yearly / 100,
+      }
+    }
+  }
 
   return {
     tier: user.subscriptionTier,
@@ -33,19 +45,6 @@ export default defineEventHandler(async (event) => {
       : null,
     limits,
     hasStripeCustomer: !!dbUser?.stripeCustomerId,
-    products: {
-      light: {
-        name: STRIPE_PRODUCTS.light.name,
-        description: STRIPE_PRODUCTS.light.description,
-        priceMonthly: STRIPE_PRODUCTS.light.priceMonthly / 100,
-        priceYearly: STRIPE_PRODUCTS.light.priceYearly / 100,
-      },
-      pro: {
-        name: STRIPE_PRODUCTS.pro.name,
-        description: STRIPE_PRODUCTS.pro.description,
-        priceMonthly: STRIPE_PRODUCTS.pro.priceMonthly / 100,
-        priceYearly: STRIPE_PRODUCTS.pro.priceYearly / 100,
-      },
-    },
+    products,
   }
 })

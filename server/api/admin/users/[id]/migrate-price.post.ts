@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const products = await getOrCreateStripeProducts()
-  const tier = subscription.tier as 'light' | 'pro'
+  const tier = subscription.tier
   const product = products[tier]
 
   if (!product) {

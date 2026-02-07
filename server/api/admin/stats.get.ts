@@ -2,12 +2,7 @@ import { db } from '~/server/database/client'
 import { users, entries, projects, subscriptions, feedback } from '~/server/database/schema'
 import { eq, count, sql, and, gte } from 'drizzle-orm'
 import { requireAdmin } from '~/server/utils/auth'
-import { STRIPE_PRODUCTS } from '~/server/services/stripe'
-
-const MONTHLY_PRICES: Record<string, number> = {
-  light: STRIPE_PRODUCTS.light.priceMonthly,
-  pro: STRIPE_PRODUCTS.pro.priceMonthly,
-}
+import { SUBSCRIPTION_PLANS, TIER_IDS, type SubscriptionTier } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -44,14 +39,18 @@ export default defineEventHandler(async (event) => {
     db.select({ count: count() }).from(feedback).where(eq(feedback.status, 'open')),
   ])
 
-  const tiers: Record<string, number> = { free: 0, light: 0, pro: 0 }
+  const tiers: Record<string, number> = {}
+  for (const id of TIER_IDS) {
+    tiers[id] = 0
+  }
   for (const row of tierBreakdown) {
     tiers[row.tier] = row.count
   }
 
   let mrrCents = 0
   for (const row of activeTierBreakdown) {
-    const pricePerMonth = MONTHLY_PRICES[row.tier] ?? 0
+    const plan = SUBSCRIPTION_PLANS[row.tier as SubscriptionTier]
+    const pricePerMonth = plan?.pricing?.monthly ?? 0
     mrrCents += pricePerMonth * row.count
   }
 

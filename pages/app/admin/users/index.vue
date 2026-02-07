@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import {
+  getAllPlansForDisplay,
+  getTierUI,
+  getTierDisplayName,
+  TIER_IDS,
+  type SubscriptionTier,
+  SUBSCRIPTION_PLANS,
+} from '~/shared/subscriptions'
+
 definePageMeta({
   layout: 'app',
   middleware: 'admin',
 })
+
+const allPlans = getAllPlansForDisplay()
 
 const search = ref('')
 const tierFilter = ref('all')
@@ -31,7 +42,7 @@ const isGrantTierOpen = ref(false)
 const isBanDialogOpen = ref(false)
 const isDeleteDialogOpen = ref(false)
 const banReason = ref('')
-const grantTier = ref<'free' | 'light' | 'pro'>('pro')
+const grantTier = ref<SubscriptionTier>('pro')
 const deleteReason = ref('')
 const deleteConfirmEmail = ref('')
 const syncingStripe = ref(false)
@@ -46,24 +57,22 @@ const userUsage = ref<any>(null)
 const loadingDetail = ref(false)
 const migratingPrice = ref(false)
 
-const STRIPE_LIST_PRICES: Record<string, Record<string, number>> = {
-  light: { month: 900, year: 9000 },
-  pro: { month: 1900, year: 19000 },
-}
-
 const isGrandfathered = computed(() => {
   const sub = userSubscription.value?.subscription
   if (!sub?.unitAmount || !sub?.tier || !sub?.billingInterval) return false
-  const listPrice = STRIPE_LIST_PRICES[sub.tier]?.[sub.billingInterval]
-  if (!listPrice) return false
+  const plan = SUBSCRIPTION_PLANS[sub.tier as SubscriptionTier]
+  if (!plan?.pricing) return false
+  const listPrice = sub.billingInterval === 'year' ? plan.pricing.yearly : plan.pricing.monthly
   return sub.unitAmount < listPrice
 })
 
 const currentListPrice = computed(() => {
   const sub = userSubscription.value?.subscription
   if (!sub?.tier || !sub?.billingInterval) return '?'
-  const listPrice = STRIPE_LIST_PRICES[sub.tier]?.[sub.billingInterval]
-  return listPrice ? (listPrice / 100).toFixed(2) : '?'
+  const plan = SUBSCRIPTION_PLANS[sub.tier as SubscriptionTier]
+  if (!plan?.pricing) return '?'
+  const listPrice = sub.billingInterval === 'year' ? plan.pricing.yearly : plan.pricing.monthly
+  return (listPrice / 100).toFixed(2)
 })
 
 async function openUserDetail(user: any) {
@@ -206,11 +215,9 @@ async function handleDelete() {
   refresh()
 }
 
-const tierColors: Record<string, string> = {
-  free: 'neutral',
-  light: 'info',
-  pro: 'warning',
-}
+const tierColors: Record<string, string> = Object.fromEntries(
+  allPlans.map(plan => [plan.id, plan.ui.badgeColor]),
+)
 
 const roleColors: Record<string, string> = {
   user: 'neutral',
@@ -262,9 +269,7 @@ watch(search, () => { page.value = 1 })
         v-model="tierFilter"
         :items="[
           { label: 'All Tiers', value: 'all' },
-          { label: 'Free', value: 'free' },
-          { label: 'Light', value: 'light' },
-          { label: 'Pro', value: 'pro' },
+          ...allPlans.map(p => ({ label: p.name, value: p.id })),
         ]"
         class="w-36"
       />
@@ -684,11 +689,7 @@ watch(search, () => { page.value = 1 })
           </p>
           <USelect
             v-model="grantTier"
-            :items="[
-              { label: 'Free', value: 'free' },
-              { label: 'Light', value: 'light' },
-              { label: 'Pro', value: 'pro' },
-            ]"
+            :items="allPlans.map(p => ({ label: p.name, value: p.id }))"
           />
           <div class="flex gap-2 justify-end">
             <UButton label="Cancel" variant="ghost" color="neutral" @click="isGrantTierOpen = false" />

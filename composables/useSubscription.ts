@@ -1,4 +1,11 @@
-import type { SubscriptionTier } from '~/shared/types'
+import {
+  type SubscriptionTier,
+  type PlanLimits,
+  DEFAULT_TIER,
+  hasFeatureAccess,
+  FEATURE_KEY_MAP,
+  getPaidPlansForDisplay,
+} from '~/shared/subscriptions'
 
 export interface SubscriptionData {
   tier: SubscriptionTier
@@ -9,22 +16,9 @@ export interface SubscriptionData {
     currentPeriodEnd: string
     cancelAtPeriodEnd: boolean
   } | null
-  limits: {
-    entries: number
-    projects: number
-    collaboratorsPerProject: number
-    customCitationStyles: number
-    metadataEnrichmentPerMonth: number
-    aiAnnotationsPerMonth: number
-    voiceMinutesPerMonth: number
-    excelPresets: number
-    customColumns: number
-  }
+  limits: PlanLimits
   hasStripeCustomer: boolean
-  products: {
-    light: ProductInfo
-    pro: ProductInfo
-  }
+  products: Record<string, ProductInfo>
 }
 
 export interface ProductInfo {
@@ -39,7 +33,7 @@ export function useSubscription() {
     key: 'subscription',
   })
 
-  const tier = computed(() => data.value?.tier || 'free')
+  const tier = computed(() => data.value?.tier || DEFAULT_TIER)
   const subscription = computed(() => data.value?.subscription)
   const limits = computed(() => data.value?.limits)
   const products = computed(() => data.value?.products)
@@ -47,10 +41,14 @@ export function useSubscription() {
   const isFree = computed(() => tier.value === 'free')
   const isLight = computed(() => tier.value === 'light')
   const isPro = computed(() => tier.value === 'pro')
-  const isPaid = computed(() => tier.value !== 'free')
+  const isPaid = computed(() => tier.value !== DEFAULT_TIER)
+
+  function isTier(id: SubscriptionTier): boolean {
+    return tier.value === id
+  }
 
   const isActive = computed(() => {
-    if (!subscription.value) return tier.value === 'free'
+    if (!subscription.value) return tier.value === DEFAULT_TIER
     return subscription.value.status === 'active' || subscription.value.status === 'trialing'
   })
 
@@ -62,26 +60,8 @@ export function useSubscription() {
   })
 
   function hasFeature(feature: string): boolean {
-    const featureMap: Record<string, SubscriptionTier[]> = {
-      pdfExport: ['light', 'pro'],
-      docxExport: ['light', 'pro'],
-      customCitationStyles: ['light', 'pro'],
-      collaboration: ['light', 'pro'],
-      semanticSearch: ['pro'],
-      aiAnnotations: ['light', 'pro'],
-      aiContext: ['pro'],
-      researchCompanion: ['pro'],
-      mindMaps: ['light', 'pro'],
-      fullMindMaps: ['pro'],
-      veritasScore: ['pro'],
-      voiceInput: ['free', 'light', 'pro'],
-      whisperVoice: ['light', 'pro'],
-      multimodalAI: ['pro'],
-    }
-
-    const allowedTiers = featureMap[feature]
-    if (!allowedTiers) return true
-    return allowedTiers.includes(tier.value)
+    const featureKey = FEATURE_KEY_MAP[feature] || feature
+    return hasFeatureAccess(tier.value, featureKey)
   }
 
   function requireFeature(feature: string): void {
@@ -93,7 +73,9 @@ export function useSubscription() {
     }
   }
 
-  async function startCheckout(targetTier: 'light' | 'pro', interval: 'month' | 'year' = 'month') {
+  const paidTierIds = getPaidPlansForDisplay().map(p => p.id) as SubscriptionTier[]
+
+  async function startCheckout(targetTier: SubscriptionTier, interval: 'month' | 'year' = 'month') {
     const response = await $fetch<{ url: string }>('/api/subscription/checkout', {
       method: 'POST',
       body: { tier: targetTier, interval },
@@ -127,6 +109,7 @@ export function useSubscription() {
     isLight,
     isPro,
     isPaid,
+    isTier,
     isActive,
     isCanceled,
     periodEnd,
@@ -134,5 +117,6 @@ export function useSubscription() {
     requireFeature,
     startCheckout,
     openPortal,
+    paidTierIds,
   }
 }

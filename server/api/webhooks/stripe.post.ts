@@ -7,7 +7,9 @@ import {
   getOrCreateStripeProducts,
   getTierFromPriceId,
   mapStripeStatus,
+  type StripeProduct,
 } from '~/server/services/stripe'
+import { DEFAULT_TIER } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -81,7 +83,7 @@ export default defineEventHandler(async (event) => {
 
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
-  products: Record<'light' | 'pro', { productId: string; priceIdMonthly: string; priceIdYearly: string }>,
+  products: Record<string, StripeProduct>,
 ) {
   const userId = session.client_reference_id || session.metadata?.userId
   const customerId = session.customer as string
@@ -99,7 +101,7 @@ async function handleCheckoutCompleted(
 
   const stripeSubscription = await stripe.subscriptions.retrieve(subscriptionId)
   const priceId = stripeSubscription.items.data[0]?.price.id
-  const tier = priceId ? getTierFromPriceId(priceId, products) : 'free'
+  const tier = priceId ? getTierFromPriceId(priceId, products) : DEFAULT_TIER
 
   await db.insert(subscriptions).values({
     userId,
@@ -132,7 +134,7 @@ async function handleCheckoutCompleted(
 
 async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
-  products: Record<'light' | 'pro', { productId: string; priceIdMonthly: string; priceIdYearly: string }>,
+  products: Record<string, StripeProduct>,
 ) {
   const userId = subscription.metadata?.userId
 
@@ -154,7 +156,7 @@ async function handleSubscriptionUpdated(
 
   const priceItem = subscription.items.data[0]?.price
   const priceId = priceItem?.id
-  const tier = priceId ? getTierFromPriceId(priceId, products) : 'free'
+  const tier = priceId ? getTierFromPriceId(priceId, products) : DEFAULT_TIER
   const status = mapStripeStatus(subscription.status)
 
   await db.insert(subscriptions).values({
@@ -183,7 +185,7 @@ async function handleSubscriptionUpdated(
     },
   })
 
-  const effectiveTier = status === 'active' || status === 'trialing' || status === 'past_due' ? tier : 'free'
+  const effectiveTier = status === 'active' || status === 'trialing' || status === 'past_due' ? tier : DEFAULT_TIER
 
   await db
     .update(users)
@@ -218,7 +220,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   await db
     .update(users)
     .set({
-      subscriptionTier: 'free',
+      subscriptionTier: DEFAULT_TIER,
       updatedAt: new Date(),
     })
     .where(eq(users.id, subscription.metadata.userId!))

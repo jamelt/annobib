@@ -3,10 +3,11 @@ import { users } from '~/server/database/schema'
 import { eq, like, or, sql, count, desc, asc } from 'drizzle-orm'
 import { requireAdminOrSupport } from '~/server/utils/auth'
 import { z } from 'zod'
+import { tierZodSchema } from '~/shared/subscriptions'
 
 const querySchema = z.object({
   q: z.string().optional(),
-  tier: z.enum(['free', 'light', 'pro']).optional(),
+  tier: z.enum(tierZodSchema()).optional(),
   role: z.enum(['user', 'admin', 'support']).optional(),
   banned: z.enum(['true', 'false']).optional(),
   sortBy: z.enum(['createdAt', 'email', 'name', 'subscriptionTier']).optional().default('createdAt'),

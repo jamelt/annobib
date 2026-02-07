@@ -1,5 +1,10 @@
 import Stripe from 'stripe'
-import type { SubscriptionTier } from '~/shared/types'
+import {
+  SUBSCRIPTION_PLANS,
+  PAID_TIER_IDS,
+  DEFAULT_TIER,
+  type SubscriptionTier,
+} from '~/shared/subscriptions'
 
 const config = useRuntimeConfig()
 
@@ -7,39 +12,27 @@ export const stripe = new Stripe(config.stripeSecretKey, {
   apiVersion: '2023-10-16',
 })
 
-export const STRIPE_PRODUCTS = {
-  light: {
-    name: 'Bibanna Light',
-    description: 'For active researchers - 500 entries, 15 projects, PDF export',
-    priceMonthly: 900,
-    priceYearly: 9000,
-  },
-  pro: {
-    name: 'Bibanna Pro',
-    description: 'For power users - Unlimited entries, AI features, Research Companion',
-    priceMonthly: 1900,
-    priceYearly: 19000,
-  },
-} as const
-
 export interface StripeProduct {
   productId: string
   priceIdMonthly: string
   priceIdYearly: string
 }
 
-let stripeProducts: Record<'light' | 'pro', StripeProduct> | null = null
+let stripeProducts: Record<string, StripeProduct> | null = null
 
-export async function getOrCreateStripeProducts(): Promise<Record<'light' | 'pro', StripeProduct>> {
+export async function getOrCreateStripeProducts(): Promise<Record<string, StripeProduct>> {
   if (stripeProducts) {
     return stripeProducts
   }
 
   const products: Record<string, StripeProduct> = {}
 
-  for (const [tier, config] of Object.entries(STRIPE_PRODUCTS)) {
+  for (const tierId of PAID_TIER_IDS) {
+    const plan = SUBSCRIPTION_PLANS[tierId]
+    if (!plan.stripe || !plan.pricing) continue
+
     const existingProducts = await stripe.products.search({
-      query: `metadata['tier']:'${tier}'`,
+      query: `metadata['tier']:'${tierId}'`,
     })
 
     let product: Stripe.Product
@@ -49,9 +42,9 @@ export async function getOrCreateStripeProducts(): Promise<Record<'light' | 'pro
     }
     else {
       product = await stripe.products.create({
-        name: config.name,
-        description: config.description,
-        metadata: { tier },
+        name: plan.stripe.productName,
+        description: plan.stripe.productDescription,
+        metadata: { tier: tierId },
       })
     }
 
@@ -70,38 +63,38 @@ export async function getOrCreateStripeProducts(): Promise<Record<'light' | 'pro
     if (!priceMonthly) {
       priceMonthly = await stripe.prices.create({
         product: product.id,
-        unit_amount: config.priceMonthly,
+        unit_amount: plan.pricing.monthly,
         currency: 'usd',
         recurring: { interval: 'month' },
-        metadata: { tier, interval: 'month' },
+        metadata: { tier: tierId, interval: 'month' },
       })
     }
 
     if (!priceYearly) {
       priceYearly = await stripe.prices.create({
         product: product.id,
-        unit_amount: config.priceYearly,
+        unit_amount: plan.pricing.yearly,
         currency: 'usd',
         recurring: { interval: 'year' },
-        metadata: { tier, interval: 'year' },
+        metadata: { tier: tierId, interval: 'year' },
       })
     }
 
-    products[tier] = {
+    products[tierId] = {
       productId: product.id,
       priceIdMonthly: priceMonthly.id,
       priceIdYearly: priceYearly.id,
     }
   }
 
-  stripeProducts = products as Record<'light' | 'pro', StripeProduct>
+  stripeProducts = products
   return stripeProducts
 }
 
 export async function createCheckoutSession(
   userId: string,
   userEmail: string,
-  tier: 'light' | 'pro',
+  tier: SubscriptionTier,
   interval: 'month' | 'year',
   successUrl: string,
   cancelUrl: string,
@@ -169,13 +162,13 @@ export async function reactivateSubscription(subscriptionId: string): Promise<St
   })
 }
 
-export function getTierFromPriceId(priceId: string, products: Record<'light' | 'pro', StripeProduct>): SubscriptionTier {
+export function getTierFromPriceId(priceId: string, products: Record<string, StripeProduct>): SubscriptionTier {
   for (const [tier, product] of Object.entries(products)) {
     if (product.priceIdMonthly === priceId || product.priceIdYearly === priceId) {
       return tier as SubscriptionTier
     }
   }
-  return 'free'
+  return DEFAULT_TIER
 }
 
 export function mapStripeStatus(status: Stripe.Subscription.Status): string {

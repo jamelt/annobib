@@ -2,7 +2,8 @@ import type { H3Event } from 'h3'
 import { db } from '../database/client'
 import { users, adminAuditLogs } from '../database/schema'
 import { eq } from 'drizzle-orm'
-import type { SubscriptionTier, UserRole } from '~/shared/types'
+import type { UserRole } from '~/shared/types'
+import { type SubscriptionTier, getTierLimits, PAID_TIER_IDS, isValidTier, DEFAULT_TIER } from '~/shared/subscriptions'
 
 export interface AuthUser {
   id: string
@@ -42,11 +43,13 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
     })
   }
 
+  const tier = isValidTier(user.subscriptionTier) ? user.subscriptionTier : DEFAULT_TIER
+
   return {
     id: user.id,
     email: user.email,
     name: user.name ?? undefined,
-    subscriptionTier: user.subscriptionTier,
+    subscriptionTier: tier,
     role: user.role,
     isBanned: user.isBanned,
   }
@@ -114,50 +117,14 @@ export function requireTier(user: AuthUser, requiredTiers: SubscriptionTier[]): 
   }
 }
 
+export function requirePaidTier(user: AuthUser): void {
+  requireTier(user, PAID_TIER_IDS)
+}
+
 export function requireProTier(user: AuthUser): void {
   requireTier(user, ['pro'])
 }
 
-export function requireLightOrProTier(user: AuthUser): void {
-  requireTier(user, ['light', 'pro'])
-}
+export const requireLightOrProTier = requirePaidTier
 
-export const TIER_LIMITS = {
-  free: {
-    entries: 50,
-    projects: 3,
-    collaboratorsPerProject: 0,
-    customCitationStyles: 0,
-    metadataEnrichmentPerMonth: 10,
-    aiAnnotationsPerMonth: 0,
-    voiceMinutesPerMonth: 0,
-    excelPresets: 1,
-    customColumns: 0,
-  },
-  light: {
-    entries: 500,
-    projects: 15,
-    collaboratorsPerProject: 3,
-    customCitationStyles: 3,
-    metadataEnrichmentPerMonth: 100,
-    aiAnnotationsPerMonth: 5,
-    voiceMinutesPerMonth: 10,
-    excelPresets: 5,
-    customColumns: 3,
-  },
-  pro: {
-    entries: Infinity,
-    projects: Infinity,
-    collaboratorsPerProject: Infinity,
-    customCitationStyles: Infinity,
-    metadataEnrichmentPerMonth: Infinity,
-    aiAnnotationsPerMonth: 50,
-    voiceMinutesPerMonth: 60,
-    excelPresets: Infinity,
-    customColumns: Infinity,
-  },
-} as const
-
-export function getTierLimits(tier: SubscriptionTier) {
-  return TIER_LIMITS[tier]
-}
+export { getTierLimits }

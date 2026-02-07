@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getAllPlansForDisplay, getDisplayPrice } from '~/shared/subscriptions'
+
 definePageMeta({
   layout: 'default',
 })
@@ -36,34 +38,15 @@ const features = [
   },
 ]
 
-const tiers = [
-  {
-    name: 'Free',
-    price: '$0',
-    description: 'Perfect for getting started',
-    features: ['50 entries', '3 projects', 'BibTeX export', 'Basic search'],
-    cta: 'Get Started',
-    highlighted: false,
-  },
-  {
-    name: 'Light',
-    price: '$9',
-    period: '/month',
-    description: 'For active researchers',
-    features: ['500 entries', '15 projects', 'PDF & Excel export', 'Custom citation styles', 'Collaboration'],
-    cta: 'Start Free Trial',
-    highlighted: true,
-  },
-  {
-    name: 'Pro',
-    price: '$19',
-    period: '/month',
-    description: 'For power users',
-    features: ['Unlimited entries', 'Unlimited projects', 'All export formats', 'AI Research Companion', 'Semantic search', 'Mind maps', 'Priority support'],
-    cta: 'Start Free Trial',
-    highlighted: false,
-  },
-]
+const tiers = getAllPlansForDisplay().map(plan => ({
+  name: plan.name,
+  price: plan.pricing ? getDisplayPrice(plan.id as any, 'monthly') : '$0',
+  period: plan.pricing ? '/month' : undefined,
+  description: plan.description,
+  features: plan.featureHighlights.slice(0, 7),
+  cta: plan.ui.cta,
+  highlighted: plan.ui.highlighted,
+}))
 </script>
 
 <template>

@@ -3,9 +3,10 @@ import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { requireAdmin, logAdminAction } from '~/server/utils/auth'
 import { z } from 'zod'
+import { tierZodSchema } from '~/shared/subscriptions'
 
 const grantSchema = z.object({
-  tier: z.enum(['free', 'light', 'pro']),
+  tier: z.enum(tierZodSchema()),
   reason: z.string().optional(),
 })
 

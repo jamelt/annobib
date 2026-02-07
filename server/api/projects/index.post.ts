@@ -1,7 +1,7 @@
 import { db } from '~/server/database/client'
 import { projects } from '~/server/database/schema'
 import { createProjectSchema } from '~/shared/validation'
-import { getTierLimits } from '~/server/utils/auth'
+import { getTierLimits } from '~/shared/subscriptions'
 import { and, eq, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {

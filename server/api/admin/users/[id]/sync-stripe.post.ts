@@ -3,6 +3,7 @@ import { users, subscriptions } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { requireAdmin, logAdminAction } from '~/server/utils/auth'
 import { stripe, getOrCreateStripeProducts, getTierFromPriceId, mapStripeStatus } from '~/server/services/stripe'
+import { DEFAULT_TIER } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   const admin = await requireAdmin(event)
@@ -39,9 +40,9 @@ export default defineEventHandler(async (event) => {
   const activeSub = stripeSubscriptions.data[0]
 
   if (!activeSub) {
-    if (targetUser.subscriptionTier !== 'free') {
+    if (targetUser.subscriptionTier !== DEFAULT_TIER) {
       await db.update(users).set({
-        subscriptionTier: 'free',
+        subscriptionTier: DEFAULT_TIER,
         updatedAt: new Date(),
       }).where(eq(users.id, userId))
     }
@@ -50,13 +51,13 @@ export default defineEventHandler(async (event) => {
     await logAdminAction(admin.id, 'user.sync_stripe', 'user', userId, {
       result: 'no_subscription',
       previousTier: targetUser.subscriptionTier,
-      newTier: 'free',
+      newTier: DEFAULT_TIER,
     }, ip)
 
     return {
       synced: true,
-      message: 'No active Stripe subscription found. User reverted to free.',
-      tier: 'free',
+      message: 'No active Stripe subscription found. User reverted to free tier.',
+      tier: DEFAULT_TIER,
       stripeSubscription: null,
     }
   }
@@ -64,9 +65,9 @@ export default defineEventHandler(async (event) => {
   const products = await getOrCreateStripeProducts()
   const priceItem = activeSub.items.data[0]?.price
   const priceId = priceItem?.id
-  const tier = priceId ? getTierFromPriceId(priceId, products) : 'free'
+  const tier = priceId ? getTierFromPriceId(priceId, products) : DEFAULT_TIER
   const status = mapStripeStatus(activeSub.status)
-  const effectiveTier = (status === 'active' || status === 'trialing' || status === 'past_due') ? tier : 'free'
+  const effectiveTier = (status === 'active' || status === 'trialing' || status === 'past_due') ? tier : DEFAULT_TIER
 
   await db.insert(subscriptions).values({
     userId,

@@ -1,5 +1,6 @@
 import { requireAdminOrSupport } from '~/server/utils/auth'
 import { getAllFeatureFlags, type FeatureFlagContext } from '~/server/utils/feature-flags'
+import { TIER_IDS } from '~/shared/subscriptions'
 
 export default defineEventHandler(async (event) => {
   await requireAdminOrSupport(event)
@@ -10,10 +11,9 @@ export default defineEventHandler(async (event) => {
 
   const flags = getAllFeatureFlags(defaultContext)
 
-  const tiers = ['free', 'light', 'pro'] as const
   const flagsByTier: Record<string, Record<string, boolean>> = {}
 
-  for (const tier of tiers) {
+  for (const tier of TIER_IDS) {
     flagsByTier[tier] = getAllFeatureFlags({
       ...defaultContext,
       subscriptionTier: tier,

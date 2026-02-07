@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import {
+  getAllPlansForDisplay,
+  getTier,
+  getTierDisplayName,
+  isPaidTier,
+  DEFAULT_TIER,
+  type SubscriptionTier,
+} from '~/shared/subscriptions'
+
 definePageMeta({
   layout: 'app',
   middleware: 'auth',
@@ -23,7 +32,7 @@ const {
 
 const billingInterval = ref<'month' | 'year'>('month')
 const isCheckoutLoading = ref(false)
-const checkoutTier = ref<'light' | 'pro' | null>(null)
+const checkoutTier = ref<SubscriptionTier | null>(null)
 
 const showSuccessToast = computed(() => route.query.success === 'true')
 const showCanceledToast = computed(() => route.query.canceled === 'true')
@@ -37,75 +46,25 @@ onMounted(() => {
 })
 
 const tiers = computed(() => {
-  if (!products.value) return []
+  return getAllPlansForDisplay().map(plan => {
+    const priceMonthly = plan.pricing ? plan.pricing.monthly / 100 : 0
+    const priceYearly = plan.pricing ? plan.pricing.yearly / 100 : 0
 
-  return [
-    {
-      id: 'free',
-      name: 'Free',
-      description: 'Perfect for getting started',
-      priceMonthly: 0,
-      priceYearly: 0,
-      features: [
-        '50 entries',
-        '3 projects',
-        'BibTeX export',
-        'Basic search',
-        '10 metadata enrichments/month',
-      ],
-      limitations: [
-        'No PDF/Excel export',
-        'No custom citation styles',
-        'No collaboration',
-        'No AI features',
-      ],
-      current: tier.value === 'free',
-    },
-    {
-      id: 'light',
-      name: products.value.light.name,
-      description: products.value.light.description,
-      priceMonthly: products.value.light.priceMonthly,
-      priceYearly: products.value.light.priceYearly,
-      features: [
-        '500 entries',
-        '15 projects',
-        'PDF, Excel, BibTeX export',
-        '3 custom citation styles',
-        '100 metadata enrichments/month',
-        '3 collaborators per project',
-        'Basic mind maps',
-        '5 AI annotations/month',
-        '10 min voice transcription/month',
-      ],
-      current: tier.value === 'light',
-    },
-    {
-      id: 'pro',
-      name: products.value.pro.name,
-      description: products.value.pro.description,
-      priceMonthly: products.value.pro.priceMonthly,
-      priceYearly: products.value.pro.priceYearly,
-      features: [
-        'Unlimited entries',
-        'Unlimited projects',
-        'All export formats',
-        'Unlimited citation styles',
-        'Unlimited metadata enrichment',
-        'Unlimited collaborators',
-        'Full mind maps with graph queries',
-        'Semantic search',
-        'Veritas Score credibility ratings',
-        '50 AI annotations/month',
-        '60 min voice transcription/month',
-        'Research Companion AI assistant',
-        'Multimodal AI (images/PDFs)',
-        'Priority support',
-      ],
-      current: tier.value === 'pro',
-      highlighted: true,
-    },
-  ]
+    const product = products.value?.[plan.id]
+
+    return {
+      id: plan.id as SubscriptionTier,
+      name: product?.name ?? plan.name,
+      description: product?.description ?? plan.description,
+      priceMonthly: product?.priceMonthly ?? priceMonthly,
+      priceYearly: product?.priceYearly ?? priceYearly,
+      features: plan.featureHighlights,
+      limitations: plan.limitations,
+      current: tier.value === plan.id,
+      highlighted: plan.ui.highlighted,
+      isPaid: plan.pricing !== null,
+    }
+  })
 })
 
 function getPrice(tierData: (typeof tiers.value)[0]) {
@@ -116,7 +75,7 @@ function formatPrice(price: number) {
   return price === 0 ? 'Free' : `$${price}`
 }
 
-async function handleUpgrade(targetTier: 'light' | 'pro') {
+async function handleUpgrade(targetTier: SubscriptionTier) {
   isCheckoutLoading.value = true
   checkoutTier.value = targetTier
 
@@ -190,7 +149,7 @@ async function handleManageBilling() {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-lg font-medium text-gray-900 dark:text-white">
-              {{ tier === 'light' ? 'Bibanna Light' : 'Bibanna Pro' }}
+              Bibanna {{ getTierDisplayName(tier) }}
             </p>
             <p v-if="periodEnd" class="text-sm text-gray-500">
               {{ isCanceled ? 'Ends' : 'Renews' }} on {{ periodEnd.toLocaleDateString() }}
@@ -338,7 +297,7 @@ async function handleManageBilling() {
             Current Plan
           </UButton>
           <UButton
-            v-else-if="tierData.id === 'free'"
+            v-else-if="!tierData.isPaid"
             block
             variant="outline"
             color="gray"
@@ -352,7 +311,7 @@ async function handleManageBilling() {
             :color="tierData.highlighted ? 'primary' : 'gray'"
             :variant="tierData.highlighted ? 'solid' : 'outline'"
             :loading="isCheckoutLoading && checkoutTier === tierData.id"
-            @click="handleUpgrade(tierData.id as 'light' | 'pro')"
+            @click="handleUpgrade(tierData.id)"
           >
             {{ isPaid ? 'Change Plan' : 'Start Free Trial' }}
           </UButton>

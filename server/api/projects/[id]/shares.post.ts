@@ -1,5 +1,6 @@
 import { shareProjectWithUser, createPublicLink } from '~/server/services/sharing'
-import { requireLightOrProTier, TIER_LIMITS } from '~/server/utils/auth'
+import { requireLightOrProTier } from '~/server/utils/auth'
+import { getTierLimits } from '~/shared/subscriptions'
 import { db } from '~/server/database/client'
 import { projectShares } from '~/server/database/schema'
 import { eq, and, count } from 'drizzle-orm'
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const limits = TIER_LIMITS[user.subscriptionTier]
+    const limits = getTierLimits(user.subscriptionTier)
     const [existingCount] = await db
       .select({ count: count() })
       .from(projectShares)

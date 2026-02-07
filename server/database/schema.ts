@@ -29,19 +29,9 @@ export const annotationTypeEnum = pgEnum('annotation_type', [
   'custom',
 ])
 
-export const subscriptionTierEnum = pgEnum('subscription_tier', [
-  'free',
-  'light',
-  'pro',
-])
-
-export const subscriptionStatusEnum = pgEnum('subscription_status', [
-  'active',
-  'past_due',
-  'canceled',
-  'trialing',
-  'incomplete',
-])
+// subscription_tier and subscription_status use plain text columns
+// instead of pgEnum for flexibility. Validation is handled at the
+// application layer via Zod schemas derived from shared/subscriptions/.
 
 export const sharePermissionEnum = pgEnum('share_permission', [
   'view',
@@ -105,7 +95,7 @@ export const users = pgTable('users', {
   avatarUrl: text('avatar_url'),
   auth0Id: text('auth0_id').unique(),
   stripeCustomerId: text('stripe_customer_id').unique(),
-  subscriptionTier: subscriptionTierEnum('subscription_tier').default('free').notNull(),
+  subscriptionTier: text('subscription_tier').notNull().default('free'),
   role: userRoleEnum('role').default('user').notNull(),
   isBanned: boolean('is_banned').default(false).notNull(),
   bannedAt: timestamp('banned_at'),
@@ -123,8 +113,8 @@ export const subscriptions = pgTable('subscriptions', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
-  tier: subscriptionTierEnum('tier').notNull(),
-  status: subscriptionStatusEnum('status').notNull(),
+  tier: text('tier').notNull(),
+  status: text('status').notNull(),
   currentPeriodStart: timestamp('current_period_start').notNull(),
   currentPeriodEnd: timestamp('current_period_end').notNull(),
   cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
