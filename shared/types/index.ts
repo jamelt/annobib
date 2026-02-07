@@ -134,6 +134,7 @@ export interface Project {
   description?: string
   color: string
   isArchived: boolean
+  isStarred: boolean
   settings: ProjectSettings
   slug?: string
   createdAt: Date

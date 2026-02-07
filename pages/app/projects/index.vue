@@ -8,6 +8,7 @@ definePageMeta({
 
 const router = useRouter()
 const toast = useToast()
+const { toggleStar } = useStarredProjects()
 
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
@@ -105,9 +106,31 @@ async function deleteProject() {
   }
 }
 
+async function handleToggleStar(project: Project) {
+  try {
+    const result = await toggleStar(project.id)
+    project.isStarred = result.isStarred
+    toast.add({
+      title: result.isStarred ? 'Project starred' : 'Project unstarred',
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Failed to update project',
+      color: 'error',
+    })
+  }
+}
+
 function getDropdownItems(project: Project) {
   return [
     [
+      {
+        label: project.isStarred ? 'Unstar' : 'Star',
+        icon: project.isStarred ? 'i-heroicons-star-solid' : 'i-heroicons-star',
+        onSelect: () => handleToggleStar(project),
+      },
       { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => openEditModal(project) },
       { label: 'Share', icon: 'i-heroicons-share', onSelect: () => router.push(`/app/projects/${projectSlugOrId(project)}?share=true`) },
       { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => router.push(`/app/projects/${projectSlugOrId(project)}?export=true`) },
@@ -189,9 +212,16 @@ function getDropdownItems(project: Project) {
               />
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="font-medium text-gray-900 dark:text-white truncate">
-                {{ project.name }}
-              </h3>
+              <div class="flex items-center gap-1.5">
+                <h3 class="font-medium text-gray-900 dark:text-white truncate">
+                  {{ project.name }}
+                </h3>
+                <UIcon
+                  v-if="project.isStarred"
+                  name="i-heroicons-star-solid"
+                  class="w-4 h-4 text-amber-400 shrink-0"
+                />
+              </div>
               <p v-if="project.description" class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
                 {{ project.description }}
               </p>

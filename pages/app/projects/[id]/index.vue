@@ -11,6 +11,7 @@ const router = useRouter()
 const toast = useToast()
 const { open: openQuickAdd } = useQuickAdd()
 const { onEntryCreated } = useEntryEvents()
+const { toggleStar } = useStarredProjects()
 
 const projectIdentifier = computed(() => route.params.id as string)
 
@@ -79,6 +80,24 @@ function openCompanion() {
 function openMindMap() {
   if (!project.value) return
   router.push(`/app/projects/${project.value.id}/mindmap`)
+}
+
+async function handleToggleStar() {
+  if (!project.value) return
+  try {
+    const result = await toggleStar(project.value.id)
+    project.value.isStarred = result.isStarred
+    toast.add({
+      title: result.isStarred ? 'Project starred' : 'Project unstarred',
+      color: 'success',
+    })
+  }
+  catch {
+    toast.add({
+      title: 'Failed to update project',
+      color: 'error',
+    })
+  }
 }
 
 async function handleProjectUpdated() {
@@ -280,9 +299,23 @@ onEntryCreated(() => {
             />
           </div>
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {{ project.name }}
-            </h1>
+            <div class="flex items-center gap-2">
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ project.name }}
+              </h1>
+              <button
+                type="button"
+                class="p-1 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                :title="project.isStarred ? 'Unstar project' : 'Star project'"
+                @click="handleToggleStar"
+              >
+                <UIcon
+                  :name="project.isStarred ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  class="w-5 h-5 transition-colors"
+                  :class="project.isStarred ? 'text-amber-400' : 'text-gray-400 hover:text-amber-300'"
+                />
+              </button>
+            </div>
             <p v-if="project.description" class="text-gray-500 dark:text-gray-400 mt-1">
               {{ project.description }}
             </p>

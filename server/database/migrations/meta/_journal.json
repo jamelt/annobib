@@ -8,6 +8,13 @@
       "when": 1770490776840,
       "tag": "0000_stale_brother_voodoo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1770508800000,
+      "tag": "0001_add_project_starred",
+      "breakpoints": true
     }
   ]
 }

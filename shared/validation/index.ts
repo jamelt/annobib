@@ -99,6 +99,7 @@ export const createProjectSchema = z.object({
 
 export const updateProjectSchema = createProjectSchema.partial().extend({
   isArchived: z.boolean().optional(),
+  isStarred: z.boolean().optional(),
 })
 
 export const createTagSchema = z.object({

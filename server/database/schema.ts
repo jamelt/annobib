@@ -138,6 +138,7 @@ export const projects = pgTable('projects', {
   description: text('description'),
   color: text('color').default('#4F46E5'),
   isArchived: boolean('is_archived').default(false),
+  isStarred: boolean('is_starred').default(false),
   settings: jsonb('settings').$type<ProjectSettings>().default({}),
   slug: text('slug'),
   createdAt: timestamp('created_at').defaultNow().notNull(),

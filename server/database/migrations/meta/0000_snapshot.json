@@ -1624,6 +1624,13 @@
           "notNull": false,
           "default": false
         },
+        "is_starred": {
+          "name": "is_starred",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "settings": {
           "name": "settings",
           "type": "jsonb",

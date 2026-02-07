@@ -7,6 +7,7 @@ const {
   defaultProjectId: quickAddProjectId,
 } = useQuickAdd();
 const { notifyEntryCreated } = useEntryEvents();
+const { starredProjects, projectRoute } = useStarredProjects();
 
 const colorMode = useColorMode();
 const isDark = computed({
@@ -21,6 +22,12 @@ const isMobileMenuOpen = ref(false);
 const isFeedbackOpen = ref(false);
 const isUserMenuOpen = ref(false);
 const userMenuRef = ref(null);
+const isProjectsPopoverOpen = ref(false);
+const projectsPopoverRef = ref(null);
+
+onClickOutside(projectsPopoverRef, () => {
+  isProjectsPopoverOpen.value = false;
+});
 
 onClickOutside(userMenuRef, () => {
   isUserMenuOpen.value = false;
@@ -222,17 +229,38 @@ const announcementBannerColors: Record<string, string> = {
           </div>
 
           <nav class="flex-1 space-y-1">
-            <NuxtLink
-              v-for="item in navigation"
-              :key="item.name"
-              :to="item.to"
-              class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
-              @click="close()"
-            >
-              <UIcon :name="item.icon" class="w-5 h-5" />
-              {{ item.name }}
-            </NuxtLink>
+            <template v-for="item in navigation" :key="item.name">
+              <NuxtLink
+                :to="item.to"
+                class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+                @click="close()"
+              >
+                <UIcon :name="item.icon" class="w-5 h-5" />
+                {{ item.name }}
+              </NuxtLink>
+
+              <!-- Starred projects nested under Projects -->
+              <div
+                v-if="item.name === 'Projects' && starredProjects.length > 0"
+                class="ml-5 pl-3 border-l-2 border-gray-200 dark:border-gray-700 space-y-0.5"
+              >
+                <NuxtLink
+                  v-for="starred in starredProjects"
+                  :key="starred.id"
+                  :to="projectRoute(starred)"
+                  class="group flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+                  @click="close()"
+                >
+                  <span
+                    class="w-2 h-2 rounded-full shrink-0"
+                    :style="{ backgroundColor: starred.color }"
+                  />
+                  <span class="truncate">{{ starred.name }}</span>
+                </NuxtLink>
+              </div>
+            </template>
 
             <template v-if="isAdmin">
               <div class="pt-4 pb-1">
@@ -284,21 +312,41 @@ const announcementBannerColors: Record<string, string> = {
       </div>
 
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <UTooltip
-          v-for="item in navigation"
-          :key="item.name"
-          :text="item.name"
-          :content="{ side: 'right' }"
-        >
-          <NuxtLink
-            :to="item.to"
-            class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+        <template v-for="item in navigation" :key="item.name">
+          <UTooltip
+            :text="item.name"
+            :content="{ side: 'right' }"
           >
-            <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
-            <span v-if="isSidebarOpen" class="truncate">{{ item.name }}</span>
-          </NuxtLink>
-        </UTooltip>
+            <NuxtLink
+              :to="item.to"
+              class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+            >
+              <UIcon :name="item.icon" class="w-5 h-5 shrink-0" />
+              <span v-if="isSidebarOpen" class="truncate">{{ item.name }}</span>
+            </NuxtLink>
+          </UTooltip>
+
+          <!-- Starred projects nested under Projects -->
+          <div
+            v-if="item.name === 'Projects' && isSidebarOpen && starredProjects.length > 0"
+            class="ml-5 pl-3 border-l-2 border-gray-200 dark:border-gray-700 space-y-0.5 mt-0.5"
+          >
+            <NuxtLink
+              v-for="starred in starredProjects"
+              :key="starred.id"
+              :to="projectRoute(starred)"
+              class="group flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+            >
+              <span
+                class="w-2 h-2 rounded-full shrink-0"
+                :style="{ backgroundColor: starred.color }"
+              />
+              <span class="truncate">{{ starred.name }}</span>
+            </NuxtLink>
+          </div>
+        </template>
       </nav>
 
       <!-- Admin section -->
@@ -523,8 +571,68 @@ const announcementBannerColors: Record<string, string> = {
         >
           <UIcon name="i-heroicons-plus" class="w-6 h-6" />
         </button>
+        <!-- Projects button with popover for starred projects -->
+        <div ref="projectsPopoverRef" class="relative">
+          <button
+            type="button"
+            class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
+            :class="{ 'text-primary-500 dark:text-primary-400': $route.path.startsWith('/app/projects') }"
+            @click="starredProjects.length > 0 ? isProjectsPopoverOpen = !isProjectsPopoverOpen : navigateTo('/app/projects')"
+          >
+            <UIcon name="i-heroicons-folder" class="w-6 h-6" />
+            <span class="text-xs">Projects</span>
+          </button>
+
+          <!-- Starred projects popover -->
+          <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-2 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-2 scale-95"
+          >
+            <div
+              v-if="isProjectsPopoverOpen"
+              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 rounded-xl bg-white dark:bg-gray-800 shadow-xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden"
+            >
+              <div class="px-3 pt-3 pb-1.5">
+                <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  Starred
+                </p>
+              </div>
+              <div class="px-1.5 pb-1.5 space-y-0.5 max-h-48 overflow-y-auto">
+                <NuxtLink
+                  v-for="starred in starredProjects"
+                  :key="starred.id"
+                  :to="projectRoute(starred)"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  @click="isProjectsPopoverOpen = false"
+                >
+                  <span
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
+                    :style="{ backgroundColor: starred.color }"
+                  />
+                  <span class="truncate">{{ starred.name }}</span>
+                </NuxtLink>
+              </div>
+              <div class="border-t border-gray-100 dark:border-gray-700 px-1.5 py-1.5">
+                <NuxtLink
+                  to="/app/projects"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                  @click="isProjectsPopoverOpen = false"
+                >
+                  <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4" />
+                  All Projects
+                </NuxtLink>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- Remaining nav items (Tags, Mind Maps) -->
         <NuxtLink
-          v-for="item in navigation.slice(2, 5)"
+          v-for="item in navigation.slice(3, 5)"
           :key="item.name"
           :to="item.to"
           class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
