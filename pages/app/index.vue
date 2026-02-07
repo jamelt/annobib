@@ -4,6 +4,12 @@ definePageMeta({
   middleware: 'auth',
 })
 
+const router = useRouter()
+const { open: openQuickAdd } = useQuickAdd()
+
+const isCreateProjectOpen = ref(false)
+const isExportModalOpen = ref(false)
+
 const stats = ref([
   { label: 'Total Entries', value: 0, icon: 'i-heroicons-book-open' },
   { label: 'Projects', value: 0, icon: 'i-heroicons-folder' },
@@ -16,6 +22,10 @@ const recentProjects = ref<any[]>([])
 
 function projectSlugOrId(project: any) {
   return project.slug || project.id
+}
+
+async function handleProjectCreated() {
+  isCreateProjectOpen.value = false
 }
 </script>
 
@@ -69,6 +79,8 @@ function projectSlugOrId(project: any) {
           variant="outline"
           color="neutral"
           block
+          data-testid="dashboard-quick-action-add-entry"
+          @click="openQuickAdd"
         />
         <UButton
           icon="i-heroicons-folder-plus"
@@ -76,6 +88,8 @@ function projectSlugOrId(project: any) {
           variant="outline"
           color="neutral"
           block
+          data-testid="dashboard-quick-action-new-project"
+          @click="isCreateProjectOpen = true"
         />
         <UButton
           icon="i-heroicons-arrow-up-tray"
@@ -83,6 +97,8 @@ function projectSlugOrId(project: any) {
           variant="outline"
           color="neutral"
           block
+          data-testid="dashboard-quick-action-import"
+          @click="router.push('/app/library')"
         />
         <UButton
           icon="i-heroicons-arrow-down-tray"
@@ -90,6 +106,8 @@ function projectSlugOrId(project: any) {
           variant="outline"
           color="neutral"
           block
+          data-testid="dashboard-quick-action-export"
+          @click="isExportModalOpen = true"
         />
       </div>
     </UCard>
@@ -205,5 +223,14 @@ function projectSlugOrId(project: any) {
         </ul>
       </UCard>
     </div>
+
+    <LazyAppProjectFormModal
+      v-model:open="isCreateProjectOpen"
+      @created="handleProjectCreated"
+    />
+
+    <LazyAppExportModal
+      v-model:open="isExportModalOpen"
+    />
   </div>
 </template>

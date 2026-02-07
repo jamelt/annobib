@@ -162,41 +162,43 @@ const userNavigation = [
           @click="openQuickAdd"
         />
 
-        <!-- Theme toggle -->
-        <UButton
-          :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
-          variant="ghost"
-          color="neutral"
-          @click="isDark = !isDark"
-        />
-
-        <!-- Notifications -->
-        <UButton
-          icon="i-heroicons-bell"
-          variant="ghost"
-          color="neutral"
-        />
-
-        <!-- User menu -->
-        <UDropdown
-          :items="[
-            [
-              { label: 'Profile', icon: 'i-heroicons-user', to: '/app/settings/profile' },
-              { label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/app/settings' },
-            ],
-            [
-              { label: 'Sign out', icon: 'i-heroicons-arrow-right-on-rectangle', onClick: () => logout() },
-            ],
-          ]"
-          :content="{ side: 'bottom', align: 'end' }"
-        >
-          <UAvatar
-            data-testid="user-menu-trigger"
-            :text="(user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
-            size="sm"
-            class="cursor-pointer"
+        <div class="flex items-center gap-4 ml-auto">
+          <!-- Theme toggle -->
+          <UButton
+            :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
+            variant="ghost"
+            color="neutral"
+            @click="isDark = !isDark"
           />
-        </UDropdown>
+
+          <!-- Notifications -->
+          <UButton
+            icon="i-heroicons-bell"
+            variant="ghost"
+            color="neutral"
+          />
+
+          <!-- User menu -->
+          <UDropdown
+            :items="[
+              [
+                { label: 'Profile', icon: 'i-heroicons-user', to: '/app/settings/profile' },
+                { label: 'Settings', icon: 'i-heroicons-cog-6-tooth', to: '/app/settings' },
+              ],
+              [
+                { label: 'Sign out', icon: 'i-heroicons-arrow-right-on-rectangle', onClick: () => logout() },
+              ],
+            ]"
+            :content="{ side: 'bottom', align: 'end' }"
+          >
+            <UAvatar
+              data-testid="user-menu-trigger"
+              :text="(user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
+              size="sm"
+              class="cursor-pointer"
+            />
+          </UDropdown>
+        </div>
       </header>
 
       <!-- Page content -->
