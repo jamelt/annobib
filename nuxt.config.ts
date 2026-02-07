@@ -86,8 +86,11 @@ export default defineNuxtConfig({
       },
     },
     rollupConfig: {
-      external: (id) => {
+      external: (id: string) => {
         if (id.startsWith('@opentelemetry/') || id.startsWith('@google-cloud/opentelemetry-')) {
+          return true
+        }
+        if (id === 'pino' || id.startsWith('pino/') || id === 'pino-pretty') {
           return true
         }
         return false

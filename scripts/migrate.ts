@@ -1,9 +1,10 @@
+import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import { sql } from 'drizzle-orm'
 
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.DATABASE_URL || 'postgresql://bibanna:bibanna@localhost:5432/bibanna'
 const command = process.argv[2]
 
 interface MigrationRecord {
@@ -13,6 +14,12 @@ interface MigrationRecord {
 }
 
 async function main() {
+  if (!connectionString) {
+    console.error('DATABASE_URL is not set')
+    process.exit(1)
+  }
+
+  console.log(`Connecting to database...`)
   const client = postgres(connectionString, { max: 1 })
   const db = drizzle(client)
 
@@ -43,11 +50,20 @@ async function main() {
   await client.end()
 }
 
+async function ensureExtensions(db: ReturnType<typeof drizzle>) {
+  console.log('Ensuring required PostgreSQL extensions...')
+  await db.execute(sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`)
+  await db.execute(sql`CREATE EXTENSION IF NOT EXISTS "vector"`)
+  console.log('Extensions ready')
+}
+
 async function runMigrations(db: ReturnType<typeof drizzle>, client: postgres.Sql) {
   console.log('Running migrations...')
   
   try {
     await db.execute(sql`SELECT pg_advisory_lock(12345)`)
+
+    await ensureExtensions(db)
     
     await migrate(db, { migrationsFolder: './server/database/migrations' })
     

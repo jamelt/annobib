@@ -18,9 +18,14 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "db:generate": "drizzle-kit generate:pg",
-    "db:migrate": "drizzle-kit up:pg",
+    "db:migrate": "npx tsx scripts/migrate.ts up",
+    "db:migrate:down": "npx tsx scripts/migrate.ts down",
+    "db:migrate:status": "npx tsx scripts/migrate.ts status",
+    "db:migrate:validate": "npx tsx scripts/migrate.ts validate",
     "db:push": "drizzle-kit push:pg",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:setup": "docker compose up -d postgres && docker compose exec postgres sh -c 'until pg_isready -U bibanna; do sleep 1; done' && npx tsx scripts/migrate.ts up",
+    "db:reset": "docker compose down -v && pnpm db:setup"
   },
   "dependencies": {
     "@google-cloud/opentelemetry-cloud-monitoring-exporter": "^0.21.0",

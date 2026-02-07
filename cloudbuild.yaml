@@ -61,6 +61,24 @@ steps:
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app'
     waitFor: ['docker-build']
 
+  # Run database migrations against staging
+  - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app:${SHORT_SHA}'
+    id: 'migrate-staging'
+    entrypoint: 'npx'
+    args: ['tsx', 'scripts/migrate.ts', 'up']
+    env:
+      - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
+    waitFor: ['docker-push']
+
+  # Validate migrations
+  - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app:${SHORT_SHA}'
+    id: 'validate-migrations'
+    entrypoint: 'npx'
+    args: ['tsx', 'scripts/migrate.ts', 'validate']
+    env:
+      - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
+    waitFor: ['migrate-staging']
+
   # Deploy to GKE (staging)
   - name: 'gcr.io/cloud-builders/gke-deploy'
     id: 'deploy-staging'
@@ -70,7 +88,7 @@ steps:
       - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app:${SHORT_SHA}'
       - '--location=${_REGION}'
       - '--cluster=${_STAGING_CLUSTER}'
-    waitFor: ['docker-push']
+    waitFor: ['migrate-staging']
     env:
       - 'CLOUDSDK_COMPUTE_REGION=${_REGION}'
 
@@ -84,6 +102,15 @@ steps:
       - 'BASE_URL=${_STAGING_URL}'
     waitFor: ['deploy-staging']
 
+  # Run database migrations against production
+  - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app:${SHORT_SHA}'
+    id: 'migrate-production'
+    entrypoint: 'npx'
+    args: ['tsx', 'scripts/migrate.ts', 'up']
+    env:
+      - 'DATABASE_URL=${_PROD_DATABASE_URL}'
+    waitFor: ['test-e2e']
+
   # Deploy to GKE (production) - only on main branch
   - name: 'gcr.io/cloud-builders/gke-deploy'
     id: 'deploy-production'
@@ -93,7 +120,7 @@ steps:
       - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/bibanna/bibanna-app:${SHORT_SHA}'
       - '--location=${_REGION}'
       - '--cluster=${_PROD_CLUSTER}'
-    waitFor: ['test-e2e']
+    waitFor: ['migrate-production']
     env:
       - 'CLOUDSDK_COMPUTE_REGION=${_REGION}'
 
@@ -102,6 +129,8 @@ substitutions:
   _STAGING_CLUSTER: 'bibanna-staging-gke'
   _PROD_CLUSTER: 'bibanna-production-gke'
   _STAGING_URL: 'https://staging.bibanna.dev'
+  _STAGING_DATABASE_URL: ''  # Set via Cloud Build trigger or Secret Manager
+  _PROD_DATABASE_URL: ''     # Set via Cloud Build trigger or Secret Manager
 
 options:
   machineType: 'E2_HIGHCPU_8'

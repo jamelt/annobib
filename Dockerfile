@@ -21,6 +21,8 @@ RUN pnpm build
 # Production stage
 FROM node:20-alpine AS runner
 
+RUN corepack enable
+
 WORKDIR /app
 
 # Create non-root user
@@ -29,6 +31,13 @@ RUN adduser --system --uid 1001 nuxtjs
 
 # Copy built application
 COPY --from=builder /app/.output ./.output
+
+# Copy migration scripts and dependencies so the K8s migration Job
+# can run `npx tsx scripts/migrate.ts up` from this same image.
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/server/database/migrations ./server/database/migrations
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Set ownership
 RUN chown -R nuxtjs:nodejs /app

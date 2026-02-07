@@ -1,4 +1,10 @@
 import pino from 'pino'
+import { createRequire } from 'node:module'
+
+if (typeof globalThis.require === 'undefined') {
+  // @ts-expect-error pino transports use require() internally
+  globalThis.require = createRequire(import.meta.url)
+}
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isGCP = !!process.env.GOOGLE_CLOUD_PROJECT

@@ -109,18 +109,32 @@ export const createTagSchema = z.object({
 
 export const updateTagSchema = createTagSchema.partial()
 
+const coerceOptionalInt = z.coerce.number().int().optional()
+
+const coerceOptionalBool = z.preprocess((val) => {
+  if (val === 'true') return true
+  if (val === 'false') return false
+  return val
+}, z.boolean().optional())
+
+const coerceStringArray = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((val) => {
+    if (val === undefined || val === null) return undefined
+    return Array.isArray(val) ? val : [val]
+  }, z.array(schema).optional())
+
 export const searchQuerySchema = z.object({
   q: z.string().optional(),
-  entryTypes: z.array(entryTypeSchema).optional(),
+  entryTypes: coerceStringArray(entryTypeSchema),
   projectId: z.string().uuid().optional(),
-  tagIds: z.array(z.string().uuid()).optional(),
-  yearFrom: z.number().int().optional(),
-  yearTo: z.number().int().optional(),
-  isFavorite: z.boolean().optional(),
+  tagIds: coerceStringArray(z.string().uuid()),
+  yearFrom: coerceOptionalInt,
+  yearTo: coerceOptionalInt,
+  isFavorite: coerceOptionalBool,
   sortBy: z.enum(['title', 'author', 'year', 'createdAt', 'updatedAt']).optional().default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-  page: z.number().int().min(1).optional().default(1),
-  pageSize: z.number().int().min(1).max(100).optional().default(20),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).optional().default(20),
 })
 
 export const shareProjectSchema = z.object({
