@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'admin',
+  layout: 'app',
   middleware: 'admin',
 })
 
@@ -89,7 +89,7 @@ const typeColors: Record<string, string> = {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-white">Announcements</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Announcements</h1>
       <UButton
         icon="i-heroicons-plus"
         label="New Announcement"
@@ -106,22 +106,21 @@ const typeColors: Record<string, string> = {
       <UCard
         v-for="a in announcementsData"
         :key="a.id"
-        class="bg-gray-900 border-gray-800"
       >
         <div class="flex items-start gap-4">
-          <div class="p-2 rounded-lg bg-gray-800 shrink-0">
-            <UIcon :name="typeIcons[a.type] || 'i-heroicons-information-circle'" class="w-5 h-5 text-gray-400" />
+          <div class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0">
+            <UIcon :name="typeIcons[a.type] || 'i-heroicons-information-circle'" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-medium text-white">{{ a.title }}</h3>
+              <h3 class="font-medium text-gray-900 dark:text-white">{{ a.title }}</h3>
               <UBadge :color="(typeColors[a.type] as any)" variant="subtle" size="sm">{{ a.type }}</UBadge>
               <UBadge :color="a.isActive ? 'success' : 'neutral'" variant="subtle" size="sm">
                 {{ a.isActive ? 'Active' : 'Inactive' }}
               </UBadge>
             </div>
-            <p class="text-sm text-gray-400 line-clamp-2">{{ a.content }}</p>
-            <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ a.content }}</p>
+            <div class="flex items-center gap-3 mt-2 text-xs text-gray-400 dark:text-gray-500">
               <span>Created {{ new Date(a.createdAt).toLocaleDateString() }}</span>
               <span v-if="a.endAt">&middot; Ends {{ new Date(a.endAt).toLocaleDateString() }}</span>
             </div>

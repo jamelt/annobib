@@ -1,16 +1,16 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'admin',
+  layout: 'app',
   middleware: 'admin',
 })
 
-const statusFilter = ref<string>('')
-const typeFilter = ref<string>('')
+const statusFilter = ref('all')
+const typeFilter = ref('all')
 const page = ref(1)
 
 const queryParams = computed(() => ({
-  status: statusFilter.value || undefined,
-  type: typeFilter.value || undefined,
+  status: statusFilter.value === 'all' ? undefined : statusFilter.value,
+  type: typeFilter.value === 'all' ? undefined : typeFilter.value,
   page: page.value,
   pageSize: 20,
 }))
@@ -58,15 +58,15 @@ const statusColors: Record<string, string> = {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold text-white">Feedback Inbox</h1>
-      <span class="text-sm text-gray-400">{{ feedbackData?.total ?? 0 }} items</span>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Feedback Inbox</h1>
+      <span class="text-sm text-gray-500 dark:text-gray-400">{{ feedbackData?.total ?? 0 }} items</span>
     </div>
 
     <div class="flex gap-3">
       <USelect
         v-model="statusFilter"
         :items="[
-          { label: 'All Status', value: '' },
+          { label: 'All Status', value: 'all' },
           { label: 'Open', value: 'open' },
           { label: 'In Progress', value: 'in_progress' },
           { label: 'Resolved', value: 'resolved' },
@@ -77,7 +77,7 @@ const statusColors: Record<string, string> = {
       <USelect
         v-model="typeFilter"
         :items="[
-          { label: 'All Types', value: '' },
+          { label: 'All Types', value: 'all' },
           { label: 'Bug', value: 'bug' },
           { label: 'Feature Request', value: 'feature_request' },
           { label: 'General', value: 'general' },
@@ -95,22 +95,22 @@ const statusColors: Record<string, string> = {
       <UCard
         v-for="item in feedbackData?.data"
         :key="item.id"
-        class="bg-gray-900 border-gray-800 cursor-pointer hover:border-gray-700 transition-colors"
+        class="cursor-pointer hover:ring-1 hover:ring-gray-300 dark:hover:ring-gray-600 transition-all"
         @click="openDetail(item)"
       >
         <div class="flex items-start gap-4">
-          <div class="p-2 rounded-lg bg-gray-800 shrink-0">
-            <UIcon :name="typeIcons[item.type] || 'i-heroicons-chat-bubble-left'" class="w-5 h-5 text-gray-400" />
+          <div class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0">
+            <UIcon :name="typeIcons[item.type] || 'i-heroicons-chat-bubble-left'" class="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </div>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="font-medium text-white truncate">{{ item.subject }}</h3>
+              <h3 class="font-medium text-gray-900 dark:text-white truncate">{{ item.subject }}</h3>
               <UBadge :color="(statusColors[item.status] as any)" variant="subtle" size="sm">
                 {{ item.status.replace('_', ' ') }}
               </UBadge>
             </div>
-            <p class="text-sm text-gray-400 line-clamp-2">{{ item.content }}</p>
-            <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.content }}</p>
+            <div class="flex items-center gap-3 mt-2 text-xs text-gray-400 dark:text-gray-500">
               <span>{{ item.userName || item.userEmail || 'Anonymous' }}</span>
               <span>&middot;</span>
               <span>{{ new Date(item.createdAt).toLocaleDateString() }}</span>
@@ -126,7 +126,7 @@ const statusColors: Record<string, string> = {
 
     <!-- Pagination -->
     <div v-if="feedbackData && feedbackData.totalPages > 1" class="flex items-center justify-between">
-      <span class="text-sm text-gray-400">Page {{ feedbackData.page }} of {{ feedbackData.totalPages }}</span>
+      <span class="text-sm text-gray-500 dark:text-gray-400">Page {{ feedbackData.page }} of {{ feedbackData.totalPages }}</span>
       <div class="flex gap-2">
         <UButton icon="i-heroicons-chevron-left" variant="ghost" color="neutral" size="sm" :disabled="page <= 1" @click="page--" />
         <UButton icon="i-heroicons-chevron-right" variant="ghost" color="neutral" size="sm" :disabled="page >= feedbackData.totalPages" @click="page++" />
@@ -134,7 +134,7 @@ const statusColors: Record<string, string> = {
     </div>
 
     <!-- Detail Slideover -->
-    <USlideover v-model="isDetailOpen" :title="selectedFeedback?.subject || 'Feedback Detail'">
+    <USlideover v-model:open="isDetailOpen" :title="selectedFeedback?.subject || 'Feedback Detail'">
       <div v-if="selectedFeedback" class="p-6 space-y-6">
         <div>
           <div class="flex items-center gap-2 mb-2">
@@ -145,27 +145,27 @@ const statusColors: Record<string, string> = {
               {{ selectedFeedback.type.replace('_', ' ') }}
             </UBadge>
           </div>
-          <h3 class="text-lg font-semibold text-white">{{ selectedFeedback.subject }}</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedFeedback.subject }}</h3>
         </div>
 
         <div>
           <p class="text-xs text-gray-500 mb-1">From</p>
-          <p class="text-sm text-white">{{ selectedFeedback.userName || selectedFeedback.userEmail || 'Anonymous' }}</p>
+          <p class="text-sm text-gray-900 dark:text-white">{{ selectedFeedback.userName || selectedFeedback.userEmail || 'Anonymous' }}</p>
         </div>
 
         <div>
           <p class="text-xs text-gray-500 mb-1">Submitted</p>
-          <p class="text-sm text-white">{{ new Date(selectedFeedback.createdAt).toLocaleString() }}</p>
+          <p class="text-sm text-gray-900 dark:text-white">{{ new Date(selectedFeedback.createdAt).toLocaleString() }}</p>
         </div>
 
         <div>
           <p class="text-xs text-gray-500 mb-2">Content</p>
-          <div class="bg-gray-800 rounded-lg p-4 text-sm text-gray-300 whitespace-pre-wrap">
+          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
             {{ selectedFeedback.content }}
           </div>
         </div>
 
-        <hr class="border-gray-800">
+        <hr class="border-gray-200 dark:border-gray-700">
 
         <div>
           <p class="text-xs text-gray-500 mb-2">Admin Notes</p>
