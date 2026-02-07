@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS "document_chunks" (
 	"annotation_id" uuid,
 	"upload_id" uuid,
 	"content" text NOT NULL,
-	"embedding" "vector(1536)",
+	"embedding" vector(1536),
 	"chunk_index" integer NOT NULL,
 	"token_count" integer NOT NULL,
 	"metadata" jsonb,
@@ -407,7 +407,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "companion_messages" ADD CONSTRAINT "companion_messages_conversation_id_companion_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "companion_conversations"("id") ON DELETE cascade ON UPDATE no action;
+ ALTER TABLE "companion_messages" ADD CONSTRAINT "companion_messages_conversation_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "companion_conversations"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
