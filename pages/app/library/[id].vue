@@ -184,7 +184,7 @@ async function handleAnnotationCreated() {
           >
             Edit
           </UButton>
-          <UDropdown
+          <UDropdownMenu
             :items="[
               [
                 { label: 'Copy citation', icon: 'i-heroicons-clipboard-document', onSelect: copyCitation },
@@ -199,7 +199,7 @@ async function handleAnnotationCreated() {
               variant="outline"
               color="neutral"
             />
-          </UDropdown>
+          </UDropdownMenu>
         </div>
       </div>
 

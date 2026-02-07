@@ -4,7 +4,8 @@ let CSL: any = null
 
 async function getCSL() {
   if (!CSL) {
-    CSL = (await import('citeproc')).default
+    const mod = await import('citeproc')
+    CSL = mod.Engine || mod.default || mod
   }
   return CSL
 }

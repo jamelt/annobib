@@ -308,7 +308,7 @@ onEntryCreated(() => {
           >
             Mind Map
           </UButton>
-          <UDropdown
+          <UDropdownMenu
             :items="[
               [
                 { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => isEditModalOpen = true },
@@ -329,7 +329,7 @@ onEntryCreated(() => {
               variant="outline"
               color="neutral"
             />
-          </UDropdown>
+          </UDropdownMenu>
         </div>
       </div>
 

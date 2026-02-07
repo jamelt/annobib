@@ -1,8 +1,9 @@
 declare module 'citeproc' {
-  export default class CSL {
+  export class Engine {
     constructor(sys: any, style: string, lang?: string)
     makeBibliography(): [any, string[]]
     makeCitationCluster(citations: any[]): string
+    processCitationCluster(citation: any, pre: any[], post: any[]): any
     updateItems(ids: string[]): void
   }
 }
