@@ -32,6 +32,15 @@ const navigation = [
   { name: "Mind Maps", to: "/app/mindmaps", icon: "i-heroicons-share" },
 ];
 
+const adminNavigation = [
+  { name: "Admin Dashboard", to: "/app/admin", icon: "i-heroicons-chart-bar-square", exact: true },
+  { name: "Users", to: "/app/admin/users", icon: "i-heroicons-users" },
+  { name: "Feedback", to: "/app/admin/feedback", icon: "i-heroicons-inbox" },
+  { name: "Announcements", to: "/app/admin/announcements", icon: "i-heroicons-megaphone" },
+  { name: "Feature Flags", to: "/app/admin/feature-flags", icon: "i-heroicons-flag" },
+  { name: "Audit Log", to: "/app/admin/audit-log", icon: "i-heroicons-clipboard-document-list" },
+];
+
 const { data: activeAnnouncements } = useFetch("/api/announcements/active", {
   default: () => [],
 });
@@ -48,26 +57,49 @@ function dismissAnnouncement(id: string) {
   dismissedAnnouncements.value.add(id);
 }
 
-const { data: adminCheck } = useFetch("/api/admin/me", {
-  default: () => null,
-  onResponseError() {
-    /* silently fail for non-admins */
-  },
-});
+const adminRole = useState<string | null>('admin-role', () => null)
+
+onMounted(async () => {
+  if (adminRole.value === null) {
+    try {
+      const profile = await $fetch<{ role: string }>('/api/admin/me')
+      adminRole.value = profile.role
+    }
+    catch {
+      adminRole.value = 'user'
+    }
+  }
+})
 
 const isAdmin = computed(
-  () =>
-    adminCheck.value?.role === "admin" || adminCheck.value?.role === "support",
+  () => adminRole.value === 'admin' || adminRole.value === 'support',
 );
 
-const { data: sessionData } = useFetch('/api/auth/session', { default: () => null })
-const isImpersonating = computed(() => !!(sessionData.value as any)?.impersonatedBy)
-const impersonator = computed(() => (sessionData.value as any)?.impersonatedBy)
+const { session } = useUserSession()
+const isImpersonating = computed(() => !!(session.value as any)?.impersonatedBy)
+const impersonator = computed(() => (session.value as any)?.impersonatedBy)
 
 async function stopImpersonation() {
   await $fetch('/api/admin/stop-impersonation', { method: 'POST' })
-  window.location.href = '/admin/users'
+  window.location.href = '/app/admin/users'
 }
+
+const subscriptionStatus = ref<any>(null)
+
+onMounted(async () => {
+  try {
+    const sub = await $fetch<any>('/api/subscription')
+    subscriptionStatus.value = sub?.subscription
+  }
+  catch {}
+})
+
+const isPaymentPastDue = computed(() => subscriptionStatus.value?.status === 'past_due')
+const graceEndsAt = computed(() => subscriptionStatus.value?.graceEndsAt ? new Date(subscriptionStatus.value.graceEndsAt) : null)
+const graceDaysLeft = computed(() => {
+  if (!graceEndsAt.value) return 0
+  return Math.max(0, Math.ceil((graceEndsAt.value.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+})
 
 const feedbackForm = ref({ type: "general", subject: "", content: "" });
 const feedbackSubmitting = ref(false);
@@ -122,8 +154,51 @@ const announcementBannerColors: Record<string, string> = {
       </div>
     </div>
 
+    <!-- Impersonation Banner -->
+    <div
+      v-if="isImpersonating"
+      class="bg-red-600 px-4 py-2 text-white text-sm flex items-center justify-center gap-3 relative z-50"
+    >
+      <UIcon name="i-heroicons-eye" class="w-4 h-4" />
+      <span>
+        You are impersonating this user.
+        Logged in as <strong>{{ impersonator?.email }}</strong>.
+      </span>
+      <UButton
+        label="Stop Impersonating"
+        size="xs"
+        color="white"
+        variant="solid"
+        @click="stopImpersonation"
+      />
+    </div>
+
+    <!-- Payment Failure Warning -->
+    <div
+      v-if="isPaymentPastDue && !isImpersonating"
+      class="bg-amber-500 px-4 py-2 text-white text-sm flex items-center justify-center gap-3 relative z-50"
+    >
+      <UIcon name="i-heroicons-exclamation-triangle" class="w-4 h-4" />
+      <span>
+        Your payment failed.
+        <template v-if="graceDaysLeft > 0">
+          Please update your payment method within <strong>{{ graceDaysLeft }} day{{ graceDaysLeft !== 1 ? 's' : '' }}</strong> to avoid losing access to your plan.
+        </template>
+        <template v-else>
+          Your grace period has expired. Please update your payment method to restore access.
+        </template>
+      </span>
+      <UButton
+        label="Update Payment"
+        size="xs"
+        color="white"
+        variant="solid"
+        @click="navigateTo('/app/settings/billing')"
+      />
+    </div>
+
     <!-- Mobile sidebar overlay -->
-    <USlideover v-model="isMobileMenuOpen" side="left" class="lg:hidden">
+    <USlideover v-model:open="isMobileMenuOpen" side="left" class="lg:hidden">
       <div class="flex h-full flex-col bg-white dark:bg-gray-800 p-4">
         <div class="flex items-center justify-between mb-8">
           <NuxtLink to="/app" class="flex items-center gap-2">
@@ -155,6 +230,23 @@ const announcementBannerColors: Record<string, string> = {
             <UIcon :name="item.icon" class="w-5 h-5" />
             {{ item.name }}
           </NuxtLink>
+
+          <template v-if="isAdmin">
+            <div class="pt-4 pb-1">
+              <p class="px-3 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Admin</p>
+            </div>
+            <NuxtLink
+              v-for="item in adminNavigation"
+              :key="item.name"
+              :to="item.to"
+              class="group flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+              @click="isMobileMenuOpen = false"
+            >
+              <UIcon :name="item.icon" class="w-5 h-5" />
+              {{ item.name }}
+            </NuxtLink>
+          </template>
         </nav>
       </div>
     </USlideover>
@@ -204,6 +296,29 @@ const announcementBannerColors: Record<string, string> = {
           </NuxtLink>
         </UTooltip>
       </nav>
+
+      <!-- Admin section -->
+      <div v-if="isAdmin" class="px-4 pb-2 border-t border-gray-200 dark:border-gray-700 pt-3">
+        <p v-if="isSidebarOpen" class="px-3 mb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          Admin
+        </p>
+        <UTooltip
+          v-for="item in adminNavigation"
+          :key="item.name"
+          :text="item.name"
+          :content="{ side: 'right' }"
+        >
+          <NuxtLink
+            :to="item.to"
+            :exact="item.exact"
+            class="group flex items-center gap-3 px-3 py-1.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+            active-class="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+          >
+            <UIcon :name="item.icon" class="w-4 h-4 shrink-0" />
+            <span v-if="isSidebarOpen" class="truncate">{{ item.name }}</span>
+          </NuxtLink>
+        </UTooltip>
+      </div>
 
       <div class="p-4 border-t border-gray-200 dark:border-gray-700 space-y-1">
         <UButton
@@ -346,7 +461,7 @@ const announcementBannerColors: Record<string, string> = {
                   
                   <NuxtLink
                     v-if="isAdmin"
-                    to="/admin"
+                    to="/app/admin"
                     class="group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                     @click="isUserMenuOpen = false"
                   >

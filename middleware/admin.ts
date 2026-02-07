@@ -17,13 +17,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo('/app')
   }
 
-  try {
-    const profile = await $fetch<{ role: string }>(`/api/admin/me`)
-    if (profile.role !== 'admin' && profile.role !== 'support') {
+  const adminRole = useState<string | null>('admin-role', () => null)
+
+  if (!adminRole.value) {
+    try {
+      const profile = await $fetch<{ role: string }>('/api/admin/me')
+      adminRole.value = profile.role
+    }
+    catch {
       return navigateTo('/app')
     }
   }
-  catch {
+
+  if (adminRole.value !== 'admin' && adminRole.value !== 'support') {
     return navigateTo('/app')
   }
 })

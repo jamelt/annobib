@@ -2,6 +2,7 @@ import { db } from '~/server/database/client'
 import { users } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -10,6 +11,8 @@ const registerSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, 'register', 3, 60_000)
+
   const body = await readBody(event)
 
   const parsed = registerSchema.safeParse(body)

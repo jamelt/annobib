@@ -152,7 +152,8 @@ async function handleSubscriptionUpdated(
     subscription.metadata = { ...subscription.metadata, userId: user.id }
   }
 
-  const priceId = subscription.items.data[0]?.price.id
+  const priceItem = subscription.items.data[0]?.price
+  const priceId = priceItem?.id
   const tier = priceId ? getTierFromPriceId(priceId, products) : 'free'
   const status = mapStripeStatus(subscription.status)
 
@@ -164,6 +165,9 @@ async function handleSubscriptionUpdated(
     currentPeriodStart: new Date(subscription.current_period_start * 1000),
     currentPeriodEnd: new Date(subscription.current_period_end * 1000),
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    stripePriceId: priceId || null,
+    unitAmount: priceItem?.unit_amount ?? null,
+    billingInterval: priceItem?.recurring?.interval || null,
   }).onConflictDoUpdate({
     target: subscriptions.stripeSubscriptionId,
     set: {
@@ -172,11 +176,14 @@ async function handleSubscriptionUpdated(
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      stripePriceId: priceId || null,
+      unitAmount: priceItem?.unit_amount ?? null,
+      billingInterval: priceItem?.recurring?.interval || null,
       updatedAt: new Date(),
     },
   })
 
-  const effectiveTier = status === 'active' || status === 'trialing' ? tier : 'free'
+  const effectiveTier = status === 'active' || status === 'trialing' || status === 'past_due' ? tier : 'free'
 
   await db
     .update(users)
@@ -231,6 +238,8 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
       status: 'active',
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      graceEndsAt: null,
+      lastPaymentError: null,
       updatedAt: new Date(),
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
@@ -244,10 +253,19 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 
   if (!userId) return
 
+  const GRACE_PERIOD_DAYS = 14
+  const graceEndsAt = new Date()
+  graceEndsAt.setDate(graceEndsAt.getDate() + GRACE_PERIOD_DAYS)
+
+  const paymentError = invoice.last_finalization_error?.message
+    || (invoice.status_transitions?.finalized_at ? 'Payment failed' : 'Payment method declined')
+
   await db
     .update(subscriptions)
     .set({
       status: 'past_due',
+      graceEndsAt,
+      lastPaymentError: paymentError,
       updatedAt: new Date(),
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))

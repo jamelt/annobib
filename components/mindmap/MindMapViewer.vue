@@ -241,7 +241,7 @@ const stats = computed(() => {
     </div>
 
     <!-- Node details slideover -->
-    <USlideover v-model="showNodeDetails">
+    <USlideover v-model:open="showNodeDetails">
       <UCard v-if="selectedNode" :ui="{ body: { padding: 'p-4' } }">
         <template #header>
           <div class="flex items-center gap-2">

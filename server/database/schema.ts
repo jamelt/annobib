@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, integer, boolean, jsonb, index, uniqueIndex, real, pgEnum, customType } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, integer, boolean, jsonb, index, uniqueIndex, real, pgEnum, customType, date } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
 export const entryTypeEnum = pgEnum('entry_type', [
@@ -128,6 +128,11 @@ export const subscriptions = pgTable('subscriptions', {
   currentPeriodStart: timestamp('current_period_start').notNull(),
   currentPeriodEnd: timestamp('current_period_end').notNull(),
   cancelAtPeriodEnd: boolean('cancel_at_period_end').default(false),
+  graceEndsAt: timestamp('grace_ends_at'),
+  lastPaymentError: text('last_payment_error'),
+  stripePriceId: text('stripe_price_id'),
+  unitAmount: integer('unit_amount'),
+  billingInterval: text('billing_interval'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -422,6 +427,20 @@ export const adminAuditLogs = pgTable('admin_audit_logs', {
   actionIdx: index('audit_logs_action_idx').on(table.action),
   targetIdx: index('audit_logs_target_idx').on(table.targetType, table.targetId),
   createdAtIdx: index('audit_logs_created_at_idx').on(table.createdAt),
+}))
+
+// API Usage Tracking
+export const apiUsageDaily = pgTable('api_usage_daily', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  date: date('date').notNull(),
+  requestCount: integer('request_count').default(0).notNull(),
+  endpointCounts: jsonb('endpoint_counts').$type<Record<string, number>>().default({}),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userDateIdx: uniqueIndex('api_usage_user_date_idx').on(table.userId, table.date),
+  dateIdx: index('api_usage_date_idx').on(table.date),
 }))
 
 // Relations

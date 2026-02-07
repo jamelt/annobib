@@ -8,6 +8,7 @@ const querySchema = z.object({
   action: z.string().optional(),
   adminId: z.string().uuid().optional(),
   targetType: z.string().optional(),
+  targetId: z.string().uuid().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).optional().default(50),
 })
@@ -27,6 +28,9 @@ export default defineEventHandler(async (event) => {
   }
   if (parsed.targetType) {
     conditions.push(eq(adminAuditLogs.targetType, parsed.targetType))
+  }
+  if (parsed.targetId) {
+    conditions.push(eq(adminAuditLogs.targetId, parsed.targetId))
   }
 
   const whereClause = conditions.length > 0

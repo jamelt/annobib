@@ -27,6 +27,8 @@ export default defineEventHandler(async (event) => {
           currentPeriodStart: subscription.currentPeriodStart,
           currentPeriodEnd: subscription.currentPeriodEnd,
           cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          graceEndsAt: subscription.graceEndsAt,
+          lastPaymentError: subscription.lastPaymentError,
         }
       : null,
     limits,

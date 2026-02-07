@@ -2,6 +2,7 @@ import { db } from '~/server/database/client'
 import { users } from '~/server/database/schema'
 import { eq, and, like } from 'drizzle-orm'
 import { z } from 'zod'
+import { enforceRateLimit } from '~/server/utils/rate-limit'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -9,6 +10,8 @@ const loginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, 'login', 5, 60_000)
+
   const body = await readBody(event)
 
   const parsed = loginSchema.safeParse(body)
