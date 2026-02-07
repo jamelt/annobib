@@ -5,6 +5,8 @@ definePageMeta({
   layout: 'default',
 })
 
+const isMobileMenuOpen = ref(false)
+
 const features = [
   {
     icon: 'i-heroicons-book-open',
@@ -80,10 +82,71 @@ const tiers = getAllPlansForDisplay().map(plan => ({
             variant="ghost"
             color="neutral"
             class="md:hidden"
+            aria-label="Open menu"
+            @click="isMobileMenuOpen = !isMobileMenuOpen"
           />
         </div>
       </div>
     </header>
+
+    <!-- Mobile navigation -->
+    <ClientOnly>
+      <USlideover
+        v-if="isMobileMenuOpen"
+        v-model:open="isMobileMenuOpen"
+        side="right"
+        class="md:hidden"
+        :close="false"
+      >
+        <template #content="{ close }">
+          <div class="flex h-full flex-col bg-white dark:bg-gray-900 p-4">
+            <div class="flex items-center justify-between mb-8">
+              <NuxtLink to="/" class="flex items-center gap-2" @click="close()">
+                <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-primary-500" />
+                <span class="text-xl font-bold text-gray-900 dark:text-white">Bibanna</span>
+              </NuxtLink>
+              <UButton
+                icon="i-heroicons-x-mark"
+                variant="ghost"
+                color="neutral"
+                aria-label="Close menu"
+                @click="close()"
+              />
+            </div>
+
+            <nav class="flex-1 space-y-2">
+              <NuxtLink
+                to="#features"
+                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="close()"
+              >
+                Features
+              </NuxtLink>
+              <NuxtLink
+                to="#pricing"
+                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="close()"
+              >
+                Pricing
+              </NuxtLink>
+              <NuxtLink
+                to="/login"
+                class="block px-3 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                @click="close()"
+              >
+                Sign In
+              </NuxtLink>
+            </nav>
+
+            <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
+              <UButton to="/signup" color="primary" block @click="close()">
+                Get Started
+              </UButton>
+            </div>
+          </div>
+        </template>
+      </USlideover>
+    </ClientOnly>
 
     <!-- Hero section -->
     <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
