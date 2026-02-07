@@ -291,4 +291,43 @@ test.describe('Dropdown Menus', () => {
     await expect(page.getByRole('menuitem').first()).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Test Project for Dropdown Tests')).toBeVisible()
   })
+
+  test('project detail page - add entry split button works', async ({ page }) => {
+    await page.goto(`/app/projects/${projectId}`)
+    
+    await expect(page.getByRole('heading', { name: 'Test Project for Dropdown Tests' })).toBeVisible()
+    
+    const addEntryButton = page.getByRole('button', { name: /add entry/i }).first()
+    await expect(addEntryButton).toBeVisible()
+    
+    await addEntryButton.click()
+    
+    await expect(page.getByRole('heading', { name: /quick add/i }).or(page.getByPlaceholder(/search/i))).toBeVisible({ timeout: 5000 })
+  })
+
+  test('project detail page - add entry split button dropdown works', async ({ page }) => {
+    await page.goto(`/app/projects/${projectId}`)
+    
+    await expect(page.getByRole('heading', { name: 'Test Project for Dropdown Tests' })).toBeVisible()
+    
+    const dropdownButton = page.locator('button').filter({
+      has: page.locator('svg[class*="i-heroicons-chevron-down"]')
+    }).first()
+    
+    await expect(dropdownButton).toBeVisible()
+    
+    await dropdownButton.click()
+    
+    await expect(page.getByRole('menuitem', { name: /new entry/i })).toBeVisible({ timeout: 5000 })
+    await expect(page.getByRole('menuitem', { name: /from library/i })).toBeVisible()
+    
+    await page.getByRole('menuitem', { name: /from library/i }).click()
+    
+    await page.waitForTimeout(1000)
+    
+    const modalVisible = await page.getByRole('heading', { name: /add entries/i }).isVisible().catch(() => false)
+      || await page.getByText(/select entries from your library/i).isVisible().catch(() => false)
+    
+    expect(modalVisible).toBeTruthy()
+  })
 })

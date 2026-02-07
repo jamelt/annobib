@@ -1,4 +1,4 @@
-# Library Entry Detail Page Fixes
+# Dropdown Menu Fixes
 
 **Date:** February 7, 2026
 
@@ -243,9 +243,77 @@ When `isDeleteModalOpen` is `false`, the modal is hidden. When `true`, it appear
 
 ---
 
+---
+
+### Issue #3: Project "Add Entry" Button Not Working ✅
+
+**Problem:** The "Add Entry" button on the project detail page was not responding when clicked - nothing happened and no dropdown appeared.
+
+**Root Cause:** The button was wrapped in a `UDropdown` with a `trailing-icon`, creating a confusing UX where it wasn't clear if clicking would trigger an action or open a menu. Additionally, the single button trying to serve dual purposes (primary action + dropdown) wasn't working properly.
+
+**Solution:** Converted to a **split button pattern**:
+1. **Main button** ("Add Entry") - directly opens Quick Add modal for the project
+2. **Chevron button** (separate) - opens dropdown menu with two options:
+   - "New Entry" → Opens Quick Add modal
+   - "From Library" → Opens modal to add existing entries from library
+
+**Files Changed:**
+- `pages/app/projects/[id]/index.vue`
+- `tests/e2e/dropdown-menus.spec.ts` (added tests)
+
+**Code Change:**
+```vue
+<!-- Before (broken - single button with trailing icon) -->
+<UDropdown :items="[...]">
+  <UButton icon="i-heroicons-plus" trailing-icon="i-heroicons-chevron-down">
+    Add Entry
+  </UButton>
+</UDropdown>
+
+<!-- After (working - split button using UFieldGroup) -->
+<UFieldGroup size="sm">
+  <UButton
+    icon="i-heroicons-plus"
+    @click="quickAddToProject"
+  >
+    Add Entry
+  </UButton>
+  <UDropdown
+    :items="[
+      [
+        { label: 'New Entry', icon: 'i-heroicons-plus-circle', onSelect: quickAddToProject },
+        { label: 'From Library', icon: 'i-heroicons-book-open', onSelect: openAddEntryModal },
+      ],
+    ]"
+    :popper="{ placement: 'bottom-end' }"
+  >
+    <UButton
+      icon="i-heroicons-chevron-down"
+      square
+    />
+  </UDropdown>
+</UFieldGroup>
+```
+
+**Key Implementation Details:**
+- **UFieldGroup** properly groups buttons together with unified styling
+- **square** prop on chevron button makes it a compact square shape
+- **@click** on main button provides immediate Quick Add action
+- **UDropdown** wraps the chevron button for menu access
+- **:popper placement** ensures menu opens in the correct position
+
+**UX Improvement:** 
+- **Visual Unity:** `UFieldGroup` creates a single, unified button group appearance
+- **Clear Actions:** Main button provides immediate Quick Add, chevron provides options
+- **Standard Pattern:** Familiar split button pattern used across many applications
+- **Accessible:** Both options available via dropdown for keyboard and mouse users
+- **Better Styling:** Properly grouped buttons with no visual gaps or separation
+
+---
+
 ## Deployment Notes
 
-No migrations or database changes required. This is a frontend-only fix.
+No migrations or database changes required. These are frontend-only fixes.
 
 **Breaking Changes:** None
 
