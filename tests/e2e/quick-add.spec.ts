@@ -33,8 +33,7 @@ test.describe('Quick Add - Desktop', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    const quickAddModal = page.locator('[data-testid="quick-add-modal"]')
-    await expect(quickAddModal).toHaveAttribute('data-state', 'closed')
+    await expect(page.locator('[data-testid="quick-add-modal"]')).toHaveAttribute('data-state', 'closed')
 
     await page.getByTestId('quick-add-button').click()
 

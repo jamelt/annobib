@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { user, logout } = useAuth()
-const route = useRoute()
-const router = useRouter()
+const { open: openQuickAdd, isOpen: isQuickAddOpen } = useQuickAdd()
 
 const colorMode = useColorMode()
 const isDark = computed({
@@ -13,32 +12,6 @@ const isDark = computed({
 
 const isSidebarOpen = ref(true)
 const isMobileMenuOpen = ref(false)
-const isQuickAddOpen = ref(false)
-
-function openQuickAdd() {
-  isQuickAddOpen.value = true
-}
-
-function closeQuickAdd() {
-  isQuickAddOpen.value = false
-  if (route.query.action === 'quick-add') {
-    router.replace({ path: route.path, query: {} })
-  }
-}
-
-watch(() => route.query.action, (action) => {
-  if (action === 'quick-add') {
-    isQuickAddOpen.value = true
-  } else {
-    isQuickAddOpen.value = false
-  }
-}, { immediate: true })
-
-watch(isQuickAddOpen, (open) => {
-  if (!open && route.query.action === 'quick-add') {
-    router.replace({ path: route.path, query: {} })
-  }
-})
 
 const navigation = [
   { name: 'Dashboard', to: '/app', icon: 'i-heroicons-home' },
@@ -270,7 +243,6 @@ const userNavigation = [
       </div>
     </nav>
 
-    <AppQuickAddModal v-model="isQuickAddOpen" />
   </div>
 </template>
 

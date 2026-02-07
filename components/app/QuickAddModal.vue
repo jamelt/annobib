@@ -161,8 +161,10 @@ watch(isOpen, (open) => {
 <template>
   <UModal
     v-model="isOpen"
-    scrollable
-    :ui="{ width: 'max-w-lg' }"
+    :ui="{
+      width: 'max-w-lg',
+      overlay: '!z-[100]',
+    }"
   >
     <UCard
       data-testid="quick-add-modal"
