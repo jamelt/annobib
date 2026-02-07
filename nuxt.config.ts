@@ -67,6 +67,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true },
     '/app/**': { ssr: false },
+    '/admin/**': { ssr: false },
   },
 
   nitro: {

@@ -32,6 +32,14 @@ export type SharePermission = 'view' | 'comment' | 'edit' | 'admin'
 
 export type VeritasLabel = 'exceptional' | 'high' | 'moderate' | 'limited' | 'low'
 
+export type UserRole = 'user' | 'admin' | 'support'
+
+export type FeedbackType = 'bug' | 'feature_request' | 'general' | 'complaint'
+
+export type FeedbackStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
+
+export type AnnouncementType = 'info' | 'warning' | 'maintenance' | 'release'
+
 export interface Author {
   firstName: string
   lastName: string
@@ -137,6 +145,10 @@ export interface User {
   name?: string
   avatarUrl?: string
   subscriptionTier: SubscriptionTier
+  role: UserRole
+  isBanned: boolean
+  bannedAt?: Date
+  bannedReason?: string
   preferences: UserPreferences
   createdAt: Date
   updatedAt: Date
@@ -268,6 +280,44 @@ export const ENTRY_TYPE_LABELS: Record<EntryType, string> = {
   custom: 'Custom',
 }
 
+export interface Feedback {
+  id: string
+  userId?: string
+  userEmail?: string
+  type: FeedbackType
+  subject: string
+  content: string
+  status: FeedbackStatus
+  adminNotes?: string
+  resolvedById?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Announcement {
+  id: string
+  createdById?: string
+  title: string
+  content: string
+  type: AnnouncementType
+  isActive: boolean
+  startAt: Date
+  endAt?: Date
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface AdminAuditLog {
+  id: string
+  adminId: string
+  action: string
+  targetType: string
+  targetId?: string
+  details?: Record<string, unknown>
+  ipAddress?: string
+  createdAt: Date
+}
+
 export const ANNOTATION_TYPE_LABELS: Record<AnnotationType, string> = {
   descriptive: 'Descriptive',
   evaluative: 'Evaluative',
@@ -275,4 +325,18 @@ export const ANNOTATION_TYPE_LABELS: Record<AnnotationType, string> = {
   summary: 'Summary',
   critical: 'Critical',
   custom: 'Custom',
+}
+
+export const FEEDBACK_TYPE_LABELS: Record<FeedbackType, string> = {
+  bug: 'Bug Report',
+  feature_request: 'Feature Request',
+  general: 'General',
+  complaint: 'Complaint',
+}
+
+export const FEEDBACK_STATUS_LABELS: Record<FeedbackStatus, string> = {
+  open: 'Open',
+  in_progress: 'In Progress',
+  resolved: 'Resolved',
+  closed: 'Closed',
 }

@@ -1,14 +1,16 @@
 import type { H3Event } from 'h3'
 import { db } from '../database/client'
-import { users } from '../database/schema'
+import { users, adminAuditLogs } from '../database/schema'
 import { eq } from 'drizzle-orm'
-import type { SubscriptionTier } from '~/shared/types'
+import type { SubscriptionTier, UserRole } from '~/shared/types'
 
 export interface AuthUser {
   id: string
   email: string
   name?: string
   subscriptionTier: SubscriptionTier
+  role: UserRole
+  isBanned: boolean
 }
 
 export async function requireAuth(event: H3Event): Promise<AuthUser> {
@@ -33,12 +35,65 @@ export async function requireAuth(event: H3Event): Promise<AuthUser> {
     })
   }
 
+  if (user.isBanned) {
+    throw createError({
+      statusCode: 403,
+      message: 'Your account has been suspended',
+    })
+  }
+
   return {
     id: user.id,
     email: user.email,
     name: user.name ?? undefined,
     subscriptionTier: user.subscriptionTier,
+    role: user.role,
+    isBanned: user.isBanned,
   }
+}
+
+export async function requireAdmin(event: H3Event): Promise<AuthUser> {
+  const user = await requireAuth(event)
+
+  if (user.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      message: 'Admin access required',
+    })
+  }
+
+  return user
+}
+
+export async function requireAdminOrSupport(event: H3Event): Promise<AuthUser> {
+  const user = await requireAuth(event)
+
+  if (user.role !== 'admin' && user.role !== 'support') {
+    throw createError({
+      statusCode: 403,
+      message: 'Admin or support access required',
+    })
+  }
+
+  return user
+}
+
+export async function logAdminAction(
+  adminId: string,
+  action: string,
+  targetType: string,
+  targetId?: string,
+  details?: Record<string, unknown>,
+  ipAddress?: string,
+) {
+  await db.insert(adminAuditLogs).values({
+    adminId,
+    action,
+    targetType,
+    targetId,
+    details,
+    ipAddress,
+  })
 }
 
 export async function optionalAuth(event: H3Event): Promise<AuthUser | null> {

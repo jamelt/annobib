@@ -58,6 +58,33 @@ export const veritasLabelEnum = pgEnum('veritas_label', [
   'low',
 ])
 
+export const userRoleEnum = pgEnum('user_role', [
+  'user',
+  'admin',
+  'support',
+])
+
+export const feedbackTypeEnum = pgEnum('feedback_type', [
+  'bug',
+  'feature_request',
+  'general',
+  'complaint',
+])
+
+export const feedbackStatusEnum = pgEnum('feedback_status', [
+  'open',
+  'in_progress',
+  'resolved',
+  'closed',
+])
+
+export const announcementTypeEnum = pgEnum('announcement_type', [
+  'info',
+  'warning',
+  'maintenance',
+  'release',
+])
+
 const vector = customType<{ data: number[]; driverData: string }>({
   dataType() {
     return 'vector(1536)'
@@ -79,6 +106,10 @@ export const users = pgTable('users', {
   auth0Id: text('auth0_id').unique(),
   stripeCustomerId: text('stripe_customer_id').unique(),
   subscriptionTier: subscriptionTierEnum('subscription_tier').default('free').notNull(),
+  role: userRoleEnum('role').default('user').notNull(),
+  isBanned: boolean('is_banned').default(false).notNull(),
+  bannedAt: timestamp('banned_at'),
+  bannedReason: text('banned_reason'),
   preferences: jsonb('preferences').$type<UserPreferences>().default({}),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -344,6 +375,55 @@ export const migrations = pgTable('migrations', {
   checksum: text('checksum'),
 })
 
+// Feedback
+export const feedback = pgTable('feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  userEmail: text('user_email'),
+  type: feedbackTypeEnum('type').default('general').notNull(),
+  subject: text('subject').notNull(),
+  content: text('content').notNull(),
+  status: feedbackStatusEnum('status').default('open').notNull(),
+  adminNotes: text('admin_notes'),
+  resolvedById: uuid('resolved_by_id').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('feedback_user_idx').on(table.userId),
+  statusIdx: index('feedback_status_idx').on(table.status),
+}))
+
+// Announcements
+export const announcements = pgTable('announcements', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  createdById: uuid('created_by_id').references(() => users.id, { onDelete: 'set null' }),
+  title: text('title').notNull(),
+  content: text('content').notNull(),
+  type: announcementTypeEnum('type').default('info').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
+  startAt: timestamp('start_at').defaultNow().notNull(),
+  endAt: timestamp('end_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// Admin Audit Logs
+export const adminAuditLogs = pgTable('admin_audit_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  adminId: uuid('admin_id').references(() => users.id, { onDelete: 'set null' }).notNull(),
+  action: text('action').notNull(),
+  targetType: text('target_type').notNull(),
+  targetId: text('target_id'),
+  details: jsonb('details').$type<Record<string, unknown>>(),
+  ipAddress: text('ip_address'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  adminIdx: index('audit_logs_admin_idx').on(table.adminId),
+  actionIdx: index('audit_logs_action_idx').on(table.action),
+  targetIdx: index('audit_logs_target_idx').on(table.targetType, table.targetId),
+  createdAtIdx: index('audit_logs_created_at_idx').on(table.createdAt),
+}))
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   projects: many(projects),
@@ -353,6 +433,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   subscription: one(subscriptions),
   citationStyles: many(citationStyles),
   excelPresets: many(excelPresets),
+  feedback: many(feedback),
 }))
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -395,6 +476,17 @@ export const tagsRelations = relations(tags, ({ one, many }) => ({
     references: [users.id],
   }),
   entryTags: many(entryTags),
+}))
+
+export const feedbackRelations = relations(feedback, ({ one }) => ({
+  user: one(users, {
+    fields: [feedback.userId],
+    references: [users.id],
+  }),
+  resolvedBy: one(users, {
+    fields: [feedback.resolvedById],
+    references: [users.id],
+  }),
 }))
 
 // Type definitions

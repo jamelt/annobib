@@ -25,7 +25,8 @@
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "db:setup": "docker compose up -d postgres && docker compose exec postgres sh -c 'until pg_isready -U bibanna; do sleep 1; done' && npx tsx scripts/migrate.ts up",
-    "db:reset": "docker compose down -v && pnpm db:setup"
+    "db:reset": "docker compose down -v && pnpm db:setup",
+    "admin:promote": "npx tsx scripts/promote-admin.ts"
   },
   "dependencies": {
     "@google-cloud/opentelemetry-cloud-monitoring-exporter": "^0.21.0",

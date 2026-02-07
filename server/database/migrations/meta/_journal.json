@@ -8,6 +8,20 @@
       "when": 1770177033718,
       "tag": "0000_ancient_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1770483751267,
+      "tag": "0001_cloudy_nightshade",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1770570000000,
+      "tag": "0002_admin_operations",
+      "breakpoints": true
     }
   ]
 }

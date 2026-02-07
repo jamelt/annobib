@@ -1,30 +1,58 @@
 import { db } from '~/server/database/client'
 import { sql } from 'drizzle-orm'
 
+type CheckStatus = 'healthy' | 'unhealthy' | 'unconfigured'
+
+interface HealthCheck {
+  status: CheckStatus
+  latency?: number
+  error?: string
+  critical: boolean
+}
+
 export default defineEventHandler(async () => {
   const startTime = Date.now()
 
-  const checks: Record<string, { status: 'healthy' | 'unhealthy'; latency?: number; error?: string }> = {
-    database: { status: 'healthy' },
+  const checks: Record<string, HealthCheck> = {
+    database: { status: 'healthy', critical: true },
+    stripe: { status: 'healthy', critical: false },
   }
 
   try {
     const dbStart = Date.now()
     await db.execute(sql`SELECT 1`)
-    const dbCheck = checks.database
-    if (dbCheck) {
-      dbCheck.latency = Date.now() - dbStart
-    }
+    checks.database!.latency = Date.now() - dbStart
   }
   catch (error: any) {
-    const dbCheck = checks.database
-    if (dbCheck) {
-      dbCheck.status = 'unhealthy'
-      dbCheck.error = error.message
+    checks.database!.status = 'unhealthy'
+    checks.database!.error = error.message
+  }
+
+  const stripeKey = process.env.NUXT_STRIPE_SECRET_KEY
+  if (!stripeKey) {
+    checks.stripe!.status = 'unconfigured'
+    checks.stripe!.error = 'Stripe secret key not configured'
+  }
+  else {
+    try {
+      const stripeStart = Date.now()
+      const res = await fetch('https://api.stripe.com/v1/balance', {
+        headers: { Authorization: `Bearer ${stripeKey}` },
+      })
+      checks.stripe!.latency = Date.now() - stripeStart
+      if (!res.ok) {
+        checks.stripe!.status = 'unhealthy'
+        checks.stripe!.error = `Stripe API returned ${res.status}`
+      }
+    }
+    catch (error: any) {
+      checks.stripe!.status = 'unhealthy'
+      checks.stripe!.error = error.message
     }
   }
 
-  const overallStatus = Object.values(checks).every(c => c.status === 'healthy')
+  const criticalChecks = Object.values(checks).filter(c => c.critical)
+  const overallStatus = criticalChecks.every(c => c.status === 'healthy')
     ? 'healthy'
     : 'unhealthy'
 

@@ -271,57 +271,87 @@ const announcementBannerColors: Record<string, string> = {
           />
 
           <!-- User menu -->
-          <UDropdown
-            :items="[
-              [
-                {
-                  label: 'Profile',
-                  icon: 'i-heroicons-user',
-                  to: '/app/settings/profile',
-                },
-                {
-                  label: 'Settings',
-                  icon: 'i-heroicons-cog-6-tooth',
-                  to: '/app/settings',
-                },
-                {
-                  label: 'Subscription',
-                  icon: 'i-heroicons-credit-card',
-                  to: '/app/subscription',
-                },
-              ],
-              ...(isAdmin
-                ? [
-                    [
-                      {
-                        label: 'Admin Panel',
-                        icon: 'i-heroicons-shield-check',
-                        to: '/admin',
-                      },
-                    ],
-                  ]
-                : []),
-              [
-                {
-                  label: 'Sign out',
-                  icon: 'i-heroicons-arrow-right-on-rectangle',
-                  onClick: () => logout(),
-                },
-              ],
-            ]"
-            :popper="{ placement: 'bottom-end' }"
-          >
-            <UAvatar
+          <div ref="userMenuRef" class="relative">
+            <UButton
+              color="white"
+              variant="ghost"
+              class="p-0 rounded-full"
               data-testid="user-menu-trigger"
-              :text="
-                (user as { email?: string })?.email
-                  ?.slice(0, 2)
-                  .toUpperCase() || 'U'
-              "
-              size="sm"
-              class="cursor-pointer"
-            />
-          </UDropdown>
+              @click="isUserMenuOpen = !isUserMenuOpen"
+            >
+              <UAvatar
+                :text="(user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
+                size="sm"
+                class="cursor-pointer"
+              />
+            </UButton>
+
+            <div
+              v-if="isUserMenuOpen"
+              class="absolute right-0 top-full mt-2 w-56 z-50"
+            >
+              <UCard :ui="{ body: { padding: 'p-1' } }">
+                <div class="space-y-1">
+                  <div class="px-2 py-2 mb-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {{ (user as any)?.name || 'User' }}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {{ (user as any)?.email || '' }}
+                    </p>
+                  </div>
+                  <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                  <NuxtLink
+                    to="/app/settings/profile"
+                    class="group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                    @click="isUserMenuOpen = false"
+                  >
+                    <UIcon name="i-heroicons-user" class="w-4 h-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" />
+                    Profile
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/app/settings"
+                    class="group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                    @click="isUserMenuOpen = false"
+                  >
+                    <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" />
+                    Settings
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/app/subscription"
+                    class="group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                    @click="isUserMenuOpen = false"
+                  >
+                    <UIcon name="i-heroicons-credit-card" class="w-4 h-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" />
+                    Subscription
+                  </NuxtLink>
+                  
+                  <div v-if="isAdmin" class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                  
+                  <NuxtLink
+                    v-if="isAdmin"
+                    to="/admin"
+                    class="group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                    @click="isUserMenuOpen = false"
+                  >
+                    <UIcon name="i-heroicons-shield-check" class="w-4 h-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" />
+                    Admin Panel
+                  </NuxtLink>
+
+                  <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                  <button
+                    class="w-full group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
+                    @click="logout"
+                  >
+                    <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400" />
+                    Sign out
+                  </button>
+                </div>
+              </UCard>
+            </div>
+          </div>
         </div>
       </header>
 
