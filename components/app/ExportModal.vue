@@ -314,7 +314,7 @@ async function handleExport() {
             <!-- Options panel -->
             <div
               class="overflow-y-auto px-6 py-5 space-y-6"
-              :class="showPreview ? 'w-[380px] shrink-0' : 'w-full'"
+              :class="showPreview ? 'w-[440px] shrink-0' : 'w-full'"
             >
               <UAlert
                 v-if="error"
