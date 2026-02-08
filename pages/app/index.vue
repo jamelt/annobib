@@ -70,8 +70,8 @@ async function handleProjectCreated() {
         :to="stat.to"
         class="group"
       >
-        <UCard class="p-4 transition-shadow duration-200 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary-200 dark:group-hover:ring-primary-800 cursor-pointer">
-          <div class="flex items-center gap-4">
+        <UCard class="h-full p-4 transition-shadow duration-200 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary-200 dark:group-hover:ring-primary-800 cursor-pointer">
+          <div class="flex flex-col items-center justify-center text-center h-full min-h-[120px] gap-3">
             <div class="shrink-0 w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
               <UIcon :name="stat.icon" class="w-6 h-6 text-primary-500" />
             </div>

@@ -436,7 +436,12 @@ const announcementBannerColors: Record<string, string> = {
 
         <div class="flex items-center gap-4 ml-auto">
           <!-- Notifications -->
-          <UButton icon="i-heroicons-bell" variant="ghost" color="neutral" />
+          <UButton
+            v-if="visibleAnnouncements.length > 0"
+            icon="i-heroicons-bell"
+            variant="ghost"
+            color="neutral"
+          />
 
           <!-- User menu -->
           <div ref="userMenuRef" class="relative">
@@ -448,8 +453,8 @@ const announcementBannerColors: Record<string, string> = {
               @click="isUserMenuOpen = !isUserMenuOpen"
             >
               <UAvatar
-                :text="(user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
-                size="sm"
+                :text="(user as any)?.name ? (user as any).name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : (user as { email?: string })?.email?.slice(0, 2).toUpperCase() || 'U'"
+                size="md"
                 class="cursor-pointer"
               />
             </UButton>
