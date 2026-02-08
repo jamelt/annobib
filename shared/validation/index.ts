@@ -184,7 +184,7 @@ export const pdfExportOptionsSchema = z.object({
   includeTitlePage: z.boolean().default(false),
   title: z.string().optional(),
   pageNumbers: z.boolean().default(true),
-  citationStyleId: z.string().uuid().optional(),
+  citationStyleId: z.string().optional(),
   sortBy: z.enum(["author", "title", "year", "custom"]).default("author"),
 });
 
