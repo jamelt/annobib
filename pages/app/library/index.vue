@@ -28,6 +28,24 @@ const sortOrder = ref<'asc' | 'desc'>('desc')
 const page = ref(1)
 const pageSize = ref(20)
 
+const isMobile = ref(false)
+
+function onMediaChange(e: MediaQueryListEvent) {
+  isMobile.value = e.matches
+}
+
+let mql: MediaQueryList | undefined
+
+onMounted(() => {
+  mql = window.matchMedia('(max-width: 639px)')
+  isMobile.value = mql.matches
+  mql.addEventListener('change', onMediaChange)
+})
+
+onUnmounted(() => {
+  mql?.removeEventListener('change', onMediaChange)
+})
+
 const isAddModalOpen = ref(false)
 const isExportModalOpen = ref(false)
 const isImportModalOpen = ref(false)
@@ -332,12 +350,12 @@ onUnmounted(() => {
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Mobile: md size for comfortable touch targets, desktop: sm -->
         <UButton
           icon="i-heroicons-plus"
           label="Add Entry"
           color="primary"
-          size="sm"
-          class="mobile-touch-target"
+          :size="isMobile ? 'md' : 'sm'"
           @click="isAddModalOpen = true"
         />
 
@@ -346,24 +364,21 @@ onUnmounted(() => {
             icon="i-heroicons-list-bullet"
             :variant="viewMode === 'list' ? 'solid' : 'outline'"
             color="neutral"
-            size="xs"
-            class="mobile-touch-target-icon"
+            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'list'"
           />
           <UButton
             icon="i-heroicons-squares-2x2"
             :variant="viewMode === 'grid' ? 'solid' : 'outline'"
             color="neutral"
-            size="xs"
-            class="mobile-touch-target-icon"
+            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'grid'"
           />
           <UButton
             icon="i-heroicons-table-cells"
             :variant="viewMode === 'table' ? 'solid' : 'outline'"
             color="neutral"
-            size="xs"
-            class="mobile-touch-target-icon"
+            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'table'"
           />
         </UFieldGroup>
@@ -426,8 +441,7 @@ onUnmounted(() => {
             icon="i-heroicons-ellipsis-vertical"
             variant="outline"
             color="neutral"
-            size="sm"
-            class="mobile-touch-target-icon"
+            size="md"
           />
         </UDropdownMenu>
       </div>
@@ -852,19 +866,3 @@ onUnmounted(() => {
     />
   </div>
 </template>
-
-<style scoped>
-@media (max-width: 639px) {
-  .mobile-touch-target {
-    min-height: 2.5rem;
-    padding-left: 0.875rem;
-    padding-right: 0.875rem;
-    font-size: 0.875rem;
-  }
-
-  .mobile-touch-target-icon {
-    min-width: 2.5rem;
-    min-height: 2.5rem;
-  }
-}
-</style>
