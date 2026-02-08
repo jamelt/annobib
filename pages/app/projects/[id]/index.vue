@@ -470,107 +470,185 @@ onEntryCreated(() => {
           </div>
         </div>
 
-        <UDropdownMenu
-          :items="[
-            [
-              {
-                label: 'Research Companion',
-                icon: 'i-heroicons-sparkles',
-                onSelect: openCompanion,
-              },
-              {
-                label: 'Annotations',
-                icon: 'i-heroicons-pencil-square',
-                onSelect: () => router.push(`/app/annotations?projectId=${project?.id}`),
-              },
-              {
-                label: 'Mind Map',
-                icon: 'i-heroicons-share',
-                onSelect: openMindMap,
-              },
-            ],
-            [
-              {
-                label: 'Edit',
-                icon: 'i-heroicons-pencil',
-                onSelect: () => (isEditModalOpen = true),
-              },
-              {
-                label: 'Export',
-                icon: 'i-heroicons-arrow-down-tray',
-                onSelect: () => (isExportModalOpen = true),
-              },
-            ],
-            [
-              {
-                label: project?.isArchived ? 'Restore' : 'Archive',
-                icon: project?.isArchived
-                  ? 'i-heroicons-arrow-uturn-up'
-                  : 'i-heroicons-archive-box',
-                onSelect: toggleArchive,
-              },
-              {
-                label: 'Delete',
-                icon: 'i-heroicons-trash',
-                color: 'error' as const,
-                onSelect: () => (isDeleteModalOpen = true),
-              },
-            ],
-          ]"
-        >
+        <div class="flex items-center gap-2">
           <UButton
-            icon="i-heroicons-ellipsis-vertical"
+            icon="i-heroicons-plus"
+            size="sm"
+            @click="quickAddToProject"
+          >
+            New Entry
+          </UButton>
+          <UButton
+            icon="i-heroicons-book-open"
+            size="sm"
             variant="outline"
             color="neutral"
+            class="hidden sm:flex"
+            @click="openAddEntryModal"
+          >
+            From Library
+          </UButton>
+
+          <UFieldGroup>
+            <UButton
+              icon="i-heroicons-list-bullet"
+              :variant="viewMode === 'list' ? 'solid' : 'outline'"
+              color="neutral"
+              size="sm"
+              @click="viewMode = 'list'"
+            />
+            <UButton
+              icon="i-heroicons-table-cells"
+              :variant="viewMode === 'table' ? 'solid' : 'outline'"
+              color="neutral"
+              size="sm"
+              @click="viewMode = 'table'"
+            />
+          </UFieldGroup>
+
+          <!-- Desktop-only buttons -->
+          <UButton
+            icon="i-heroicons-sparkles"
+            label="Research Companion"
+            variant="outline"
+            color="primary"
+            size="sm"
+            class="hidden sm:flex"
+            @click="openCompanion"
           />
-        </UDropdownMenu>
+          <UButton
+            icon="i-heroicons-pencil-square"
+            label="Annotations"
+            variant="outline"
+            color="neutral"
+            size="sm"
+            class="hidden sm:flex"
+            :to="`/app/annotations?projectId=${project?.id}`"
+          />
+          <UButton
+            icon="i-heroicons-share"
+            label="Mind Map"
+            variant="outline"
+            color="neutral"
+            size="sm"
+            class="hidden sm:flex"
+            @click="openMindMap"
+          />
+          <UButton
+            icon="i-heroicons-arrow-down-tray"
+            label="Export"
+            variant="outline"
+            color="neutral"
+            size="sm"
+            class="hidden sm:flex"
+            @click="isExportModalOpen = true"
+          />
+
+          <!-- Mobile overflow menu -->
+          <UDropdownMenu
+            :items="[
+              [
+                {
+                  label: 'From Library',
+                  icon: 'i-heroicons-book-open',
+                  onSelect: openAddEntryModal,
+                },
+                {
+                  label: 'Research Companion',
+                  icon: 'i-heroicons-sparkles',
+                  onSelect: openCompanion,
+                },
+                {
+                  label: 'Annotations',
+                  icon: 'i-heroicons-pencil-square',
+                  onSelect: () => router.push(`/app/annotations?projectId=${project?.id}`),
+                },
+                {
+                  label: 'Mind Map',
+                  icon: 'i-heroicons-share',
+                  onSelect: openMindMap,
+                },
+                {
+                  label: 'Export',
+                  icon: 'i-heroicons-arrow-down-tray',
+                  onSelect: () => (isExportModalOpen = true),
+                },
+              ],
+              [
+                {
+                  label: 'Edit',
+                  icon: 'i-heroicons-pencil',
+                  onSelect: () => (isEditModalOpen = true),
+                },
+              ],
+              [
+                {
+                  label: project?.isArchived ? 'Restore' : 'Archive',
+                  icon: project?.isArchived
+                    ? 'i-heroicons-arrow-uturn-up'
+                    : 'i-heroicons-archive-box',
+                  onSelect: toggleArchive,
+                },
+                {
+                  label: 'Delete',
+                  icon: 'i-heroicons-trash',
+                  color: 'error' as const,
+                  onSelect: () => (isDeleteModalOpen = true),
+                },
+              ],
+            ]"
+            :content="{ align: 'end' }"
+            class="sm:hidden"
+          >
+            <UButton
+              icon="i-heroicons-ellipsis-vertical"
+              variant="outline"
+              color="neutral"
+              size="sm"
+            />
+          </UDropdownMenu>
+
+          <!-- Desktop context menu (Edit, Archive, Delete) -->
+          <UDropdownMenu
+            :items="[
+              [
+                {
+                  label: 'Edit',
+                  icon: 'i-heroicons-pencil',
+                  onSelect: () => (isEditModalOpen = true),
+                },
+              ],
+              [
+                {
+                  label: project?.isArchived ? 'Restore' : 'Archive',
+                  icon: project?.isArchived
+                    ? 'i-heroicons-arrow-uturn-up'
+                    : 'i-heroicons-archive-box',
+                  onSelect: toggleArchive,
+                },
+                {
+                  label: 'Delete',
+                  icon: 'i-heroicons-trash',
+                  color: 'error' as const,
+                  onSelect: () => (isDeleteModalOpen = true),
+                },
+              ],
+            ]"
+            :content="{ align: 'end' }"
+            class="hidden sm:block"
+          >
+            <UButton
+              icon="i-heroicons-ellipsis-vertical"
+              variant="outline"
+              color="neutral"
+              size="sm"
+            />
+          </UDropdownMenu>
+        </div>
       </div>
 
       <!-- Entries section -->
       <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Entries
-            <span class="text-sm font-normal text-gray-400 ml-1">
-              ({{ totalEntries }})
-            </span>
-          </h2>
-          <div class="flex items-center gap-2">
-            <UButton
-              icon="i-heroicons-plus"
-              size="xs"
-              @click="quickAddToProject"
-            >
-              New Entry
-            </UButton>
-            <UButton
-              icon="i-heroicons-book-open"
-              size="xs"
-              variant="outline"
-              color="neutral"
-              @click="openAddEntryModal"
-            >
-              From Library
-            </UButton>
-            <div class="w-px h-5 bg-gray-200 dark:bg-gray-700" />
-            <UFieldGroup>
-              <UButton
-                icon="i-heroicons-list-bullet"
-                :variant="viewMode === 'list' ? 'solid' : 'outline'"
-                color="neutral"
-                size="xs"
-                @click="viewMode = 'list'"
-              />
-              <UButton
-                icon="i-heroicons-table-cells"
-                :variant="viewMode === 'table' ? 'solid' : 'outline'"
-                color="neutral"
-                size="xs"
-                @click="viewMode = 'table'"
-              />
-            </UFieldGroup>
-          </div>
-        </div>
 
         <!-- Filter bar -->
         <div
@@ -858,7 +936,7 @@ onEntryCreated(() => {
                 variant="ghost"
                 color="neutral"
                 size="xs"
-                class="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
                 :loading="isRemovingEntry === entry.id"
                 title="Remove from project"
                 @click="removeEntryFromProject(entry.id)"
