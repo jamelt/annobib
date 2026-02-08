@@ -26,6 +26,7 @@
     "db:studio": "drizzle-kit studio",
     "db:setup": "docker compose up -d postgres && docker compose exec postgres sh -c 'until pg_isready -U bibanna; do sleep 1; done' && npx tsx scripts/migrate.ts up",
     "db:reset": "docker compose down -v && pnpm db:setup",
+    "db:seed": "npx tsx scripts/seed-sources.ts",
     "admin:promote": "npx tsx scripts/promote-admin.ts",
     "kill:dev": "npx tsx scripts/kill-dev.ts",
     "dev:reset": "pnpm db:reset && pnpm admin:promote admin@test.local admin123 \"Test Admin\" && pnpm dev"
