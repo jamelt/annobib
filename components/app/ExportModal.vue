@@ -63,6 +63,24 @@ const canExport = computed(() => !requiresPaidTier.value || isPaidUser.value);
 const showPreview = computed(
   () => exportFormat.value === "pdf" || exportFormat.value === "docx",
 );
+
+const showScrollHint = ref(false);
+let scrollHintTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+  () => showPreview.value && isMobile.value,
+  (shouldShow) => {
+    if (scrollHintTimer) clearTimeout(scrollHintTimer);
+    if (shouldShow) {
+      showScrollHint.value = true;
+      scrollHintTimer = setTimeout(() => {
+        showScrollHint.value = false;
+      }, 1500);
+    } else {
+      showScrollHint.value = false;
+    }
+  },
+);
 const modalMaxWidth = computed(() =>
   showPreview.value ? "sm:max-w-6xl" : "sm:max-w-2xl",
 );
