@@ -278,7 +278,7 @@ function toggleCitations(messageId: string) {
             <!-- Confidence -->
             <div v-if="message.confidence" class="mt-2 flex items-center gap-2 text-xs text-gray-500">
               <span>Confidence:</span>
-              <UProgress :value="message.confidence" size="xs" class="w-20" />
+              <UProgress :model-value="message.confidence" size="xs" class="w-20" />
               <span>{{ message.confidence }}%</span>
             </div>
 

@@ -4,8 +4,7 @@
       <NuxtPage />
     </NuxtLayout>
 
-    <UModals />
-    <USlideovers />
+    <UOverlayProvider />
   </UApp>
 </template>
 

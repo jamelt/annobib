@@ -1,72 +1,74 @@
 <script setup lang="ts">
-import type { VeritasFactor } from '~/shared/types'
+import type { VeritasFactor } from "~/shared/types";
 
 interface Props {
-  entryId: string
+  entryId: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const { data: score, pending, refresh } = await useFetch(`/api/entries/${props.entryId}/veritas`, {
+const {
+  data: score,
+  pending,
+  refresh,
+} = await useFetch(`/api/entries/${props.entryId}/veritas`, {
   lazy: true,
-})
+});
 
-const isRefreshing = ref(false)
-const showOverrideModal = ref(false)
-const overrideScore = ref(50)
-const overrideReason = ref('')
+const isRefreshing = ref(false);
+const showOverrideModal = ref(false);
+const overrideScore = ref(50);
+const overrideReason = ref("");
 
 const sortedFactors = computed(() => {
-  if (!score.value?.factors) return []
-  return [...score.value.factors].sort((a, b) => b.weight - a.weight)
-})
+  if (!score.value?.factors) return [];
+  return [...score.value.factors].sort((a, b) => b.weight - a.weight);
+});
 
 function getScoreColor(value: number): string {
-  if (value >= 90) return 'emerald'
-  if (value >= 75) return 'blue'
-  if (value >= 60) return 'yellow'
-  if (value >= 40) return 'orange'
-  return 'red'
+  if (value >= 90) return "success";
+  if (value >= 75) return "info";
+  if (value >= 60) return "warning";
+  if (value >= 40) return "warning";
+  return "error";
 }
 
 function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 async function handleRefresh() {
-  isRefreshing.value = true
+  isRefreshing.value = true;
   try {
     await $fetch(`/api/entries/${props.entryId}/veritas`, {
-      method: 'POST',
-      body: { action: 'refresh' },
-    })
-    await refresh()
-  }
-  finally {
-    isRefreshing.value = false
+      method: "POST",
+      body: { action: "refresh" },
+    });
+    await refresh();
+  } finally {
+    isRefreshing.value = false;
   }
 }
 
 async function handleOverride() {
   try {
     await $fetch(`/api/entries/${props.entryId}/veritas`, {
-      method: 'POST',
+      method: "POST",
       body: {
-        action: 'override',
+        action: "override",
         overrideScore: overrideScore.value,
         overrideReason: overrideReason.value,
       },
-    })
-    showOverrideModal.value = false
-    overrideReason.value = ''
-    await refresh()
-  }
-  catch (error) {
-    console.error('Override failed:', error)
+    });
+    showOverrideModal.value = false;
+    overrideReason.value = "";
+    await refresh();
+  } catch (error) {
+    console.error("Override failed:", error);
   }
 }
 </script>
@@ -78,17 +80,16 @@ async function handleOverride() {
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
           Veritas Score
         </h3>
-        <VeritasScoreBadge
-          v-if="score"
-          :score="score.overallScore"
-          size="lg"
-        />
+        <VeritasScoreBadge v-if="score" :score="score.overallScore" size="lg" />
       </div>
     </template>
 
     <!-- Loading state -->
     <div v-if="pending" class="flex justify-center py-8">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin text-gray-400" />
+      <UIcon
+        name="i-heroicons-arrow-path"
+        class="w-8 h-8 animate-spin text-gray-400"
+      />
     </div>
 
     <!-- Score details -->
@@ -96,17 +97,28 @@ async function handleOverride() {
       <!-- Overall progress -->
       <div>
         <div class="flex justify-between text-sm mb-2">
-          <span class="text-gray-600 dark:text-gray-400">Overall Credibility</span>
-          <span class="font-medium text-gray-900 dark:text-white">{{ score.overallScore }}/100</span>
+          <span class="text-gray-600 dark:text-gray-400"
+            >Overall Credibility</span
+          >
+          <span class="font-medium text-gray-900 dark:text-white"
+            >{{ score.overallScore }}/100</span
+          >
         </div>
-        <UProgress :value="score.overallScore" :color="getScoreColor(score.overallScore)" />
+        <UProgress
+          :model-value="score.overallScore"
+          :color="getScoreColor(score.overallScore)"
+        />
       </div>
 
       <!-- Confidence -->
       <div class="flex items-center gap-2 text-sm">
         <span class="text-gray-500">Confidence:</span>
-        <span class="font-medium">{{ Math.round(score.confidence * 100) }}%</span>
-        <span class="text-gray-400">({{ score.dataSources?.length || 0 }} data sources)</span>
+        <span class="font-medium"
+          >{{ Math.round(score.confidence * 100) }}%</span
+        >
+        <span class="text-gray-400"
+          >({{ score.dataSources?.length || 0 }} data sources)</span
+        >
       </div>
 
       <!-- User override notice -->
@@ -136,21 +148,29 @@ async function handleOverride() {
           class="space-y-1"
         >
           <div class="flex justify-between text-sm">
-            <span class="text-gray-700 dark:text-gray-300">{{ factor.name }}</span>
-            <span class="text-gray-500">{{ Math.round(factor.weight * 100) }}% weight</span>
+            <span class="text-gray-700 dark:text-gray-300">{{
+              factor.name
+            }}</span>
+            <span class="text-gray-500"
+              >{{ Math.round(factor.weight * 100) }}% weight</span
+            >
           </div>
           <div class="flex items-center gap-3">
             <UProgress
-              :value="factor.score"
+              :model-value="factor.score"
               :color="getScoreColor(factor.score)"
               size="sm"
               class="flex-1"
             />
-            <span class="text-sm font-medium w-8 text-right">{{ factor.score }}</span>
+            <span class="text-sm font-medium w-8 text-right">{{
+              factor.score
+            }}</span>
           </div>
           <p class="text-xs text-gray-500 dark:text-gray-400">
             {{ factor.evidence }}
-            <span v-if="factor.source" class="text-gray-400"> ({{ factor.source }})</span>
+            <span v-if="factor.source" class="text-gray-400">
+              ({{ factor.source }})</span
+            >
           </p>
         </div>
       </div>
@@ -158,7 +178,7 @@ async function handleOverride() {
       <!-- Data sources -->
       <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
         <p class="text-xs text-gray-400">
-          Data from: {{ score.dataSources?.join(', ') || 'Manual entry only' }}
+          Data from: {{ score.dataSources?.join(", ") || "Manual entry only" }}
           <br />
           Calculated: {{ formatDate(score.calculatedAt) }}
         </p>
@@ -167,7 +187,10 @@ async function handleOverride() {
 
     <!-- Calculate prompt for no score -->
     <div v-else class="text-center py-8">
-      <UIcon name="i-heroicons-shield-check" class="w-12 h-12 mx-auto text-gray-300" />
+      <UIcon
+        name="i-heroicons-shield-check"
+        class="w-12 h-12 mx-auto text-gray-300"
+      />
       <p class="mt-2 text-gray-500">No credibility score yet</p>
       <UButton
         color="primary"
@@ -221,28 +244,40 @@ async function handleOverride() {
 
         <div class="space-y-4">
           <p class="text-sm text-gray-500">
-            Override the automatically calculated score if you have additional information about this source's credibility.
+            Override the automatically calculated score if you have additional
+            information about this source's credibility.
           </p>
 
-          <UFormGroup label="New Score (0-100)">
+          <UFormField label="New Score (0-100)">
             <div class="flex items-center gap-4">
-              <URange v-model="overrideScore" :min="0" :max="100" class="flex-1" />
-              <span class="w-12 text-right font-medium">{{ overrideScore }}</span>
+              <USlider
+                v-model="overrideScore"
+                :min="0"
+                :max="100"
+                class="flex-1"
+              />
+              <span class="w-12 text-right font-medium">{{
+                overrideScore
+              }}</span>
             </div>
-          </UFormGroup>
+          </UFormField>
 
-          <UFormGroup label="Reason (optional)">
+          <UFormField label="Reason (optional)">
             <UTextarea
               v-model="overrideReason"
               placeholder="Why are you overriding this score?"
               :rows="3"
             />
-          </UFormGroup>
+          </UFormField>
         </div>
 
         <template #footer>
           <div class="flex justify-end gap-3">
-            <UButton variant="outline" color="neutral" @click="showOverrideModal = false">
+            <UButton
+              variant="outline"
+              color="neutral"
+              @click="showOverrideModal = false"
+            >
               Cancel
             </UButton>
             <UButton color="primary" @click="handleOverride">

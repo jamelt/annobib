@@ -192,6 +192,11 @@ async function handleAnnotationCreated() {
               size="xs"
               @click="toggleFavorite"
             />
+            <VeritasScoreBadge
+              v-if="veritasScore?.overallScore"
+              :score="veritasScore.overallScore"
+              size="sm"
+            />
           </div>
           <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
             {{ entry.title }}
@@ -231,14 +236,6 @@ async function handleAnnotationCreated() {
           </UDropdownMenu>
         </div>
       </div>
-
-      <!-- Veritas Score (Pro feature) -->
-      <AppUpgradePrompt feature="veritasScore" required-tier="pro">
-        Get AI-powered credibility assessments for your sources with the Pro plan.
-        <template #content>
-          <VeritasScoreDetail :entry-id="entryId" />
-        </template>
-      </AppUpgradePrompt>
 
       <div class="grid lg:grid-cols-3 gap-6">
         <!-- Metadata -->
@@ -402,6 +399,35 @@ async function handleAnnotationCreated() {
           No annotations yet. Add one to record your thoughts about this source.
         </p>
       </UCard>
+
+      <!-- Veritas Score (Pro feature) -->
+      <AppUpgradePrompt feature="veritasScore" required-tier="pro">
+        Get AI-powered credibility assessments for your sources with the Pro plan.
+        <template #content>
+          <UCollapsible>
+            <template #default="{ open }">
+              <UButton
+                variant="ghost"
+                color="neutral"
+                :icon="open ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
+                class="gap-3"
+              >
+                <span>Veritas Score Details</span>
+                <VeritasScoreBadge
+                  v-if="veritasScore?.overallScore"
+                  :score="veritasScore.overallScore"
+                  size="sm"
+                />
+              </UButton>
+            </template>
+            <template #content>
+              <div class="mt-3">
+                <VeritasScoreDetail :entry-id="entryId" />
+              </div>
+            </template>
+          </UCollapsible>
+        </template>
+      </AppUpgradePrompt>
     </div>
 
     <!-- Annotation Editor Modal -->

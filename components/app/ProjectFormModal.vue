@@ -127,6 +127,7 @@ async function handleSubmit() {
               placeholder="Enter project name"
               data-testid="project-modal-name"
               autofocus
+              class="w-full"
             />
           </UFormField>
 
@@ -135,6 +136,7 @@ async function handleSubmit() {
               v-model="form.description"
               :rows="3"
               placeholder="What is this project about?"
+              class="w-full"
             />
           </UFormField>
 
