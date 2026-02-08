@@ -92,6 +92,7 @@ async function handleOAuthLogin(provider: string) {
               placeholder="Your name"
               required
               autofocus
+              class="w-full"
             />
           </UFormField>
 
@@ -101,6 +102,7 @@ async function handleOAuthLogin(provider: string) {
               type="email"
               placeholder="you@example.com"
               required
+              class="w-full"
             />
           </UFormField>
 
@@ -110,6 +112,7 @@ async function handleOAuthLogin(provider: string) {
               type="password"
               placeholder="At least 8 characters"
               required
+              class="w-full"
             />
           </UFormField>
 
@@ -119,6 +122,7 @@ async function handleOAuthLogin(provider: string) {
               type="password"
               placeholder="Confirm your password"
               required
+              class="w-full"
             />
           </UFormField>
 
@@ -145,13 +149,31 @@ async function handleOAuthLogin(provider: string) {
             Google
           </UButton>
           <UButton
-            icon="i-simple-icons-github"
+            icon="i-simple-icons-apple"
             variant="outline"
             color="neutral"
             block
-            @click="handleOAuthLogin('github')"
+            @click="handleOAuthLogin('apple')"
           >
-            GitHub
+            Apple
+          </UButton>
+          <UButton
+            icon="i-simple-icons-facebook"
+            variant="outline"
+            color="neutral"
+            block
+            @click="handleOAuthLogin('facebook')"
+          >
+            Facebook
+          </UButton>
+          <UButton
+            icon="i-simple-icons-microsoft"
+            variant="outline"
+            color="neutral"
+            block
+            @click="handleOAuthLogin('microsoft')"
+          >
+            Microsoft
           </UButton>
         </div>
 
