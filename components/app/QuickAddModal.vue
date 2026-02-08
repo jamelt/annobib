@@ -85,12 +85,12 @@ interface QualifierOption {
 }
 
 const qualifierOptions: QualifierOption[] = [
-  { key: "author", label: "Author", shortcut: "/a", color: "blue" },
+  { key: "author", label: "Author", shortcut: "/a", color: "info" },
   { key: "title", label: "Title", shortcut: "/t", color: "neutral" },
-  { key: "publisher", label: "Publisher", shortcut: "/p", color: "violet" },
-  { key: "journal", label: "Journal", shortcut: "/j", color: "green" },
-  { key: "subject", label: "Subject", shortcut: "/s", color: "amber" },
-  { key: "year", label: "Year", shortcut: "/y", color: "rose" },
+  { key: "publisher", label: "Publisher", shortcut: "/p", color: "primary" },
+  { key: "journal", label: "Journal", shortcut: "/j", color: "success" },
+  { key: "subject", label: "Subject", shortcut: "/s", color: "warning" },
+  { key: "year", label: "Year", shortcut: "/y", color: "error" },
 ];
 
 const SLASH_MAP: Record<string, FieldQualifier> = {
@@ -113,12 +113,12 @@ const COLON_PREFIX_MAP: Record<string, FieldQualifier> = {
 
 const qualifierColorMap: Record<FieldQualifier, string> = {
   any: "neutral",
-  author: "blue",
+  author: "info",
   title: "neutral",
-  publisher: "violet",
-  journal: "green",
-  subject: "amber",
-  year: "rose",
+  publisher: "primary",
+  journal: "success",
+  subject: "warning",
+  year: "error",
 };
 
 const qualifierLabelMap: Record<FieldQualifier, string> = {
@@ -762,23 +762,17 @@ onMounted(() => {
         <div class="px-4 sm:px-5 pt-4 pb-2">
           <div class="relative">
             <div class="flex items-stretch gap-2">
-              <button
+              <UBadge
                 v-if="activeQualifier !== 'any'"
-                type="button"
-                class="shrink-0 inline-flex items-center gap-1.5 px-3 rounded-lg text-sm font-medium transition-colors"
-                :class="{
-                  'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800': qualifierColorMap[activeQualifier] === 'blue',
-                  'bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800': qualifierColorMap[activeQualifier] === 'violet',
-                  'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800': qualifierColorMap[activeQualifier] === 'green',
-                  'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800': qualifierColorMap[activeQualifier] === 'amber',
-                  'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800': qualifierColorMap[activeQualifier] === 'rose',
-                  'bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700': qualifierColorMap[activeQualifier] === 'neutral',
-                }"
+                :color="qualifierColorMap[activeQualifier]"
+                variant="subtle"
+                size="md"
+                class="shrink-0 cursor-pointer gap-1.5"
                 @click="clearQualifier"
               >
                 {{ qualifierLabelMap[activeQualifier] }}
                 <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5 opacity-60" />
-              </button>
+              </UBadge>
               <UInput
                 ref="inputRef"
                 v-model="query"
