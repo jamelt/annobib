@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import type { EditorToolbarItem } from '@nuxt/ui'
 import type { AnnotationType, Annotation } from '~/shared/types'
 import { ANNOTATION_TYPE_LABELS } from '~/shared/types'
+import { DialogTitle, DialogDescription, VisuallyHidden } from 'reka-ui'
+
+const isMobile = useMediaQuery('(max-width: 640px)')
 
 const props = defineProps<{
   open: boolean
@@ -132,17 +136,28 @@ function handleCancel() {
 <template>
   <UModal
     v-model:open="isOpen"
+    :fullscreen="isMobile"
     :ui="{
-      content: 'sm:max-w-3xl w-full max-h-[min(90vh,50rem)]',
+      content: isMobile
+        ? 'w-full h-full max-w-full max-h-full rounded-none'
+        : 'sm:max-w-3xl w-full max-h-[min(90vh,50rem)]',
     }"
   >
     <template #content>
-      <div class="flex flex-col max-h-[min(90vh,50rem)] bg-white dark:bg-gray-900 rounded-lg overflow-hidden">
+      <div
+        class="flex flex-col bg-white dark:bg-gray-900 overflow-hidden"
+        :class="isMobile ? 'h-full w-full' : 'max-h-[min(90vh,50rem)] rounded-lg'"
+      >
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+          <DialogTitle class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ isEditing ? 'Edit Annotation' : 'Add Annotation' }}
-          </h2>
+          </DialogTitle>
+          <VisuallyHidden>
+            <DialogDescription>
+              {{ isEditing ? 'Edit an existing annotation' : 'Add a new annotation to this entry' }}
+            </DialogDescription>
+          </VisuallyHidden>
           <UButton
             variant="ghost"
             icon="i-heroicons-x-mark"
