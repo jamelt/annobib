@@ -384,14 +384,15 @@ watch(search, () => { page.value = 1 })
 
     <!-- User Detail Slideover -->
     <USlideover v-model:open="isDetailOpen" :title="selectedUser?.name || selectedUser?.email || 'User Detail'">
-      <div v-if="selectedUser" class="p-6 space-y-6">
-        <div class="flex items-center gap-4">
-          <UAvatar :text="selectedUser.email?.slice(0, 2).toUpperCase()" size="lg" />
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedUser.name || 'No name' }}</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ selectedUser.email }}</p>
+      <template #body>
+        <div v-if="selectedUser" class="space-y-6">
+          <div class="flex items-center gap-4">
+            <UAvatar :text="selectedUser.email?.slice(0, 2).toUpperCase()" size="lg" />
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ selectedUser.name || 'No name' }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ selectedUser.email }}</p>
+            </div>
           </div>
-        </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -674,8 +675,9 @@ watch(search, () => { page.value = 1 })
             </NuxtLink>
           </div>
           <p v-else class="text-xs text-gray-500">No admin actions recorded for this user.</p>
+          </div>
         </div>
-      </div>
+      </template>
     </USlideover>
 
     <!-- Grant Tier Dialog -->

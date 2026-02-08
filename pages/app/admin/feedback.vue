@@ -135,7 +135,8 @@ const statusColors: Record<string, string> = {
 
     <!-- Detail Slideover -->
     <USlideover v-model:open="isDetailOpen" :title="selectedFeedback?.subject || 'Feedback Detail'">
-      <div v-if="selectedFeedback" class="p-6 space-y-6">
+      <template #body>
+        <div v-if="selectedFeedback" class="space-y-6">
         <div>
           <div class="flex items-center gap-2 mb-2">
             <UBadge :color="(statusColors[selectedFeedback.status] as any)" variant="subtle">
@@ -202,7 +203,8 @@ const statusColors: Record<string, string> = {
             @click="updateStatus('closed')"
           />
         </div>
-      </div>
+        </div>
+      </template>
     </USlideover>
   </div>
 </template>
