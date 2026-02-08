@@ -345,7 +345,7 @@ Interactive D3.js mind map visualization.
 
 Compact credibility score display.
 
-**File:** `components/veritas/VeritasScoreBadge.vue`
+**File:** `components/veritas/ScoreBadge.vue`
 
 **Props:**
 | Prop | Type | Required | Description |
@@ -369,7 +369,7 @@ Compact credibility score display.
 
 Detailed credibility score breakdown.
 
-**File:** `components/veritas/VeritasScoreDetail.vue`
+**File:** `components/veritas/ScoreDetail.vue`
 
 **Props:**
 | Prop | Type | Required | Description |

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Entry, Annotation } from '~/shared/types'
+import type { Entry, Annotation, Tag } from '~/shared/types'
 import { ENTRY_TYPE_LABELS, ANNOTATION_TYPE_LABELS } from '~/shared/types'
 
 definePageMeta({
@@ -54,6 +54,23 @@ async function handleDelete() {
 async function handleEntryUpdated() {
   isEditModalOpen.value = false
   await refresh()
+}
+
+const entryTagIds = computed({
+  get: () => entry.value?.tags?.map(t => t.id) ?? [],
+  set: () => {},
+})
+
+async function saveEntryTags(tagIds: string[]) {
+  try {
+    await $fetch(`/api/entries/${entryId.value}`, {
+      method: 'PUT',
+      body: { tagIds },
+    })
+    await refresh()
+  } catch {
+    toast.add({ title: 'Failed to update tags', color: 'error' })
+  }
 }
 
 const toast = useToast()
@@ -217,7 +234,7 @@ async function handleAnnotationCreated() {
       <AppUpgradePrompt feature="veritasScore" required-tier="pro">
         Get AI-powered credibility assessments for your sources with the Pro plan.
         <template #content>
-          <VeritasVeritasScoreDetail :entry-id="entryId" />
+          <VeritasScoreDetail :entry-id="entryId" />
         </template>
       </AppUpgradePrompt>
 
@@ -283,6 +300,13 @@ async function handleAnnotationCreated() {
               {{ entry.metadata.abstract }}
             </p>
           </div>
+
+          <div v-if="entry.notes" class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-medium text-gray-900 dark:text-white mb-2">Notes</h3>
+            <p class="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+              {{ entry.notes }}
+            </p>
+          </div>
         </UCard>
 
         <!-- Sidebar -->
@@ -313,24 +337,16 @@ async function handleAnnotationCreated() {
           </UCard>
 
           <!-- Tags -->
-          <UCard>
+          <UCard :ui="{ body: 'overflow-visible' }">
             <template #header>
               <h2 class="font-semibold text-gray-900 dark:text-white">Tags</h2>
             </template>
 
-            <div v-if="entry.tags?.length" class="flex flex-wrap gap-2">
-              <span
-                v-for="tag in entry.tags"
-                :key="tag.id"
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm"
-                :style="{ backgroundColor: `${tag.color}20`, color: tag.color }"
-              >
-                {{ tag.name }}
-              </span>
-            </div>
-            <p v-else class="text-gray-500 dark:text-gray-400 text-sm">
-              No tags
-            </p>
+            <AppInlineTagInput
+              :model-value="entryTagIds"
+              placeholder="Add or create tags..."
+              @update:model-value="saveEntryTags"
+            />
           </UCard>
         </div>
       </div>
