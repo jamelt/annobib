@@ -230,34 +230,22 @@ function getDropdownItems(tag: Tag) {
       </p>
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
       <UCard
         v-for="tag in filteredTags"
         :key="tag.id"
-        class="p-4 hover:ring-2 hover:ring-primary-500/50 transition-all cursor-pointer group"
+        class="p-3 hover:ring-2 hover:ring-primary-500/50 transition-all cursor-pointer group"
         @click="viewEntries(tag)"
       >
-        <div class="flex items-start gap-3">
-          <div
-            class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-            :style="{ backgroundColor: tag.color + '20' }"
-          >
-            <UIcon
-              name="i-heroicons-tag"
-              class="w-5 h-5"
-              :style="{ color: tag.color }"
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span
+              class="w-3 h-3 rounded-full shrink-0"
+              :style="{ backgroundColor: tag.color }"
             />
-          </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-medium text-gray-900 dark:text-white truncate">
+            <span class="font-medium text-sm text-gray-900 dark:text-white truncate">
               {{ tag.name }}
-            </h3>
-            <p v-if="tag.description" class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
-              {{ tag.description }}
-            </p>
-            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">
-              {{ tag.entryCount ?? 0 }} {{ (tag.entryCount ?? 0) === 1 ? 'entry' : 'entries' }}
-            </p>
+            </span>
           </div>
           <UDropdownMenu
             :items="getDropdownItems(tag)"
@@ -267,12 +255,15 @@ function getDropdownItems(tag: Tag) {
               icon="i-heroicons-ellipsis-vertical"
               variant="ghost"
               color="neutral"
-              size="sm"
-              class="opacity-0 group-hover:opacity-100 transition-opacity"
+              size="xs"
+              class="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               @click.stop
             />
           </UDropdownMenu>
         </div>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 ml-5">
+          {{ tag.entryCount ?? 0 }} {{ (tag.entryCount ?? 0) === 1 ? 'entry' : 'entries' }}
+        </p>
       </UCard>
     </div>
 

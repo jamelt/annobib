@@ -87,7 +87,7 @@ export default defineEventHandler(async (event) => {
       color: tags.color,
       description: tags.description,
       createdAt: tags.createdAt,
-      entryCount: sql<number>`(SELECT COUNT(*) FROM entry_tags WHERE tag_id = ${tags.id})`.as('entry_count'),
+      entryCount: sql<number>`(SELECT count(*) FROM entry_tags WHERE entry_tags.tag_id = "tags"."id")`.as('entry_count'),
     })
     .from(tags)
     .where(eq(tags.id, targetTagId))

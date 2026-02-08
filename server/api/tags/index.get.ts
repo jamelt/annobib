@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { tags, entryTags } from '~/server/database/schema'
+import { tags } from '~/server/database/schema'
 import { eq, sql, asc } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -12,10 +12,7 @@ export default defineEventHandler(async (event) => {
       color: tags.color,
       description: tags.description,
       createdAt: tags.createdAt,
-      entryCount: sql<number>`(
-        SELECT COUNT(*) FROM ${entryTags}
-        WHERE ${entryTags.tagId} = ${tags.id}
-      )`,
+      entryCount: sql<number>`(SELECT count(*) FROM entry_tags WHERE entry_tags.tag_id = "tags"."id")`.as('entry_count'),
     })
     .from(tags)
     .where(eq(tags.userId, user.id))
