@@ -57,20 +57,26 @@ const bulkTagIds = ref<string[]>([])
 const isBulkTagPickerOpen = ref(false)
 const bulkTagMode = ref<'add' | 'remove'>('add')
 
-const queryParams = computed(() => ({
-  q: searchQuery.value || undefined,
-  entryTypes: selectedTypes.value.length > 0 ? selectedTypes.value : undefined,
-  tagIds: selectedTags.value.length > 0 ? selectedTags.value : undefined,
-  projectId: selectedProject.value || undefined,
-  sortBy: sortBy.value,
-  sortOrder: sortOrder.value,
-  page: page.value,
-  pageSize: pageSize.value,
-}))
+const q = computed(() => searchQuery.value || undefined)
+const entryTypesQuery = computed(() =>
+  selectedTypes.value.length > 0 ? selectedTypes.value : undefined,
+)
+const tagIdsQuery = computed(() =>
+  selectedTags.value.length > 0 ? selectedTags.value : undefined,
+)
+const projectIdQuery = computed(() => selectedProject.value || undefined)
 
 const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
-  query: queryParams,
-  watch: [queryParams],
+  query: {
+    q,
+    entryTypes: entryTypesQuery,
+    tagIds: tagIdsQuery,
+    projectId: projectIdQuery,
+    sortBy,
+    sortOrder,
+    page,
+    pageSize,
+  },
 })
 
 const { data: tags } = await useFetch<Tag[]>('/api/tags')
@@ -94,13 +100,19 @@ const entryTypeOptions = Object.entries(ENTRY_TYPE_LABELS).map(([value, label]) 
   label,
 }))
 
-const sortOptions = [
-  { value: 'createdAt', label: 'Date Added' },
-  { value: 'updatedAt', label: 'Last Modified' },
-  { value: 'title', label: 'Title' },
-  { value: 'author', label: 'Author' },
-  { value: 'year', label: 'Year' },
-]
+const sortOptions = computed(() => {
+  const options = [
+    { value: 'createdAt', label: 'Date Added' },
+    { value: 'updatedAt', label: 'Last Modified' },
+    { value: 'title', label: 'Title' },
+    { value: 'author', label: 'Author' },
+    { value: 'year', label: 'Year' },
+  ]
+  if (searchQuery.value) {
+    options.unshift({ value: 'relevance', label: 'Relevance' })
+  }
+  return options
+})
 
 function formatAuthors(authors: any[] | null) {
   if (!authors || authors.length === 0) return 'Unknown'
@@ -113,8 +125,11 @@ function formatAuthors(authors: any[] | null) {
   return `${authors[0].lastName} et al.`
 }
 
-function handleSearch() {
+watch([searchQuery, selectedTypes, selectedTags, selectedProject], () => {
   page.value = 1
+})
+
+function handleSearch() {
   router.push({ query: { ...route.query, q: searchQuery.value || undefined } })
 }
 
@@ -359,26 +374,23 @@ onUnmounted(() => {
           @click="isAddModalOpen = true"
         />
 
-        <UFieldGroup>
+        <UFieldGroup :size="isMobile ? 'sm' : 'xs'">
           <UButton
             icon="i-heroicons-list-bullet"
             :variant="viewMode === 'list' ? 'solid' : 'outline'"
             color="neutral"
-            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'list'"
           />
           <UButton
             icon="i-heroicons-squares-2x2"
             :variant="viewMode === 'grid' ? 'solid' : 'outline'"
             color="neutral"
-            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'grid'"
           />
           <UButton
             icon="i-heroicons-table-cells"
             :variant="viewMode === 'table' ? 'solid' : 'outline'"
             color="neutral"
-            :size="isMobile ? 'sm' : 'xs'"
             @click="viewMode = 'table'"
           />
         </UFieldGroup>
@@ -449,7 +461,7 @@ onUnmounted(() => {
 
     <!-- Filters -->
     <div class="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center">
-      <div class="flex-1">
+      <div class="flex-1 min-w-72">
         <UInput
           v-model="searchQuery"
           icon="i-heroicons-magnifying-glass"

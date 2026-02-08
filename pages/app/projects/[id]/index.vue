@@ -36,23 +36,30 @@ const viewMode = useViewPreferences<"list" | "table">(
   "table",
 );
 
-const entryQueryParams = computed(() => ({
-  projectId: project.value?.id,
-  q: entrySearchQuery.value || undefined,
-  entryTypes: selectedTypes.value.length > 0 ? selectedTypes.value : undefined,
-  tagIds: selectedTags.value.length > 0 ? selectedTags.value : undefined,
-  sortBy: sortBy.value,
-  sortOrder: sortOrder.value,
-  page: page.value,
-  pageSize: pageSize.value,
-}));
+const projectId = computed(() => project.value?.id);
+const q = computed(() => entrySearchQuery.value || undefined);
+const entryTypesQuery = computed(() =>
+  selectedTypes.value.length > 0 ? selectedTypes.value : undefined,
+);
+const tagIdsQuery = computed(() =>
+  selectedTags.value.length > 0 ? selectedTags.value : undefined,
+);
 
 const {
   data: entriesData,
   pending: entriesPending,
   refresh: refreshEntries,
 } = useFetch("/api/entries", {
-  query: entryQueryParams,
+  query: {
+    projectId,
+    q,
+    entryTypes: entryTypesQuery,
+    tagIds: tagIdsQuery,
+    sortBy,
+    sortOrder,
+    page,
+    pageSize,
+  },
 });
 
 const entries = computed(() => entriesData.value?.data ?? []);
@@ -416,235 +423,229 @@ onEntryCreated(() => {
         </span>
       </nav>
 
-      <!-- Header -->
-      <div
-        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-      >
-        <div class="flex items-center gap-3">
-          <div
-            class="w-10 h-10 rounded-lg flex items-center justify-center"
-            :style="{ backgroundColor: (project.color || '#4F46E5') + '20' }"
-          >
-            <UIcon
-              name="i-heroicons-folder"
-              class="w-5 h-5"
-              :style="{ color: project.color || '#4F46E5' }"
-            />
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                {{ project.name }}
-              </h1>
-              <button
-                type="button"
-                class="p-1 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                :title="project.isStarred ? 'Unstar project' : 'Star project'"
-                @click="handleToggleStar"
-              >
-                <UIcon
-                  :name="
-                    project.isStarred
-                      ? 'i-heroicons-star-solid'
-                      : 'i-heroicons-star'
-                  "
-                  class="w-5 h-5 transition-colors"
-                  :class="
-                    project.isStarred
-                      ? 'text-amber-400'
-                      : 'text-gray-400 hover:text-amber-300'
-                  "
-                />
-              </button>
-            </div>
-            <p
-              v-if="project.description"
-              class="text-gray-500 dark:text-gray-400 mt-1"
+      <!-- Header: Project identity -->
+      <div class="flex items-start gap-3">
+        <div
+          class="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center mt-0.5"
+          :style="{ backgroundColor: (project.color || '#4F46E5') + '20' }"
+        >
+          <UIcon
+            name="i-heroicons-folder"
+            class="w-5 h-5"
+            :style="{ color: project.color || '#4F46E5' }"
+          />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ project.name }}
+            </h1>
+            <button
+              type="button"
+              class="shrink-0 p-1 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+              :title="project.isStarred ? 'Unstar project' : 'Star project'"
+              @click="handleToggleStar"
             >
-              {{ project.description }}
-            </p>
-            <p class="text-sm text-gray-400 mt-1">
-              {{ project.entryCount || 0 }}
-              {{ (project.entryCount || 0) === 1 ? "entry" : "entries" }}
-            </p>
+              <UIcon
+                :name="
+                  project.isStarred
+                    ? 'i-heroicons-star-solid'
+                    : 'i-heroicons-star'
+                "
+                class="w-5 h-5 transition-colors"
+                :class="
+                  project.isStarred
+                    ? 'text-amber-400'
+                    : 'text-gray-400 hover:text-amber-300'
+                "
+              />
+            </button>
           </div>
+          <p
+            v-if="project.description"
+            class="text-sm text-gray-500 dark:text-gray-400 mt-1"
+          >
+            {{ project.description }}
+          </p>
+          <p class="text-sm text-gray-400 mt-1">
+            {{ project.entryCount || 0 }}
+            {{ (project.entryCount || 0) === 1 ? "entry" : "entries" }}
+          </p>
         </div>
+      </div>
 
-        <div class="flex items-center gap-2">
+      <!-- Toolbar: Actions -->
+      <div class="flex items-center gap-2">
+        <UButton
+          icon="i-heroicons-plus"
+          size="sm"
+          @click="quickAddToProject"
+        >
+          New Entry
+        </UButton>
+        <UButton
+          icon="i-heroicons-book-open"
+          size="sm"
+          variant="outline"
+          color="neutral"
+          class="hidden sm:flex"
+          @click="openAddEntryModal"
+        >
+          From Library
+        </UButton>
+
+        <UFieldGroup size="sm">
           <UButton
-            icon="i-heroicons-plus"
-            size="sm"
-            @click="quickAddToProject"
-          >
-            New Entry
-          </UButton>
-          <UButton
-            icon="i-heroicons-book-open"
-            size="sm"
-            variant="outline"
+            icon="i-heroicons-list-bullet"
+            :variant="viewMode === 'list' ? 'solid' : 'outline'"
             color="neutral"
-            class="hidden sm:flex"
-            @click="openAddEntryModal"
-          >
-            From Library
-          </UButton>
-
-          <UFieldGroup>
-            <UButton
-              icon="i-heroicons-list-bullet"
-              :variant="viewMode === 'list' ? 'solid' : 'outline'"
-              color="neutral"
-              size="sm"
-              @click="viewMode = 'list'"
-            />
-            <UButton
-              icon="i-heroicons-table-cells"
-              :variant="viewMode === 'table' ? 'solid' : 'outline'"
-              color="neutral"
-              size="sm"
-              @click="viewMode = 'table'"
-            />
-          </UFieldGroup>
-
-          <!-- Desktop-only buttons -->
-          <UButton
-            icon="i-heroicons-sparkles"
-            label="Research Companion"
-            variant="outline"
-            color="primary"
-            size="sm"
-            class="hidden sm:flex"
-            @click="openCompanion"
+            @click="viewMode = 'list'"
           />
           <UButton
-            icon="i-heroicons-pencil-square"
-            label="Annotations"
-            variant="outline"
+            icon="i-heroicons-table-cells"
+            :variant="viewMode === 'table' ? 'solid' : 'outline'"
             color="neutral"
-            size="sm"
-            class="hidden sm:flex"
-            :to="`/app/annotations?projectId=${project?.id}`"
+            @click="viewMode = 'table'"
           />
-          <UButton
-            icon="i-heroicons-share"
-            label="Mind Map"
-            variant="outline"
-            color="neutral"
-            size="sm"
-            class="hidden sm:flex"
-            @click="openMindMap"
-          />
-          <UButton
-            icon="i-heroicons-arrow-down-tray"
-            label="Export"
-            variant="outline"
-            color="neutral"
-            size="sm"
-            class="hidden sm:flex"
-            @click="isExportModalOpen = true"
-          />
+        </UFieldGroup>
 
-          <!-- Mobile overflow menu -->
-          <UDropdownMenu
-            :items="[
-              [
-                {
-                  label: 'From Library',
-                  icon: 'i-heroicons-book-open',
-                  onSelect: openAddEntryModal,
-                },
-                {
-                  label: 'Research Companion',
-                  icon: 'i-heroicons-sparkles',
-                  onSelect: openCompanion,
-                },
-                {
-                  label: 'Annotations',
-                  icon: 'i-heroicons-pencil-square',
-                  onSelect: () => router.push(`/app/annotations?projectId=${project?.id}`),
-                },
-                {
-                  label: 'Mind Map',
-                  icon: 'i-heroicons-share',
-                  onSelect: openMindMap,
-                },
-                {
-                  label: 'Export',
-                  icon: 'i-heroicons-arrow-down-tray',
-                  onSelect: () => (isExportModalOpen = true),
-                },
-              ],
-              [
-                {
-                  label: 'Edit',
-                  icon: 'i-heroicons-pencil',
-                  onSelect: () => (isEditModalOpen = true),
-                },
-              ],
-              [
-                {
-                  label: project?.isArchived ? 'Restore' : 'Archive',
-                  icon: project?.isArchived
-                    ? 'i-heroicons-arrow-uturn-up'
-                    : 'i-heroicons-archive-box',
-                  onSelect: toggleArchive,
-                },
-                {
-                  label: 'Delete',
-                  icon: 'i-heroicons-trash',
-                  color: 'error' as const,
-                  onSelect: () => (isDeleteModalOpen = true),
-                },
-              ],
-            ]"
-            :content="{ align: 'end' }"
-            class="sm:hidden"
-          >
-            <UButton
-              icon="i-heroicons-ellipsis-vertical"
-              variant="outline"
-              color="neutral"
-              size="sm"
-            />
-          </UDropdownMenu>
+        <UButton
+          icon="i-heroicons-sparkles"
+          label="Research Companion"
+          variant="outline"
+          color="primary"
+          size="sm"
+          class="hidden sm:flex"
+          @click="openCompanion"
+        />
+        <UButton
+          icon="i-heroicons-pencil-square"
+          label="Annotations"
+          variant="outline"
+          color="neutral"
+          size="sm"
+          class="hidden sm:flex"
+          :to="`/app/annotations?projectId=${project?.id}`"
+        />
+        <UButton
+          icon="i-heroicons-share"
+          label="Mind Map"
+          variant="outline"
+          color="neutral"
+          size="sm"
+          class="hidden sm:flex"
+          @click="openMindMap"
+        />
+        <UButton
+          icon="i-heroicons-arrow-down-tray"
+          label="Export"
+          variant="outline"
+          color="neutral"
+          size="sm"
+          class="hidden sm:flex"
+          @click="isExportModalOpen = true"
+        />
 
-          <!-- Desktop context menu (Edit, Archive, Delete) -->
-          <UDropdownMenu
-            :items="[
-              [
-                {
-                  label: 'Edit',
-                  icon: 'i-heroicons-pencil',
-                  onSelect: () => (isEditModalOpen = true),
-                },
-              ],
-              [
-                {
-                  label: project?.isArchived ? 'Restore' : 'Archive',
-                  icon: project?.isArchived
-                    ? 'i-heroicons-arrow-uturn-up'
-                    : 'i-heroicons-archive-box',
-                  onSelect: toggleArchive,
-                },
-                {
-                  label: 'Delete',
-                  icon: 'i-heroicons-trash',
-                  color: 'error' as const,
-                  onSelect: () => (isDeleteModalOpen = true),
-                },
-              ],
-            ]"
-            :content="{ align: 'end' }"
-            class="hidden sm:block"
-          >
-            <UButton
-              icon="i-heroicons-ellipsis-vertical"
-              variant="outline"
-              color="neutral"
-              size="sm"
-            />
-          </UDropdownMenu>
-        </div>
+        <!-- Mobile overflow menu -->
+        <UDropdownMenu
+          :items="[
+            [
+              {
+                label: 'From Library',
+                icon: 'i-heroicons-book-open',
+                onSelect: openAddEntryModal,
+              },
+              {
+                label: 'Research Companion',
+                icon: 'i-heroicons-sparkles',
+                onSelect: openCompanion,
+              },
+              {
+                label: 'Annotations',
+                icon: 'i-heroicons-pencil-square',
+                onSelect: () => router.push(`/app/annotations?projectId=${project?.id}`),
+              },
+              {
+                label: 'Mind Map',
+                icon: 'i-heroicons-share',
+                onSelect: openMindMap,
+              },
+              {
+                label: 'Export',
+                icon: 'i-heroicons-arrow-down-tray',
+                onSelect: () => (isExportModalOpen = true),
+              },
+            ],
+            [
+              {
+                label: 'Edit',
+                icon: 'i-heroicons-pencil',
+                onSelect: () => (isEditModalOpen = true),
+              },
+            ],
+            [
+              {
+                label: project?.isArchived ? 'Restore' : 'Archive',
+                icon: project?.isArchived
+                  ? 'i-heroicons-arrow-uturn-up'
+                  : 'i-heroicons-archive-box',
+                onSelect: toggleArchive,
+              },
+              {
+                label: 'Delete',
+                icon: 'i-heroicons-trash',
+                color: 'error' as const,
+                onSelect: () => (isDeleteModalOpen = true),
+              },
+            ],
+          ]"
+          :content="{ align: 'end' }"
+          class="sm:hidden"
+        >
+          <UButton
+            icon="i-heroicons-ellipsis-vertical"
+            variant="outline"
+            color="neutral"
+            size="sm"
+          />
+        </UDropdownMenu>
+
+        <!-- Desktop context menu (Edit, Archive, Delete) -->
+        <UDropdownMenu
+          :items="[
+            [
+              {
+                label: 'Edit',
+                icon: 'i-heroicons-pencil',
+                onSelect: () => (isEditModalOpen = true),
+              },
+            ],
+            [
+              {
+                label: project?.isArchived ? 'Restore' : 'Archive',
+                icon: project?.isArchived
+                  ? 'i-heroicons-arrow-uturn-up'
+                  : 'i-heroicons-archive-box',
+                onSelect: toggleArchive,
+              },
+              {
+                label: 'Delete',
+                icon: 'i-heroicons-trash',
+                color: 'error' as const,
+                onSelect: () => (isDeleteModalOpen = true),
+              },
+            ],
+          ]"
+          :content="{ align: 'end' }"
+          class="hidden sm:inline-flex"
+        >
+          <UButton
+            icon="i-heroicons-ellipsis-vertical"
+            variant="outline"
+            color="neutral"
+            size="sm"
+          />
+        </UDropdownMenu>
       </div>
 
       <!-- Entries section -->
@@ -654,7 +655,7 @@ onEntryCreated(() => {
         <div
           class="flex flex-col lg:flex-row gap-2 items-stretch lg:items-center"
         >
-          <div class="flex-1">
+          <div class="flex-1 min-w-64">
             <UInput
               v-model="entrySearchQuery"
               icon="i-heroicons-magnifying-glass"

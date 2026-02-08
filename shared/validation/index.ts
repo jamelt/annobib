@@ -151,7 +151,7 @@ export const searchQuerySchema = z.object({
   yearTo: coerceOptionalInt,
   isFavorite: coerceOptionalBool,
   sortBy: z
-    .enum(["title", "author", "year", "createdAt", "updatedAt"])
+    .enum(["relevance", "title", "author", "year", "createdAt", "updatedAt"])
     .optional()
     .default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),

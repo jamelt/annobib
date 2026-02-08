@@ -212,7 +212,7 @@ async function handleManageBilling() {
 
     <!-- Billing Interval Toggle -->
     <div class="flex justify-center">
-      <UButtonGroup>
+      <UFieldGroup>
         <UButton
           :variant="billingInterval === 'month' ? 'solid' : 'outline'"
           :color="billingInterval === 'month' ? 'primary' : 'gray'"
@@ -230,7 +230,7 @@ async function handleManageBilling() {
             Save 17%
           </UBadge>
         </UButton>
-      </UButtonGroup>
+      </UFieldGroup>
     </div>
 
     <!-- Plans Grid -->
