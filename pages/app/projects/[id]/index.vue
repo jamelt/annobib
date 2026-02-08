@@ -397,7 +397,7 @@ onEntryCreated(() => {
             :items="[
               [
                 { label: 'Edit', icon: 'i-heroicons-pencil', onSelect: () => isEditModalOpen = true },
-                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => isExportModalOpen.value = true },
+                { label: 'Export', icon: 'i-heroicons-arrow-down-tray', onSelect: () => isExportModalOpen = true },
               ],
               [
                 {
