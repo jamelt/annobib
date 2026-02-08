@@ -660,11 +660,6 @@ const announcementBannerColors: Record<string, string> = {
     <AppQuickAddModal
       v-model:open="isQuickAddOpen"
       :default-project-id="quickAddProjectId"
-      @update:open="
-        (val: boolean) => {
-          if (!val) closeQuickAdd();
-        }
-      "
       @created="notifyEntryCreated"
     />
 

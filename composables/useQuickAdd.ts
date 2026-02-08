@@ -19,8 +19,11 @@ export function useQuickAdd() {
   }, { immediate: true })
 
   watch(isOpen, (open) => {
-    if (!open && route.query.action === 'quick-add') {
-      router.replace({ path: route.path, query: {} })
+    if (!open) {
+      defaultProjectId.value = undefined
+      if (route.query.action === 'quick-add') {
+        router.replace({ path: route.path, query: {} })
+      }
     }
   })
 

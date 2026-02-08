@@ -623,6 +623,10 @@ function handleKeydown(e: KeyboardEvent) {
   }
 
   if (status.value === "preview") {
+    const target = e.target as HTMLElement;
+    if (target?.closest("[data-slot='content'], [data-slot='item'], [data-slot='input'], [role='listbox'], [role='option']")) {
+      return;
+    }
     if (e.key === "Escape") {
       e.preventDefault();
       clearPreview();
@@ -1146,8 +1150,8 @@ onMounted(() => {
                   placeholder="Select a project..."
                   value-key="id"
                   label-key="name"
-                  searchable
-                  :ui="{ trigger: 'w-full' }"
+                  class="w-full"
+                  :portal="false"
                 >
                   <template #leading>
                     <UIcon name="i-heroicons-folder" class="w-4 h-4" />
