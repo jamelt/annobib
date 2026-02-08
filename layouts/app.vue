@@ -37,8 +37,10 @@ const navigation = [
   { name: "Dashboard", to: "/app", icon: "i-heroicons-home", exact: true },
   { name: "Library", to: "/app/library", icon: "i-heroicons-book-open" },
   { name: "Projects", to: "/app/projects", icon: "i-heroicons-folder" },
+  { name: "Annotations", to: "/app/annotations", icon: "i-heroicons-pencil-square" },
   { name: "Tags", to: "/app/tags", icon: "i-heroicons-tag" },
   { name: "Mind Maps", to: "/app/mindmaps", icon: "i-heroicons-share" },
+  { name: "Citation Styles", to: "/app/settings/citation-styles", icon: "i-heroicons-document-text" },
 ];
 
 const adminNavigation = [
@@ -631,12 +633,12 @@ const announcementBannerColors: Record<string, string> = {
         </div>
 
         <NuxtLink
-          :to="navigation[3].to"
+          :to="navigation[4].to"
           class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
           active-class="text-primary-500 dark:text-primary-400"
         >
-          <UIcon :name="navigation[3].icon" class="w-6 h-6" />
-          <span class="text-xs">{{ navigation[3].name }}</span>
+          <UIcon :name="navigation[4].icon" class="w-6 h-6" />
+          <span class="text-xs">{{ navigation[4].name }}</span>
         </NuxtLink>
       </div>
     </nav>
