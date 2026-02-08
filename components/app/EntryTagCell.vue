@@ -57,7 +57,7 @@ async function handleTagsChange(newTagIds: string[]) {
         variant="ghost"
         color="neutral"
         size="2xs"
-        class="opacity-0 group-hover/row:opacity-100 transition-opacity"
+        class="sm:opacity-0 sm:group-hover/row:opacity-100 transition-opacity"
         @click.stop
       />
       <template #content>

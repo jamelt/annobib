@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useMediaQuery } from "@vueuse/core";
 import type { ExcelColumnConfig, ExcelExportOptions } from "~/shared/types";
 import type { SubscriptionTier } from "~/shared/subscriptions";
+
+const isMobile = useMediaQuery("(max-width: 640px)");
 
 const props = defineProps<{
   open: boolean;
@@ -281,10 +284,23 @@ async function handleExport() {
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" :ui="{ content: modalMaxWidth }">
+  <UModal
+    v-model:open="isOpen"
+    :fullscreen="isMobile"
+    :ui="{
+      content: isMobile
+        ? 'w-full h-full max-w-full max-h-full rounded-none'
+        : modalMaxWidth,
+    }"
+  >
     <template #content>
       <div
-        class="flex flex-col bg-white dark:bg-gray-900 rounded-lg ring ring-gray-200 dark:ring-gray-800 shadow-lg divide-y divide-gray-200 dark:divide-gray-800 max-h-[90vh]"
+        class="flex flex-col bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800"
+        :class="
+          isMobile
+            ? 'h-full w-full'
+            : 'rounded-lg ring ring-gray-200 dark:ring-gray-800 shadow-lg max-h-[90vh]'
+        "
       >
         <!-- Header -->
         <div class="flex items-center justify-between px-6 py-4 shrink-0">
@@ -304,17 +320,19 @@ async function handleExport() {
         </div>
 
         <!-- Body -->
-        <div class="flex-1 min-h-0 overflow-hidden">
+        <div class="flex-1 min-h-0 overflow-y-auto export-body-scroll">
           <div
-            class="flex h-full"
+            class="flex flex-col sm:flex-row h-full"
             :class="
-              showPreview ? 'divide-x divide-gray-200 dark:divide-gray-800' : ''
+              showPreview
+                ? 'divide-y sm:divide-y-0 sm:divide-x divide-gray-200 dark:divide-gray-800'
+                : ''
             "
           >
             <!-- Options panel -->
             <div
-              class="overflow-y-auto px-6 py-5 space-y-6"
-              :class="showPreview ? 'w-[440px] shrink-0' : 'w-full'"
+              class="overflow-y-auto px-4 sm:px-6 py-5 space-y-6"
+              :class="showPreview ? 'w-full sm:w-[440px] sm:shrink-0' : 'w-full'"
             >
               <UAlert
                 v-if="error"
@@ -327,7 +345,7 @@ async function handleExport() {
               <!-- Format Selection -->
               <UFormField label="Export Format">
                 <div
-                  class="grid grid-cols-4 gap-2"
+                  class="grid grid-cols-2 sm:grid-cols-4 gap-2"
                   data-testid="export-format-selector"
                 >
                   <UButton
@@ -522,11 +540,12 @@ async function handleExport() {
                     value-key="value"
                     label-key="label"
                     placeholder="Select citation style..."
+                    :searchable="!isMobile"
                   />
                 </UFormField>
 
                 <div
-                  class="grid grid-cols-2 gap-3"
+                  class="grid grid-cols-1 sm:grid-cols-2 gap-3"
                   data-testid="export-pdf-options"
                 >
                   <UFormField label="Paper Size">
@@ -625,7 +644,7 @@ async function handleExport() {
             <!-- Preview panel (PDF / DOCX only) -->
             <div
               v-if="showPreview"
-              class="flex-1 min-w-0 flex flex-col"
+              class="flex-1 min-w-0 flex flex-col min-h-[50vh] sm:min-h-0"
               data-testid="export-preview-panel"
             >
               <div
@@ -680,7 +699,9 @@ async function handleExport() {
         </div>
 
         <!-- Footer -->
-        <div class="flex justify-between items-center px-6 py-4 shrink-0">
+        <div
+          class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 px-4 sm:px-6 py-4 shrink-0"
+        >
           <span class="text-sm text-gray-500" data-testid="export-entry-count">
             {{
               props.entryIds?.length
@@ -691,7 +712,7 @@ async function handleExport() {
             }}
             will be exported
           </span>
-          <div class="flex gap-3">
+          <div class="flex gap-3 self-end sm:self-auto">
             <UButton
               variant="outline"
               color="neutral"
@@ -716,3 +737,22 @@ async function handleExport() {
     </template>
   </UModal>
 </template>
+
+<style scoped>
+@media (max-width: 640px) {
+  .export-body-scroll {
+    overflow-y: scroll;
+    scrollbar-width: thin;
+  }
+  .export-body-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .export-body-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .export-body-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+}
+</style>

@@ -256,7 +256,7 @@ function getDropdownItems(tag: Tag) {
               variant="ghost"
               color="neutral"
               size="xs"
-              class="opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+              class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
               @click.stop
             />
           </UDropdownMenu>

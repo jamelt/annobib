@@ -115,7 +115,7 @@ function stripHtml(html: string): string {
                   v-html="sample.bibliography"
                 />
                 <button
-                  class="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  class="absolute -right-2 top-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                   @click="copyToClipboard(sample.bibliography, index)"
                 >
                   <UIcon
@@ -133,7 +133,7 @@ function stripHtml(html: string): string {
                   v-html="sample.inText"
                 />
                 <button
-                  class="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  class="absolute -right-2 top-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
                   @click="copyToClipboard(sample.inText, index)"
                 >
                   <UIcon

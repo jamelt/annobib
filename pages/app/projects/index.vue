@@ -419,7 +419,7 @@ const projectColumns = computed<TableColumn<Project>[]>(() => [
                 variant="ghost"
                 color="neutral"
                 size="sm"
-                class="opacity-0 group-hover:opacity-100 transition-opacity"
+                class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 @click.stop
               />
             </UDropdownMenu>
@@ -467,7 +467,7 @@ const projectColumns = computed<TableColumn<Project>[]>(() => [
                   variant="ghost"
                   color="neutral"
                   size="sm"
-                  class="opacity-0 group-hover:opacity-100 transition-opacity"
+                  class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                   @click.stop
                 />
               </UDropdownMenu>

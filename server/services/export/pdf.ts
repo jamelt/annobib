@@ -153,6 +153,7 @@ export async function generateBibliographyHtml(
       font-size: ${opts.fontSize}pt;
       line-height: ${lineHeight};
       color: #000;
+      padding: 0.5em 0.75em;
     }
     
     .title-page {
