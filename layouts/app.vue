@@ -35,12 +35,12 @@ onClickOutside(userMenuRef, () => {
 
 const navigation = [
   { name: "Dashboard", to: "/app", icon: "i-heroicons-home", exact: true },
-  { name: "Library", to: "/app/library", icon: "i-heroicons-book-open" },
   { name: "Projects", to: "/app/projects", icon: "i-heroicons-folder" },
+  { name: "Library", to: "/app/library", icon: "i-heroicons-book-open" },
   { name: "Annotations", to: "/app/annotations", icon: "i-heroicons-pencil-square" },
   { name: "Tags", to: "/app/tags", icon: "i-heroicons-tag" },
-  { name: "Mind Maps", to: "/app/mindmaps", icon: "i-heroicons-share" },
   { name: "Citation Styles", to: "/app/settings/citation-styles", icon: "i-heroicons-document-text" },
+  { name: "Mind Maps", to: "/app/mindmaps", icon: "i-heroicons-share" },
 ];
 
 const adminNavigation = [
@@ -555,24 +555,14 @@ const announcementBannerColors: Record<string, string> = {
     >
       <div class="flex justify-around items-center py-2">
         <NuxtLink
-          v-for="item in navigation.slice(0, 2)"
-          :key="item.name"
-          :to="item.to"
+          :to="navigation[0].to"
           class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
           active-class="text-primary-500 dark:text-primary-400"
         >
-          <UIcon :name="item.icon" class="w-6 h-6" />
-          <span class="text-xs">{{ item.name }}</span>
+          <UIcon :name="navigation[0].icon" class="w-6 h-6" />
+          <span class="text-xs">{{ navigation[0].name }}</span>
         </NuxtLink>
-        <button
-          type="button"
-          class="flex flex-col items-center justify-center -mt-4 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg"
-          data-testid="quick-add-fab"
-          aria-label="Quick Add"
-          @click="openQuickAdd"
-        >
-          <UIcon name="i-heroicons-plus" class="w-6 h-6" />
-        </button>
+
         <!-- Projects button with popover for starred projects -->
         <div ref="projectsPopoverRef" class="relative">
           <button
@@ -631,6 +621,25 @@ const announcementBannerColors: Record<string, string> = {
             </div>
           </Transition>
         </div>
+
+        <button
+          type="button"
+          class="flex flex-col items-center justify-center -mt-4 w-14 h-14 rounded-full bg-primary-500 text-white shadow-lg"
+          data-testid="quick-add-fab"
+          aria-label="Quick Add"
+          @click="openQuickAdd"
+        >
+          <UIcon name="i-heroicons-plus" class="w-6 h-6" />
+        </button>
+
+        <NuxtLink
+          :to="navigation[2].to"
+          class="flex flex-col items-center gap-1 px-3 py-1 text-gray-500 dark:text-gray-400"
+          active-class="text-primary-500 dark:text-primary-400"
+        >
+          <UIcon :name="navigation[2].icon" class="w-6 h-6" />
+          <span class="text-xs">{{ navigation[2].name }}</span>
+        </NuxtLink>
 
         <NuxtLink
           :to="navigation[4].to"
