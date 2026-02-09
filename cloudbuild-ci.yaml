@@ -1,0 +1,66 @@
+steps:
+  - name: 'node:20'
+    id: 'install'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm install --frozen-lockfile'
+
+  - name: 'node:20'
+    id: 'lint'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm run lint'
+    waitFor: ['install']
+
+  - name: 'node:20'
+    id: 'typecheck'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm run typecheck'
+    waitFor: ['install']
+
+  - name: 'node:20'
+    id: 'test-unit'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'corepack enable && pnpm run test:unit'
+    waitFor: ['install']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-build'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:latest'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:latest'
+      - '.'
+    waitFor: ['lint', 'typecheck', 'test-unit']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'docker-push'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app'
+    waitFor: ['docker-build']
+
+substitutions:
+  _REGION: 'us-central1'
+  _APP_NAME: 'annobib'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '900s'
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:latest'

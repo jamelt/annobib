@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: annobib-check-grace-periods
+  labels:
+    app: annobib
+    component: cronjob
+spec:
+  schedule: "0 6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: annobib
+            component: cronjob
+        spec:
+          restartPolicy: Never
+          serviceAccountName: annobib-app
+          containers:
+            - name: check-grace-periods
+              image: curlimages/curl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  curl -sf http://annobib-app.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local/api/_tasks/check-grace-periods || exit 1
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi

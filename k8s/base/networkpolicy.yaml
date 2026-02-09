@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: annobib-app-netpol
+  labels:
+    app: annobib
+spec:
+  podSelector:
+    matchLabels:
+      app: annobib
+      component: app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 443
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

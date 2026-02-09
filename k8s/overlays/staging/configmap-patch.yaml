@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: annobib-config
+data:
+  NODE_ENV: "staging"
+  NUXT_PUBLIC_APP_URL: ""
+  LOG_LEVEL: "debug"
+  GOOGLE_CLOUD_PROJECT: "annobib-staging"
+  GCS_BUCKET_NAME: "annobib-staging-uploads"
+  DB_CONNECTION_NAME: "annobib-staging:us-central1:annobib-staging-db"
