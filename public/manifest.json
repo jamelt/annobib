@@ -100,7 +100,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+bibanna",
+      "protocol": "web+annobib",
       "url": "/app/handle/%s"
     }
   ]

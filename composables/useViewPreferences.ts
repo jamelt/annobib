@@ -1,4 +1,4 @@
-const STORAGE_PREFIX = 'bibanna:viewMode:'
+const STORAGE_PREFIX = 'annobib:viewMode:'
 
 export function useViewPreferences<T extends string>(
   pageKey: string,

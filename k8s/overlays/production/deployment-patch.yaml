@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bibanna-app
+  name: annobib-app
 spec:
   template:
     spec:

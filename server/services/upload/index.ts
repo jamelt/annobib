@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm'
 import { ingestPDF, ingestDOCX, ingestPlainText } from '../companion/document-ingestion'
 
 const storage = new Storage()
-const bucketName = process.env.GCS_BUCKET_NAME || 'bibanna-uploads'
+const bucketName = process.env.GCS_BUCKET_NAME || 'annobib-uploads'
 
 export interface UploadResult {
   id: string

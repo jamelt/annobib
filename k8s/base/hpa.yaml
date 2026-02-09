@@ -1,14 +1,14 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: bibanna-app-hpa
+  name: annobib-app-hpa
   labels:
-    app: bibanna
+    app: annobib
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: bibanna-app
+    name: annobib-app
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -45,12 +45,12 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: bibanna-app-pdb
+  name: annobib-app-pdb
   labels:
-    app: bibanna
+    app: annobib
 spec:
   minAvailable: 1
   selector:
     matchLabels:
-      app: bibanna
+      app: annobib
       component: app

@@ -183,9 +183,9 @@ export function useGlobalSearch() {
   const activeIndex = useState('global-search-active-index', () => -1)
   const semanticMode = useState('global-search-semantic', () => false)
 
-  const recentSearches = useLocalStorage<RecentSearchItem[]>('bibanna-recent-searches', [])
-  const recentlyVisited = useLocalStorage<RecentlyVisitedItem[]>('bibanna-recently-visited', [])
-  const pinnedSearches = useLocalStorage<RecentSearchItem[]>('bibanna-pinned-searches', [])
+  const recentSearches = useLocalStorage<RecentSearchItem[]>('annobib-recent-searches', [])
+  const recentlyVisited = useLocalStorage<RecentlyVisitedItem[]>('annobib-recently-visited', [])
+  const pinnedSearches = useLocalStorage<RecentSearchItem[]>('annobib-pinned-searches', [])
 
   const route = useRoute()
   const router = useRouter()

@@ -31,11 +31,11 @@ export async function initializeGraphExtension(): Promise<void> {
     await db.execute(sql`SET search_path = ag_catalog, "$user", public`)
     
     const graphExists = await db.execute<{ count: number }>(
-      sql`SELECT count(*) FROM ag_catalog.ag_graph WHERE name = 'bibanna_graph'`
+      sql`SELECT count(*) FROM ag_catalog.ag_graph WHERE name = 'annobib_graph'`
     )
     
     if (graphExists[0]?.count === 0) {
-      await db.execute(sql`SELECT create_graph('bibanna_graph')`)
+      await db.execute(sql`SELECT create_graph('annobib_graph')`)
     }
     
     console.log('Apache AGE graph extension initialized')
@@ -53,7 +53,7 @@ export async function createEntryVertex(entryId: string, entry: {
   const authorNames = entry.authors?.map(a => `${a.firstName} ${a.lastName}`).join(', ') || ''
   
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MERGE (e:Entry {id: ${entryId}})
       SET e.title = ${entry.title},
           e.type = ${entry.entryType},
@@ -69,7 +69,7 @@ export async function createCitationEdge(
   targetEntryId: string,
 ): Promise<void> {
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (source:Entry {id: ${sourceEntryId}})
       MATCH (target:Entry {id: ${targetEntryId}})
       MERGE (source)-[r:CITES]->(target)
@@ -82,7 +82,7 @@ export async function createAuthorVertex(authorName: string): Promise<string> {
   const authorId = `author:${authorName.toLowerCase().replace(/\s+/g, '_')}`
   
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MERGE (a:Author {id: ${authorId}})
       SET a.name = ${authorName}
       RETURN a
@@ -94,7 +94,7 @@ export async function createAuthorVertex(authorName: string): Promise<string> {
 
 export async function linkEntryToAuthor(entryId: string, authorId: string): Promise<void> {
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (e:Entry {id: ${entryId}})
       MATCH (a:Author {id: ${authorId}})
       MERGE (e)-[r:AUTHORED_BY]->(a)
@@ -107,7 +107,7 @@ export async function createTopicVertex(topic: string): Promise<string> {
   const topicId = `topic:${topic.toLowerCase().replace(/\s+/g, '_')}`
   
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MERGE (t:Topic {id: ${topicId}})
       SET t.name = ${topic}
       RETURN t
@@ -119,7 +119,7 @@ export async function createTopicVertex(topic: string): Promise<string> {
 
 export async function linkEntryToTopic(entryId: string, topicId: string): Promise<void> {
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (e:Entry {id: ${entryId}})
       MATCH (t:Topic {id: ${topicId}})
       MERGE (e)-[r:HAS_TOPIC]->(t)
@@ -135,7 +135,7 @@ export async function createUserLink(
   notes?: string,
 ): Promise<void> {
   await db.execute(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (source:Entry {id: ${sourceEntryId}})
       MATCH (target:Entry {id: ${targetEntryId}})
       MERGE (source)-[r:USER_LINK {type: ${linkType}, notes: ${notes || ''}}]->(target)
@@ -146,7 +146,7 @@ export async function createUserLink(
 
 export async function getCitationNetwork(entryId: string, depth: number = 2): Promise<GraphData> {
   const result = await db.execute<{ path: string }>(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH path = (start:Entry {id: ${entryId}})-[:CITES*1..${depth}]->(cited:Entry)
       RETURN path
     $$) AS (path agtype)
@@ -157,7 +157,7 @@ export async function getCitationNetwork(entryId: string, depth: number = 2): Pr
 
 export async function getRelatedEntriesByAuthor(entryId: string): Promise<GraphData> {
   const result = await db.execute<{ e: string }>(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (start:Entry {id: ${entryId}})-[:AUTHORED_BY]->(a:Author)<-[:AUTHORED_BY]-(related:Entry)
       WHERE related.id <> ${entryId}
       RETURN DISTINCT related
@@ -169,7 +169,7 @@ export async function getRelatedEntriesByAuthor(entryId: string): Promise<GraphD
 
 export async function getRelatedEntriesByTopic(entryId: string): Promise<GraphData> {
   const result = await db.execute<{ e: string }>(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (start:Entry {id: ${entryId}})-[:HAS_TOPIC]->(t:Topic)<-[:HAS_TOPIC]-(related:Entry)
       WHERE related.id <> ${entryId}
       RETURN DISTINCT related
@@ -184,7 +184,7 @@ export async function findShortestPath(
   targetEntryId: string,
 ): Promise<GraphData> {
   const result = await db.execute<{ path: string }>(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH path = shortestPath((source:Entry {id: ${sourceEntryId}})-[*]-(target:Entry {id: ${targetEntryId}}))
       RETURN path
     $$) AS (path agtype)
@@ -199,7 +199,7 @@ export async function getTopicClusters(projectId: string): Promise<Array<{
   count: number
 }>> {
   const result = await db.execute<{ topic: string; entries: string[]; count: number }>(sql`
-    SELECT * FROM cypher('bibanna_graph', $$
+    SELECT * FROM cypher('annobib_graph', $$
       MATCH (e:Entry)-[:HAS_TOPIC]->(t:Topic)
       WHERE e.projectId = ${projectId}
       RETURN t.name AS topic, collect(e.id) AS entries, count(e) AS count

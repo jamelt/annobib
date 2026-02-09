@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bibanna-app
+  name: annobib-app
   labels:
-    app: bibanna
+    app: annobib
     component: app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: bibanna
+      app: annobib
       component: app
   strategy:
     type: RollingUpdate
@@ -19,22 +19,23 @@ spec:
   template:
     metadata:
       labels:
-        app: bibanna
+        app: annobib
         component: app
     spec:
-      serviceAccountName: bibanna-app
+      serviceAccountName: annobib-app
+      terminationGracePeriodSeconds: 30
       containers:
         - name: app
-          image: bibanna-app:latest
+          image: annobib-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
               name: http
           envFrom:
             - configMapRef:
-                name: bibanna-config
+                name: annobib-config
             - secretRef:
-                name: bibanna-secrets
+                name: annobib-secrets
           resources:
             requests:
               cpu: 100m
@@ -42,11 +43,16 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /api/health
               port: http
-            initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
@@ -54,7 +60,6 @@ spec:
             httpGet:
               path: /api/health
               port: http
-            initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
@@ -68,6 +73,25 @@ spec:
               mountPath: /tmp
             - name: cache
               mountPath: /.cache
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "$(DB_CONNECTION_NAME)"
+          envFrom:
+            - configMapRef:
+                name: annobib-config
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
       volumes:
         - name: tmp
           emptyDir: {}
@@ -80,6 +104,6 @@ spec:
               podAffinityTerm:
                 labelSelector:
                   matchLabels:
-                    app: bibanna
+                    app: annobib
                     component: app
                 topologyKey: kubernetes.io/hostname

@@ -15,7 +15,7 @@ try {
   ).trim()
 
   if (!psOutput) {
-    console.log('✅ No bibanna processes found')
+    console.log('✅ No annobib processes found')
     process.exit(0)
   }
 

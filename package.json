@@ -1,5 +1,5 @@
 {
-  "name": "bibanna",
+  "name": "annobib",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,6 +13,8 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "nuxt typecheck",
     "test": "vitest",
+    "test:unit": "vitest run --dir tests/unit",
+    "test:integration": "vitest run --dir tests/integration",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
@@ -24,7 +26,7 @@
     "db:migrate:validate": "npx tsx scripts/migrate.ts validate",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "db:setup": "docker compose up -d postgres && docker compose exec postgres sh -c 'until pg_isready -U bibanna; do sleep 1; done' && npx tsx scripts/migrate.ts up",
+    "db:setup": "docker compose up -d postgres && docker compose exec postgres sh -c 'until pg_isready -U annobib; do sleep 1; done' && npx tsx scripts/migrate.ts up",
     "db:reset": "docker compose down -v && pnpm db:setup",
     "db:seed": "npx tsx scripts/seed-sources.ts",
     "admin:promote": "npx tsx scripts/promote-admin.ts",
@@ -73,7 +75,6 @@
     "sharp": "^0.34.5",
     "stripe": "^14.14.0",
     "tailwindcss": "^4.0.0",
-    "unleash-client": "^6.9.6",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5",
     "zod": "^3.22.4"

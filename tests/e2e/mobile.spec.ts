@@ -197,7 +197,7 @@ test.describe('Offline Support', () => {
     await context.setOffline(true)
     
     const pendingCount = await page.evaluate(() => {
-      const stored = localStorage.getItem('bibanna-offline-queue')
+      const stored = localStorage.getItem('annobib-offline-queue')
       if (stored) {
         return JSON.parse(stored).length
       }

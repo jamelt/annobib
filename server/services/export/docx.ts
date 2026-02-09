@@ -259,7 +259,7 @@ export async function generateDocx(
     numbering: {
       config: [
         {
-          reference: 'bibanna-bullets',
+          reference: 'annobib-bullets',
           levels: [
             {
               level: 0,

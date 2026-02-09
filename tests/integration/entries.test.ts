@@ -4,7 +4,7 @@ import postgres from 'postgres'
 import { eq } from 'drizzle-orm'
 import * as schema from '~/server/database/schema'
 
-const testDbUrl = process.env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/bibanna_test'
+const testDbUrl = process.env.TEST_DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/annobib_test'
 
 let db: ReturnType<typeof drizzle>
 let client: postgres.Sql

@@ -7,7 +7,7 @@ import { project1Config } from './seed-data/project1-sources'
 import { project2Config } from './seed-data/project2-sources'
 import type { SeedEntry, SeedProjectConfig } from './seed-data/types'
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://bibanna:bibanna@localhost:5432/bibanna'
+const connectionString = process.env.DATABASE_URL || 'postgresql://annobib:annobib@localhost:5432/annobib'
 const userEmail = process.argv[2]
 
 async function hashPassword(raw: string): Promise<string> {
@@ -315,9 +315,9 @@ async function main() {
   try {
     // Users
     console.log('--- Setting up users ---')
-    const primaryEmail = userEmail?.toLowerCase() || 'seed@bibanna.dev'
+    const primaryEmail = userEmail?.toLowerCase() || 'seed@annobib.dev'
     const primaryUserId = await getOrCreateUser(db, primaryEmail, 'seed123', 'Seed User')
-    const secondaryUserId = await getOrCreateUser(db, 'collaborator@bibanna.dev', 'collab123', 'Research Collaborator')
+    const secondaryUserId = await getOrCreateUser(db, 'collaborator@annobib.dev', 'collab123', 'Research Collaborator')
 
     // Project 1: Post-Labor Economy
     const p1 = await seedProjectConfig(db, primaryUserId, project1Config, 'Post-Labor Economy & Digital Commons')
@@ -336,12 +336,12 @@ async function main() {
     // Summary
     console.log('\n=== Seed complete ===')
     console.log(`  Primary user: ${primaryEmail}`)
-    console.log(`  Collaborator: collaborator@bibanna.dev`)
+    console.log(`  Collaborator: collaborator@annobib.dev`)
     console.log(`  Projects: ${project1Config.projects.length + project2Config.projects.length}`)
     console.log(`  Tags: ${project1Config.tags.length + project2Config.tags.length}`)
     console.log(`  Entries: ${project1Config.entries.length + project2Config.entries.length}`)
     if (!userEmail) {
-      console.log(`\n  Login with: email=seed@bibanna.dev password=seed123`)
+      console.log(`\n  Login with: email=seed@annobib.dev password=seed123`)
     }
   }
   finally {

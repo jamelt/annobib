@@ -4,7 +4,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import { sql } from 'drizzle-orm'
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://bibanna:bibanna@localhost:5432/bibanna'
+const connectionString = process.env.DATABASE_URL || 'postgresql://annobib:annobib@localhost:5432/annobib'
 const command = process.argv[2]
 
 interface MigrationRecord {

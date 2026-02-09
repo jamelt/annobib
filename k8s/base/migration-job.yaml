@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: bibanna-migration
+  name: annobib-migration
   labels:
-    app: bibanna
+    app: annobib
     component: migration
 spec:
   ttlSecondsAfterFinished: 86400
@@ -11,11 +11,11 @@ spec:
   template:
     metadata:
       labels:
-        app: bibanna
+        app: annobib
         component: migration
     spec:
       restartPolicy: Never
-      serviceAccountName: bibanna-app
+      serviceAccountName: annobib-app
       initContainers:
         - name: wait-for-db
           image: postgres:18-alpine
@@ -23,25 +23,21 @@ spec:
             - sh
             - -c
             - |
-              until pg_isready -h $DB_HOST -p 5432 -U $DB_USER; do
-                echo "Waiting for database..."
+              until pg_isready -h localhost -p 5432; do
+                echo "Waiting for Cloud SQL Proxy..."
                 sleep 2
               done
               echo "Database is ready"
-          env:
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: bibanna-config
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: bibanna-secrets
-                  key: DB_USER
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
       containers:
         - name: migration
-          image: bibanna-app:latest
+          image: annobib-app:latest
           command:
             - npx
             - tsx
@@ -51,7 +47,7 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: bibanna-secrets
+                  name: annobib-secrets
                   key: DATABASE_URL
           resources:
             requests:
@@ -60,13 +56,32 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "$(DB_CONNECTION_NAME)"
+          envFrom:
+            - configMapRef:
+                name: annobib-config
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: bibanna-migration-validate
+  name: annobib-migration-validate
   labels:
-    app: bibanna
+    app: annobib
     component: migration-validate
 spec:
   ttlSecondsAfterFinished: 3600
@@ -74,18 +89,25 @@ spec:
   template:
     metadata:
       labels:
-        app: bibanna
+        app: annobib
         component: migration-validate
     spec:
       restartPolicy: Never
+      serviceAccountName: annobib-app
       containers:
         - name: validate
-          image: bibanna-app:latest
+          image: annobib-app:latest
           command:
             - npx
             - tsx
             - scripts/migrate.ts
             - validate
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: annobib-secrets
+                  key: DATABASE_URL
           resources:
             requests:
               memory: "128Mi"
@@ -93,3 +115,22 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "200m"
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "$(DB_CONNECTION_NAME)"
+          envFrom:
+            - configMapRef:
+                name: annobib-config
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

@@ -3,7 +3,7 @@ import type { EntrySuggestion, SearchRequest, SourceAdapter } from "../types";
 
 const OPENALEX_API = "https://api.openalex.org";
 const REQUEST_TIMEOUT = 8000;
-const USER_AGENT = "Bibanna/1.0 (mailto:support@bibanna.dev)";
+const USER_AGENT = "Bibanna/1.0 (mailto:support@annobib.dev)";
 
 export const openAlexAdapter: SourceAdapter = {
   name: "openalex",

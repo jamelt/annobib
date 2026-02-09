@@ -69,7 +69,7 @@ export const logger = pino({
   transport: isProduction ? gcpTransport : devTransport,
   
   base: {
-    service: 'bibanna-app',
+    service: 'annobib-app',
     version: process.env.APP_VERSION || '1.0.0',
     environment: process.env.NODE_ENV || 'development',
   },

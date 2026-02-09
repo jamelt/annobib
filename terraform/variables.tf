@@ -24,6 +24,18 @@ variable "environment" {
   }
 }
 
+variable "app_name" {
+  description = "The application name used in all resource naming"
+  type        = string
+  default     = "annobib"
+}
+
+variable "domain" {
+  description = "The application domain (leave empty if not yet purchased)"
+  type        = string
+  default     = ""
+}
+
 variable "node_machine_type" {
   description = "The machine type for GKE nodes"
   type        = string
@@ -58,4 +70,20 @@ variable "db_password" {
   description = "The database password for the app user"
   type        = string
   sensitive   = true
+}
+
+variable "notification_email" {
+  description = "Email address for alert notifications"
+  type        = string
+}
+
+variable "monthly_budget_amount" {
+  description = "Monthly budget alert threshold in USD"
+  type        = number
+  default     = 400
+}
+
+variable "billing_account_id" {
+  description = "The billing account ID for budget alerts"
+  type        = string
 }

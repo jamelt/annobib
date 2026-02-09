@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { sql } from 'drizzle-orm'
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://bibanna:bibanna@localhost:5432/bibanna'
+const connectionString = process.env.DATABASE_URL || 'postgresql://annobib:annobib@localhost:5432/annobib'
 
 const email = process.argv[2]
 const password = process.argv[3] || 'admin123'
@@ -16,8 +16,8 @@ if (!email) {
   console.error('  If the user does NOT exist, creates them with the given password and promotes to admin.')
   console.error('')
   console.error('Examples:')
-  console.error('  npx tsx scripts/promote-admin.ts admin@bibanna.dev')
-  console.error('  npx tsx scripts/promote-admin.ts admin@bibanna.dev mypassword "Jamel Toms"')
+  console.error('  npx tsx scripts/promote-admin.ts admin@annobib.dev')
+  console.error('  npx tsx scripts/promote-admin.ts admin@annobib.dev mypassword "Jamel Toms"')
   process.exit(1)
 }
 

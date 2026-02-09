@@ -24,7 +24,7 @@ export async function initTelemetry() {
   const { resourceFromAttributes } = await import('@opentelemetry/resources')
 
   const resource = resourceFromAttributes({
-    [SEMRESATTRS_SERVICE_NAME]: 'bibanna-app',
+    [SEMRESATTRS_SERVICE_NAME]: 'annobib-app',
     [SEMRESATTRS_SERVICE_VERSION]: process.env.APP_VERSION || '1.0.0',
     [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV || 'development',
   })
@@ -71,11 +71,11 @@ export async function initTelemetry() {
   })
 }
 
-export function getTracer(name: string = 'bibanna') {
+export function getTracer(name: string = 'annobib') {
   return trace.getTracer(name)
 }
 
-export function getMeter(name: string = 'bibanna') {
+export function getMeter(name: string = 'annobib') {
   return metrics.getMeter(name)
 }
 

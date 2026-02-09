@@ -1,10 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bibanna-config
+  name: annobib-config
   labels:
-    app: bibanna
+    app: annobib
 data:
   NODE_ENV: "production"
-  NUXT_PUBLIC_APP_URL: "https://bibanna.dev"
+  NUXT_PUBLIC_APP_URL: ""
   LOG_LEVEL: "info"
+  GOOGLE_CLOUD_PROJECT: ""
+  APP_VERSION: "0.0.0"
+  GCS_BUCKET_NAME: ""
+  DB_CONNECTION_NAME: ""

@@ -7,7 +7,7 @@ interface QueuedAction {
   synced: boolean
 }
 
-const STORAGE_KEY = 'bibanna-offline-queue'
+const STORAGE_KEY = 'annobib-offline-queue'
 
 export function useOfflineQueue() {
   const queue = ref<QueuedAction[]>([])

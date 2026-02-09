@@ -14,7 +14,7 @@ variable "notification_email" {
 }
 
 locals {
-  name_prefix = "bibanna-${var.environment}"
+  name_prefix = "annobib-${var.environment}"
 }
 
 resource "google_monitoring_notification_channel" "email" {

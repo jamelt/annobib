@@ -15,7 +15,7 @@ try {
   ).trim();
 
   if (!psOutput) {
-    console.log("✅ No bibanna processes found");
+    console.log("✅ No annobib processes found");
     process.exit(0);
   }
 
@@ -47,7 +47,7 @@ try {
   console.log("\n✅ Cleanup complete");
 } catch (err: any) {
   if (err.status === 1 && !err.stdout?.trim()) {
-    console.log("✅ No bibanna processes found");
+    console.log("✅ No annobib processes found");
   } else {
     console.error("Error during cleanup:", err.message);
     process.exit(1);
