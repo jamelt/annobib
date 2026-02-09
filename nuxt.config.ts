@@ -47,8 +47,21 @@ export default defineNuxtConfig({
           content:
             "Manage your bibliographies, annotations, and research sources with ease.",
         },
+        { name: "theme-color", content: "#4F46E5" },
+        { name: "apple-mobile-web-app-capable", content: "yes" },
+        {
+          name: "apple-mobile-web-app-status-bar-style",
+          content: "default",
+        },
+        { name: "apple-mobile-web-app-title", content: "AnnoBib" },
       ],
-      link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+        { rel: "icon", type: "image/png", sizes: "32x32", href: "/icons/icon-32x32.png" },
+        { rel: "icon", type: "image/png", sizes: "16x16", href: "/icons/icon-16x16.png" },
+        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        { rel: "manifest", href: "/manifest.json" },
+      ],
     },
   },
 
