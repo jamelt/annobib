@@ -59,7 +59,7 @@ const tiers = getAllPlansForDisplay().map(plan => ({
         <div class="flex items-center justify-between h-16">
           <NuxtLink to="/" class="flex items-center gap-2">
             <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-primary-500" />
-            <span class="text-xl font-bold text-gray-900 dark:text-white">Bibanna</span>
+            <span class="text-xl font-bold text-gray-900 dark:text-white">AnnoBib</span>
           </NuxtLink>
 
           <nav class="hidden md:flex items-center gap-6">
@@ -103,7 +103,7 @@ const tiers = getAllPlansForDisplay().map(plan => ({
             <div class="flex items-center justify-between mb-8">
               <NuxtLink to="/" class="flex items-center gap-2" @click="close()">
                 <UIcon name="i-heroicons-book-open" class="w-8 h-8 text-primary-500" />
-                <span class="text-xl font-bold text-gray-900 dark:text-white">Bibanna</span>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">AnnoBib</span>
               </NuxtLink>
               <UButton
                 icon="i-heroicons-x-mark"
@@ -273,10 +273,10 @@ const tiers = getAllPlansForDisplay().map(plan => ({
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-book-open" class="w-6 h-6 text-primary-500" />
-            <span class="font-semibold text-gray-900 dark:text-white">Bibanna</span>
+            <span class="font-semibold text-gray-900 dark:text-white">AnnoBib</span>
           </div>
           <p class="text-gray-500 dark:text-gray-400 text-sm">
-            &copy; {{ new Date().getFullYear() }} Bibanna. All rights reserved.
+            &copy; {{ new Date().getFullYear() }} AnnoBib. All rights reserved.
           </p>
         </div>
       </div>

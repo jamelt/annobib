@@ -1,10 +1,10 @@
 # Deployment Guide
 
-This document describes how to deploy Bibanna to Google Cloud Platform using Kubernetes.
+This document describes how to deploy AnnoBib to Google Cloud Platform using Kubernetes.
 
 ## Overview
 
-Bibanna uses:
+AnnoBib uses:
 - **GKE** (Google Kubernetes Engine) for container orchestration
 - **Cloud SQL** for managed PostgreSQL
 - **Cloud Storage** for file uploads
@@ -35,7 +35,7 @@ Bibanna uses:
             ┌───────────────────────────┐
             │         GKE Cluster       │
             │  ┌─────────────────────┐  │
-            │  │   Bibanna Pods      │  │
+            │  │   AnnoBib Pods      │  │
             │  │   (autoscaled)      │  │
             │  └──────────┬──────────┘  │
             └─────────────┼─────────────┘
@@ -92,7 +92,7 @@ cd terraform
 # Initialize with GCS backend
 terraform init \
   -backend-config="bucket=your-terraform-state-bucket" \
-  -backend-config="prefix=bibanna/production"
+  -backend-config="prefix=annobib/production"
 ```
 
 ### Deploy Infrastructure
@@ -136,10 +136,10 @@ Terraform creates a Cloud SQL instance with:
 cloud_sql_proxy -instances=project:region:instance=tcp:5432
 
 # Run initialization script
-psql -h 127.0.0.1 -U postgres -d bibanna < scripts/init-db.sql
+psql -h 127.0.0.1 -U postgres -d annobib < scripts/init-db.sql
 
 # Run migrations
-DATABASE_URL="postgresql://postgres:password@127.0.0.1:5432/bibanna" \
+DATABASE_URL="postgresql://postgres:password@127.0.0.1:5432/annobib" \
   npx tsx scripts/migrate.ts
 ```
 
@@ -148,8 +148,8 @@ DATABASE_URL="postgresql://postgres:password@127.0.0.1:5432/bibanna" \
 Store credentials in Secret Manager:
 
 ```bash
-echo -n "postgresql://user:pass@host:5432/bibanna" | \
-  gcloud secrets create bibanna-database-url --data-file=-
+echo -n "postgresql://user:pass@host:5432/annobib" | \
+  gcloud secrets create annobib-database-url --data-file=-
 ```
 
 ---
@@ -181,13 +181,13 @@ CMD ["node", ".output/server/index.mjs"]
 
 ```bash
 # Build image
-docker build -t gcr.io/your-project/bibanna:v1.0.0 .
+docker build -t gcr.io/your-project/annobib:v1.0.0 .
 
 # Or use Artifact Registry
-docker build -t us-central1-docker.pkg.dev/your-project/bibanna/app:v1.0.0 .
+docker build -t us-central1-docker.pkg.dev/your-project/annobib/app:v1.0.0 .
 
 # Push to registry
-docker push us-central1-docker.pkg.dev/your-project/bibanna/app:v1.0.0
+docker push us-central1-docker.pkg.dev/your-project/annobib/app:v1.0.0
 ```
 
 ---
@@ -220,7 +220,7 @@ k8s/
 ### Connect to Cluster
 
 ```bash
-gcloud container clusters get-credentials bibanna-cluster \
+gcloud container clusters get-credentials annobib-cluster \
   --region us-central1 \
   --project your-project-id
 ```
@@ -243,7 +243,7 @@ kubectl apply -k k8s/overlays/production
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bibanna-app
+  name: annobib-app
 spec:
   replicas: 3
   strategy:
@@ -255,7 +255,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: us-central1-docker.pkg.dev/project/bibanna/app:latest
+        image: us-central1-docker.pkg.dev/project/annobib/app:latest
         resources:
           requests:
             memory: "512Mi"
@@ -283,12 +283,12 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: bibanna-app-hpa
+  name: annobib-app-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: bibanna-app
+    name: annobib-app
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -306,20 +306,20 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: bibanna-ingress
+  name: annobib-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: bibanna-ip
-    networking.gke.io/managed-certificates: bibanna-cert
+    kubernetes.io/ingress.global-static-ip-name: annobib-ip
+    networking.gke.io/managed-certificates: annobib-cert
 spec:
   rules:
-  - host: app.bibanna.io
+  - host: app.annobib.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: bibanna-app
+            name: annobib-app
             port:
               number: 80
 ```
@@ -345,9 +345,9 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/bibanna/app:$SHORT_SHA'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/annobib/app:$SHORT_SHA'
       - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/bibanna/app:latest'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/annobib/app:latest'
       - '.'
 
   # Push to Artifact Registry
@@ -355,16 +355,16 @@ steps:
     args:
       - 'push'
       - '--all-tags'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/bibanna/app'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/annobib/app'
 
   # Deploy to GKE
   - name: 'gcr.io/cloud-builders/gke-deploy'
     args:
       - 'run'
       - '--filename=k8s/overlays/production'
-      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/bibanna/app:$SHORT_SHA'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/annobib/app:$SHORT_SHA'
       - '--location=us-central1'
-      - '--cluster=bibanna-cluster'
+      - '--cluster=annobib-cluster'
 ```
 
 ### Trigger Setup
@@ -372,7 +372,7 @@ steps:
 ```bash
 # Create trigger for main branch
 gcloud builds triggers create github \
-  --repo-name=bibanna \
+  --repo-name=annobib \
   --repo-owner=your-org \
   --branch-pattern="^main$" \
   --build-config=cloudbuild.yaml
@@ -388,10 +388,10 @@ gcloud builds triggers create github \
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: bibanna-config
+  name: annobib-config
 data:
   NODE_ENV: "production"
-  NUXT_PUBLIC_APP_URL: "https://app.bibanna.io"
+  NUXT_PUBLIC_APP_URL: "https://app.annobib.com"
   LOG_LEVEL: "info"
 ```
 
@@ -403,10 +403,10 @@ Secrets are stored in Secret Manager and mounted via Workload Identity:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: bibanna-secrets
+  name: annobib-secrets
 type: Opaque
 stringData:
-  DATABASE_URL: "sm://project-id/bibanna-database-url/latest"
+  DATABASE_URL: "sm://project-id/annobib-database-url/latest"
   STRIPE_SECRET_KEY: "sm://project-id/stripe-secret-key/latest"
   OPENAI_API_KEY: "sm://project-id/openai-api-key/latest"
 ```
@@ -443,12 +443,12 @@ The deployment uses rolling updates with:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: bibanna-pdb
+  name: annobib-pdb
 spec:
   minAvailable: 2
   selector:
     matchLabels:
-      app: bibanna-app
+      app: annobib-app
 ```
 
 ---
@@ -470,7 +470,7 @@ Use expand-contract pattern for zero-downtime migrations:
 # Add migration step to cloudbuild.yaml
 
 # Manual migration
-kubectl exec -it deployment/bibanna-app -- \
+kubectl exec -it deployment/annobib-app -- \
   npx tsx scripts/migrate.ts
 ```
 
@@ -478,12 +478,12 @@ kubectl exec -it deployment/bibanna-app -- \
 
 ```bash
 # Revert deployment
-kubectl rollout undo deployment/bibanna-app
+kubectl rollout undo deployment/annobib-app
 
 # For database, restore from backup
 gcloud sql backups restore BACKUP_ID \
-  --restore-instance=bibanna-db \
-  --backup-instance=bibanna-db
+  --restore-instance=annobib-db \
+  --backup-instance=annobib-db
 ```
 
 ---
@@ -551,7 +551,7 @@ resources:
 Scale Cloud SQL instance:
 
 ```bash
-gcloud sql instances patch bibanna-db \
+gcloud sql instances patch annobib-db \
   --tier=db-custom-4-16384
 ```
 
@@ -563,23 +563,23 @@ gcloud sql instances patch bibanna-db \
 
 ```bash
 # Application logs
-kubectl logs -f deployment/bibanna-app
+kubectl logs -f deployment/annobib-app
 
 # All pods
-kubectl logs -l app=bibanna-app --all-containers
+kubectl logs -l app=annobib-app --all-containers
 
 # Cloud Logging
-gcloud logging read "resource.type=k8s_container AND resource.labels.container_name=bibanna-app"
+gcloud logging read "resource.type=k8s_container AND resource.labels.container_name=annobib-app"
 ```
 
 ### Debug Pod
 
 ```bash
 # Shell into running pod
-kubectl exec -it deployment/bibanna-app -- /bin/sh
+kubectl exec -it deployment/annobib-app -- /bin/sh
 
 # Debug crashed pod
-kubectl debug -it pod/bibanna-app-xxx --image=busybox
+kubectl debug -it pod/annobib-app-xxx --image=busybox
 ```
 
 ### Common Issues
@@ -603,11 +603,11 @@ Restrict pod-to-pod communication:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: bibanna-network-policy
+  name: annobib-network-policy
 spec:
   podSelector:
     matchLabels:
-      app: bibanna-app
+      app: annobib-app
   ingress:
   - from:
     - namespaceSelector:
@@ -620,7 +620,7 @@ spec:
 Pods use Workload Identity to access GCP services without service account keys:
 
 ```yaml
-serviceAccountName: bibanna-sa
+serviceAccountName: annobib-sa
 ```
 
 ### Secret Rotation
@@ -630,10 +630,10 @@ Rotate secrets regularly:
 ```bash
 # Rotate database password
 gcloud sql users set-password postgres \
-  --instance=bibanna-db \
+  --instance=annobib-db \
   --password=NEW_PASSWORD
 
 # Update Secret Manager
 echo -n "new-connection-string" | \
-  gcloud secrets versions add bibanna-database-url --data-file=-
+  gcloud secrets versions add annobib-database-url --data-file=-
 ```

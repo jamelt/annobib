@@ -1,6 +1,6 @@
 {
-  "name": "Bibanna",
-  "short_name": "Bibanna",
+  "name": "AnnoBib",
+  "short_name": "AnnoBib",
   "description": "AI-powered bibliography management for researchers",
   "start_url": "/app",
   "display": "standalone",

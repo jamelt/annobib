@@ -32,7 +32,7 @@ For isolated testing, you can set up a separate test database:
 
 ```bash
 # Set the test database URL
-export TEST_DATABASE_URL="postgres://postgres:postgres@localhost:5432/bibanna_test"
+export TEST_DATABASE_URL="postgres://postgres:postgres@localhost:5432/annobib_test"
 
 # Run tests
 pnpm test tests/integration/

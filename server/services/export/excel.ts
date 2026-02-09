@@ -8,7 +8,7 @@ export async function generateExcel(
   preset: ExcelExportPreset,
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Bibanna'
+  workbook.creator = 'AnnoBib'
   workbook.created = new Date()
 
   const mainSheet = workbook.addWorksheet('Bibliography', {

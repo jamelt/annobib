@@ -76,7 +76,7 @@ Users reported difficulty seeing the full edit entry page and figuring out how t
 ## Technical Details
 
 ### Files Modified
-- `/Users/jamel/Projects/bibanna/components/app/EntryFormModal.vue`
+- `/Users/jamel/Projects/annobib/components/app/EntryFormModal.vue`
 
 ### New Features
 - `scrollContainer` ref for tracking scroll position

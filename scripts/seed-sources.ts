@@ -307,7 +307,7 @@ async function createExcelPreset(db: ReturnType<typeof drizzle>, userId: string)
 }
 
 async function main() {
-  console.log('=== Bibanna Seed Script ===\n')
+  console.log('=== AnnoBib Seed Script ===\n')
 
   const client = postgres(connectionString, { max: 1 })
   const db = drizzle(client)

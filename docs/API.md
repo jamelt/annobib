@@ -1,6 +1,6 @@
 # API Reference
 
-This document describes all API endpoints in Bibanna. All endpoints are prefixed with `/api/`.
+This document describes all API endpoints in AnnoBib. All endpoints are prefixed with `/api/`.
 
 ## Authentication
 

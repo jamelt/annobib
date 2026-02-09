@@ -1,6 +1,6 @@
 # Services Guide
 
-This document describes the backend services in Bibanna. Services encapsulate business logic and are located in `server/services/`.
+This document describes the backend services in AnnoBib. Services encapsulate business logic and are located in `server/services/`.
 
 ## Service Organization
 

@@ -58,7 +58,7 @@ async function fetchCrossrefWorks(
       {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Bibanna/1.0 (mailto:support@annobib.dev)",
+          "User-Agent": "AnnoBib/1.0 (mailto:support@annobib.dev)",
         },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT),
       },
@@ -88,7 +88,7 @@ export async function lookupByDoi(
       {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Bibanna/1.0 (mailto:support@annobib.dev)",
+          "User-Agent": "AnnoBib/1.0 (mailto:support@annobib.dev)",
         },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT),
       },

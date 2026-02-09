@@ -219,7 +219,7 @@ const announcementBannerColors: Record<string, string> = {
                 class="w-8 h-8 text-primary-500"
               />
               <span class="text-xl font-bold text-gray-900 dark:text-white"
-                >Bibanna</span
+                >AnnoBib</span
               >
             </NuxtLink>
             <UButton
@@ -303,7 +303,7 @@ const announcementBannerColors: Record<string, string> = {
             class="w-8 h-8 text-primary-500"
           />
           <span class="text-xl font-bold text-gray-900 dark:text-white"
-            >Bibanna</span
+            >AnnoBib</span
           >
         </NuxtLink>
         <UIcon

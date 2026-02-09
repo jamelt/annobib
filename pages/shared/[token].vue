@@ -184,7 +184,7 @@ function formatAuthors(authors: any[]): string {
       <footer class="border-t border-gray-200 dark:border-gray-700 py-6 mt-12">
         <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
           <p>
-            Powered by <NuxtLink to="/" class="text-primary-600 hover:text-primary-700">Bibanna</NuxtLink>
+            Powered by <NuxtLink to="/" class="text-primary-600 hover:text-primary-700">AnnoBib</NuxtLink>
             · The modern bibliography manager for researchers
           </p>
         </div>

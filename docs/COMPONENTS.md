@@ -1,6 +1,6 @@
 # Component Guide
 
-This document describes the Vue components used in Bibanna, their purpose, and usage patterns.
+This document describes the Vue components used in AnnoBib, their purpose, and usage patterns.
 
 ## Component Organization
 

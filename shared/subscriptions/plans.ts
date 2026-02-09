@@ -139,7 +139,7 @@ export const SUBSCRIPTION_PLANS = {
       cta: 'Start Free Trial',
     },
     stripe: {
-      productName: 'Bibanna Light',
+      productName: 'AnnoBib Light',
       productDescription: 'For active researchers - 500 entries, 15 projects, PDF export',
     },
   },
@@ -206,7 +206,7 @@ export const SUBSCRIPTION_PLANS = {
       cta: 'Start Free Trial',
     },
     stripe: {
-      productName: 'Bibanna Pro',
+      productName: 'AnnoBib Pro',
       productDescription: 'For power users - Unlimited entries, AI features, Research Companion',
     },
   },

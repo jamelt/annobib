@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     try {
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'Bibanna/1.0',
+          'User-Agent': 'AnnoBib/1.0',
           'Accept': 'text/html',
         },
         signal: AbortSignal.timeout(5000),

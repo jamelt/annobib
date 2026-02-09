@@ -1,4 +1,4 @@
-# Bibanna
+# AnnoBib
 
 A modern bibliography and annotation management platform for researchers, students, and professors.
 
@@ -37,8 +37,8 @@ A modern bibliography and annotation management platform for researchers, studen
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/your-username/bibanna.git
-cd bibanna
+git clone https://github.com/your-username/annobib.git
+cd annobib
 pnpm install
 ```
 
@@ -72,7 +72,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 ## Project Structure
 
 ```
-bibanna/
+annobib/
 ├── app.vue                 # Root component
 ├── app.config.ts           # App configuration (UI theme)
 ├── nuxt.config.ts          # Nuxt configuration
@@ -160,7 +160,7 @@ pnpm typecheck        # Run type checking
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:pass@localhost:5432/bibanna"
+DATABASE_URL="postgresql://user:pass@localhost:5432/annobib"
 
 # Authentication
 NUXT_AUTH0_DOMAIN="your-tenant.auth0.com"
@@ -184,8 +184,8 @@ NUXT_SESSION_SECRET="your-session-secret"
 ### Docker
 
 ```bash
-docker build -t bibanna .
-docker run -p 3000:3000 bibanna
+docker build -t annobib .
+docker run -p 3000:3000 annobib
 ```
 
 ### Kubernetes (GKE)

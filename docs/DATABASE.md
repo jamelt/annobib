@@ -1,10 +1,10 @@
 # Database Schema Documentation
 
-This document describes the PostgreSQL database schema used by Bibanna, including all tables, relationships, and key design patterns.
+This document describes the PostgreSQL database schema used by AnnoBib, including all tables, relationships, and key design patterns.
 
 ## Overview
 
-Bibanna uses PostgreSQL 18 with the following extensions:
+AnnoBib uses PostgreSQL 18 with the following extensions:
 - **uuid-ossp** - UUID generation for primary keys
 - **pgvector** - Vector similarity search for semantic features
 

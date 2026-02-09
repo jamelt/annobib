@@ -157,7 +157,7 @@ test.describe('PWA Installation', () => {
     expect(response?.status()).toBe(200)
     
     const manifest = await response?.json()
-    expect(manifest.name).toBe('Bibanna')
+    expect(manifest.name).toBe('AnnoBib')
     expect(manifest.start_url).toBe('/app')
     expect(manifest.display).toBe('standalone')
   })

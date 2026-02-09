@@ -149,7 +149,7 @@ async function handleManageBilling() {
         <div class="flex items-center justify-between">
           <div>
             <p class="text-lg font-medium text-gray-900 dark:text-white">
-              Bibanna {{ getTierDisplayName(tier) }}
+              AnnoBib {{ getTierDisplayName(tier) }}
             </p>
             <p v-if="periodEnd" class="text-sm text-gray-500">
               {{ isCanceled ? 'Ends' : 'Renews' }} on {{ periodEnd.toLocaleDateString() }}

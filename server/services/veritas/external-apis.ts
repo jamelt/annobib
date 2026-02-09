@@ -110,7 +110,7 @@ export async function getOpenAlexData(entry: Entry): Promise<OpenAlexData | null
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Bibanna/1.0 (mailto:support@annobib.dev)',
+        'User-Agent': 'AnnoBib/1.0 (mailto:support@annobib.dev)',
         'Accept': 'application/json',
       },
     })
@@ -139,7 +139,7 @@ export async function getCrossRefData(entry: Entry): Promise<CrossRefData | null
     const url = `${CROSSREF_API}/works/${entry.metadata.doi}`
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Bibanna/1.0 (mailto:support@annobib.dev)',
+        'User-Agent': 'AnnoBib/1.0 (mailto:support@annobib.dev)',
         'Accept': 'application/json',
       },
     })

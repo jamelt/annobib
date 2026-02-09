@@ -1,6 +1,6 @@
-# Bibanna Architecture Overview
+# AnnoBib Architecture Overview
 
-Bibanna is a modern bibliography management application built for researchers, students, and professors. This document provides a comprehensive overview of the system architecture, design decisions, and how components interact.
+AnnoBib is a modern bibliography management application built for researchers, students, and professors. This document provides a comprehensive overview of the system architecture, design decisions, and how components interact.
 
 ## Table of Contents
 
@@ -126,7 +126,7 @@ Bibanna is a modern bibliography management application built for researchers, s
 ## Directory Structure
 
 ```
-bibanna/
+annobib/
 ├── app.vue                 # Root Vue component
 ├── app.config.ts           # Nuxt UI theme configuration
 ├── nuxt.config.ts          # Nuxt configuration

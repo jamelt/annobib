@@ -26,7 +26,7 @@ export async function extractMetadataFromUrl(url: string): Promise<ExtractedMeta
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Bibanna/1.0 (Academic Bibliography Tool)',
+        'User-Agent': 'AnnoBib/1.0 (Academic Bibliography Tool)',
         'Accept': 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(10000),

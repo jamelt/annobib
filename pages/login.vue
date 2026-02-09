@@ -50,7 +50,7 @@ async function handleOAuthLogin(provider: string) {
       <div class="text-center mb-8">
         <NuxtLink to="/" class="inline-flex items-center gap-2">
           <UIcon name="i-heroicons-book-open" class="w-10 h-10 text-primary-500" />
-          <span class="text-2xl font-bold text-gray-900 dark:text-white">Bibanna</span>
+          <span class="text-2xl font-bold text-gray-900 dark:text-white">AnnoBib</span>
         </NuxtLink>
         <h1 class="mt-6 text-2xl font-bold text-gray-900 dark:text-white">
           Sign in to your account

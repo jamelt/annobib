@@ -28,14 +28,14 @@ export default defineNuxtConfig({
     openaiApiKey: process.env.NUXT_OPENAI_API_KEY,
     googleBooksApiKey: process.env.NUXT_GOOGLE_BOOKS_API_KEY,
     public: {
-      appName: "Bibanna",
+      appName: "AnnoBib",
       stripePublishableKey: process.env.NUXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     },
   },
 
   app: {
     head: {
-      title: "Bibanna - Bibliography & Annotation Management",
+      title: "AnnoBib - Bibliography & Annotation Management",
       meta: [
         { charset: "utf-8" },
         {
