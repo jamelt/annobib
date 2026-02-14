@@ -132,6 +132,7 @@ steps:
       - |
         gcloud container clusters get-credentials ${_STAGING_CLUSTER} --zone ${_STAGING_ZONE} --project ${PROJECT_ID}
         sed -i "s/newTag: latest/newTag: ${SHORT_SHA}/" infra/k8s/overlays/staging/kustomization.yaml
+        kubectl -n annobib-staging delete job annobib-migration annobib-migration-validate --ignore-not-found
         kubectl apply -k infra/k8s/overlays/staging
         kubectl -n annobib-staging rollout status deployment/annobib-app --timeout=300s
     waitFor: ['validate-migrations']
