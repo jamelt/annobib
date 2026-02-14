@@ -35,7 +35,7 @@ steps:
     entrypoint: 'bash'
     args:
       - '-c'
-      - 'corepack enable && pnpm run build'
+      - 'export NODE_OPTIONS="--max-old-space-size=4096" && corepack enable && pnpm run build'
     waitFor: ['lint', 'typecheck', 'test-unit']
 
   - name: 'gcr.io/cloud-builders/docker'
