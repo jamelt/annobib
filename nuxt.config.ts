@@ -61,7 +61,7 @@ export default defineNuxtConfig({
           content: 'Manage your bibliographies, annotations, and research sources with ease.',
         },
         { name: 'theme-color', content: '#4F46E5' },
-        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         {
           name: 'apple-mobile-web-app-status-bar-style',
           content: 'default',
