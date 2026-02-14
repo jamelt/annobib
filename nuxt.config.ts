@@ -1,4 +1,11 @@
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const rootDir = fileURLToPath(new URL(".", import.meta.url));
+
 export default defineNuxtConfig({
+  srcDir: "app/",
+
   devtools: { enabled: true },
 
   css: ["~/assets/css/main.css"],
@@ -89,6 +96,9 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "node-server",
+    alias: {
+      "~/server": resolve(rootDir, "server"),
+    },
     experimental: {
       openAPI: true,
     },

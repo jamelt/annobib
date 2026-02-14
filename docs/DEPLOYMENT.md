@@ -75,7 +75,7 @@ gcloud config set project your-project-id
 ### Directory Structure
 
 ```
-terraform/
+infra/terraform/
 ├── main.tf               # Main resource definitions
 ├── variables.tf          # Input variables
 ├── outputs.tf            # Output values
@@ -87,7 +87,7 @@ terraform/
 ### Initialize Terraform
 
 ```bash
-cd terraform
+cd infra/terraform
 
 # Initialize with GCS backend
 terraform init \
@@ -136,11 +136,11 @@ Terraform creates a Cloud SQL instance with:
 cloud_sql_proxy -instances=project:region:instance=tcp:5432
 
 # Run initialization script
-psql -h 127.0.0.1 -U postgres -d annobib < scripts/init-db.sql
+psql -h 127.0.0.1 -U postgres -d annobib < scripts/db/init-db.sql
 
 # Run migrations
 DATABASE_URL="postgresql://postgres:password@127.0.0.1:5432/annobib" \
-  npx tsx scripts/migrate.ts
+  npx tsx scripts/db/migrate.ts
 ```
 
 ### Database Secrets
@@ -229,10 +229,10 @@ gcloud container clusters get-credentials annobib-cluster \
 
 ```bash
 # Deploy to staging
-kubectl apply -k k8s/overlays/staging
+kubectl apply -k infra/k8s/overlays/staging
 
 # Deploy to production
-kubectl apply -k k8s/overlays/production
+kubectl apply -k infra/k8s/overlays/production
 ```
 
 ### Key Kubernetes Resources
@@ -361,7 +361,7 @@ steps:
   - name: 'gcr.io/cloud-builders/gke-deploy'
     args:
       - 'run'
-      - '--filename=k8s/overlays/production'
+      - '--filename=infra/k8s/overlays/production'
       - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/annobib/app:$SHORT_SHA'
       - '--location=us-central1'
       - '--cluster=annobib-cluster'
@@ -471,7 +471,7 @@ Use expand-contract pattern for zero-downtime migrations:
 
 # Manual migration
 kubectl exec -it deployment/annobib-app -- \
-  npx tsx scripts/migrate.ts
+  npx tsx scripts/db/migrate.ts
 ```
 
 ### Rollback

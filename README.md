@@ -52,7 +52,7 @@ cp .env.example .env
 ### 3. Start Database
 
 ```bash
-docker-compose up -d postgres
+docker compose -f infra/docker/docker-compose.yml up -d postgres
 ```
 
 ### 4. Run Migrations

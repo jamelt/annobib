@@ -14,8 +14,9 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
+      reportsDirectory: './.output/coverage',
       reporter: ['text', 'json', 'html'],
-      include: ['server/**/*.ts', 'composables/**/*.ts', 'utils/**/*.ts'],
+      include: ['server/**/*.ts', 'app/composables/**/*.ts', 'app/utils/**/*.ts'],
       exclude: ['node_modules', 'tests', '.nuxt', '.output'],
       thresholds: {
         lines: 70,

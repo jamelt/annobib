@@ -30,6 +30,8 @@ steps:
     id: 'docker-build'
     args:
       - 'build'
+      - '-f'
+      - 'infra/docker/Dockerfile'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/annobib/annobib-preview:pr-${_PR_NUMBER}'
       - '--cache-from'
@@ -72,8 +74,8 @@ steps:
     args:
       - '-c'
       - |
-        mkdir -p /workspace/k8s/overlays/preview-pr-${_PR_NUMBER}
-        cat > /workspace/k8s/overlays/preview-pr-${_PR_NUMBER}/kustomization.yaml << EOF
+        mkdir -p /workspace/infra/k8s/overlays/preview-pr-${_PR_NUMBER}
+        cat > /workspace/infra/k8s/overlays/preview-pr-${_PR_NUMBER}/kustomization.yaml << EOF
         apiVersion: kustomize.config.k8s.io/v1beta1
         kind: Kustomization
         namespace: preview-pr-${_PR_NUMBER}
@@ -112,7 +114,7 @@ steps:
     id: 'deploy-preview'
     args:
       - 'run'
-      - '--filename=/workspace/k8s/overlays/preview-pr-${_PR_NUMBER}'
+      - '--filename=/workspace/infra/k8s/overlays/preview-pr-${_PR_NUMBER}'
       - '--location=${_REGION}'
       - '--cluster=${_PREVIEW_CLUSTER}'
     env:

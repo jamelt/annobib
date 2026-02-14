@@ -83,13 +83,13 @@ gcloud storage buckets update gs://annobib-terraform-state --versioning
 
 Edit the tfvars files with your actual values:
 
-**`terraform/environments/staging.tfvars`:**
+**`infra/terraform/environments/staging.tfvars`:**
 ```hcl
 notification_email    = "your-email@example.com"
 billing_account_id    = "YOUR_BILLING_ACCOUNT_ID"
 ```
 
-**`terraform/environments/production.tfvars`:**
+**`infra/terraform/environments/production.tfvars`:**
 ```hcl
 notification_email    = "your-email@example.com"
 billing_account_id    = "YOUR_BILLING_ACCOUNT_ID"
@@ -109,13 +109,13 @@ echo "Save this password somewhere secure: $DB_PASSWORD"
 
 ```bash
 # Initialize Terraform for staging (note the backend-config for state isolation)
-make tf-init ENV=staging
+pnpm ops:tf:init -- staging
 
 # Review what will be created
-make tf-plan ENV=staging
+pnpm ops:tf:plan -- staging
 
 # Apply (you'll be prompted for the db_password -- paste the one you generated)
-make tf-apply ENV=staging
+pnpm ops:tf:apply -- staging
 ```
 
 This will take 10-15 minutes. It provisions:
@@ -135,7 +135,7 @@ This will take 10-15 minutes. It provisions:
 
 After completion, note the outputs:
 ```bash
-cd terraform && terraform output
+cd infra/terraform && terraform output
 ```
 
 Get the ingress external IP (needed for DNS):
@@ -161,7 +161,7 @@ Go to your domain registrar (wherever you registered annobib.com) and create the
 
 **Note:** Production DNS records (`@` and `www`) will be added after provisioning production in Step 10.
 
-After DNS propagates (5-30 minutes), the TLS ingress is already defined in `k8s/overlays/staging/` and will be applied during the first deploy.
+After DNS propagates (5-30 minutes), the TLS ingress is already defined in `infra/k8s/overlays/staging/` and will be applied during the first deploy.
 
 ---
 
@@ -223,13 +223,13 @@ echo -n "your-google-books-key" | \
 - **Name:** `annobib-ci`
 - **Event:** Pull request
 - **Source:** Your repo, any branch
-- **Config:** Cloud Build config file: `cloudbuild-ci.yaml`
+- **Config:** Cloud Build config file: `infra/cloudbuild/ci.yaml`
 
 ### Trigger 2: Staging Deploy (runs on push to main)
 - **Name:** `annobib-staging-deploy`
 - **Event:** Push to branch
 - **Branch:** `^main$`
-- **Config:** Cloud Build config file: `cloudbuild-staging.yaml`
+- **Config:** Cloud Build config file: `infra/cloudbuild/staging.yaml`
 - **Substitution variables:**
   - `_STAGING_DATABASE_URL` = (create via Secret Manager reference)
   - `_STAGING_URL` = `https://staging.annobib.com`
@@ -238,7 +238,7 @@ echo -n "your-google-books-key" | \
 - **Name:** `annobib-production-deploy`
 - **Event:** Push new tag
 - **Tag:** `^v.*$`
-- **Config:** Cloud Build config file: `cloudbuild-production.yaml`
+- **Config:** Cloud Build config file: `infra/cloudbuild/production.yaml`
 - **Substitution variables:**
   - `_PROD_DATABASE_URL` = (create via Secret Manager reference)
 
@@ -261,12 +261,12 @@ gcloud builds log LATEST_BUILD_ID --project=annobib-staging --stream
 
 After the first successful deploy, seed the staging database with test data:
 ```bash
-make seed ENV=staging
+pnpm ops:seed -- staging
 ```
 
 Verify the app is running:
 ```bash
-make health ENV=staging
+pnpm ops:health -- staging
 
 # Or via the domain once DNS is set up
 curl https://staging.annobib.com/api/health
@@ -275,9 +275,9 @@ curl https://staging.annobib.com/api/health
 ### Test a rollback
 
 ```bash
-make rollback ENV=staging
+pnpm ops:rollback -- staging
 # Verify the previous version is running
-make health ENV=staging
+pnpm ops:health -- staging
 ```
 
 ---
@@ -285,9 +285,9 @@ make health ENV=staging
 ## Step 10: Provision Production Infrastructure
 
 ```bash
-make tf-init ENV=production
-make tf-plan ENV=production
-make tf-apply ENV=production
+pnpm ops:tf:init -- production
+pnpm ops:tf:plan -- production
+pnpm ops:tf:apply -- production
 ```
 
 This provisions the same infrastructure as staging (including all cluster add-ons) for production.
@@ -324,7 +324,7 @@ PROJECT=annobib-prod
 Create your first release tag:
 
 ```bash
-make deploy-production TAG=v1.0.0
+pnpm ops:deploy:production -- v1.0.0
 ```
 
 Monitor the build:
@@ -334,7 +334,7 @@ gcloud builds list --project=annobib-staging --limit=5
 
 Verify production:
 ```bash
-make health ENV=production
+pnpm ops:health -- production
 curl https://annobib.com/api/health
 ```
 
@@ -366,25 +366,25 @@ curl https://annobib.com/api/health
 
 ```bash
 # View staging logs
-make logs ENV=staging
+pnpm ops:logs -- staging
 
 # View production logs  
-make logs ENV=production
+pnpm ops:logs -- production
 
 # Exec into a staging pod
-make shell ENV=staging
+pnpm ops:shell -- staging
 
 # Check detailed health
-make health ENV=production
+pnpm ops:health -- production
 
 # View cluster status
-make cluster-info ENV=staging
+pnpm ops:cluster:info -- staging
 
 # Trigger a database backup
-make db-backup ENV=production
+pnpm ops:db:backup -- production
 
 # Run a backup restore test
-make db-restore-test ENV=production
+pnpm ops:db:restore-test -- production
 ```
 
 ### Deploying changes
@@ -400,20 +400,20 @@ git push -u origin feature/my-feature
 # Monitor: gcloud builds list --project=annobib-staging --limit=3
 
 # 4. Verify staging is healthy
-make health ENV=staging
+pnpm ops:health -- staging
 
 # 5. When ready, tag a release (deploys to production)
-make deploy-production TAG=v1.1.0
+pnpm ops:deploy:production -- v1.1.0
 
 # 6. Verify production
-make health ENV=production
+pnpm ops:health -- production
 ```
 
 ### Rolling back
 
 ```bash
 # Undo the last deployment
-make rollback ENV=production
+pnpm ops:rollback -- production
 
 # Or deploy a specific previous version
 # (check Artifact Registry for available tags)
@@ -427,17 +427,17 @@ gcloud artifacts docker tags list \
 Migrations run automatically in the CI/CD pipeline (staging on merge to main, production on tag). To run manually:
 
 ```bash
-make migrate ENV=staging
-make migrate-rollback ENV=staging
+pnpm ops:migrate -- staging
+pnpm ops:migrate:rollback -- staging
 ```
 
 ### Terraform changes
 
 ```bash
-make tf-plan ENV=staging    # Review changes
-make tf-apply ENV=staging   # Apply changes
-make tf-plan ENV=production
-make tf-apply ENV=production
+pnpm ops:tf:plan -- staging    # Review changes
+pnpm ops:tf:apply -- staging   # Apply changes
+pnpm ops:tf:plan -- production
+pnpm ops:tf:apply -- production
 ```
 
 ---

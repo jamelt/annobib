@@ -41,7 +41,7 @@ spec:
           command:
             - npx
             - tsx
-            - scripts/migrate.ts
+            - scripts/db/migrate.ts
             - up
           env:
             - name: DATABASE_URL
@@ -100,7 +100,7 @@ spec:
           command:
             - npx
             - tsx
-            - scripts/migrate.ts
+            - scripts/db/migrate.ts
             - validate
           env:
             - name: DATABASE_URL

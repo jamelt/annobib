@@ -23,7 +23,7 @@ steps:
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${TAG_NAME}'
     id: 'migrate-production'
     entrypoint: 'npx'
-    args: ['tsx', 'scripts/migrate.ts', 'up']
+    args: ['tsx', 'scripts/db/migrate.ts', 'up']
     env:
       - 'DATABASE_URL=${_PROD_DATABASE_URL}'
     waitFor: ['push-image']
@@ -31,7 +31,7 @@ steps:
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${TAG_NAME}'
     id: 'validate-migrations'
     entrypoint: 'npx'
-    args: ['tsx', 'scripts/migrate.ts', 'validate']
+    args: ['tsx', 'scripts/db/migrate.ts', 'validate']
     env:
       - 'DATABASE_URL=${_PROD_DATABASE_URL}'
     waitFor: ['migrate-production']
@@ -40,7 +40,7 @@ steps:
     id: 'deploy-production'
     args:
       - 'run'
-      - '--filename=k8s/overlays/production'
+      - '--filename=infra/k8s/overlays/production'
       - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${TAG_NAME}'
       - '--location=${_REGION}'
       - '--cluster=${_PROD_CLUSTER}'

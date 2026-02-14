@@ -17,20 +17,14 @@ logs
 .DS_Store
 .fleet
 .idea
+.history
 
 # Local env files
 .env
 .env.*
 !.env.example
 
-# Cookie/session files
-cookies.txt
-
-# Testing
-/coverage
-/.nyc_output
-/playwright-report
-/test-results
+# Testing (artifacts in .output/)
 
 # Editor directories and files
 .vscode/*
@@ -48,15 +42,14 @@ ehthumbs.db
 drizzle/meta
 
 # PWA
-public/sw.js
-public/workbox-*.js
+app/public/sw.js
+app/public/workbox-*.js
 
 # Terraform
-.terraform/
+infra/terraform/.terraform/
 *.tfstate
 *.tfstate.backup
 *.tfplan
 
 # Work files
-AnnoBib_Email_Setup_Guide.docx
 \~$*

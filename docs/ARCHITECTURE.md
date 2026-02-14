@@ -127,8 +127,6 @@ AnnoBib is a modern bibliography management application built for researchers, s
 
 ```
 annobib/
-├── app.vue                 # Root Vue component
-├── app.config.ts           # Nuxt UI theme configuration
 ├── nuxt.config.ts          # Nuxt configuration
 ├── package.json            # Dependencies and scripts
 ├── tsconfig.json           # TypeScript configuration
@@ -136,38 +134,37 @@ annobib/
 ├── vitest.config.ts        # Unit test configuration
 ├── playwright.config.ts    # E2E test configuration
 │
-├── components/             # Vue components
-│   ├── app/               # Application-wide components
-│   ├── citation/          # Citation formatting components
-│   ├── companion/         # Research Companion AI components
-│   ├── mindmap/           # D3.js mind map components
-│   └── veritas/           # Credibility score components
-│
-├── composables/            # Vue composables (shared logic)
-│   ├── useAuth.ts         # Authentication state
-│   ├── useSubscription.ts # Subscription management
-│   ├── useVoiceInput.ts   # Web Speech API wrapper
-│   └── useMindMap.ts      # D3.js visualization logic
-│
-├── layouts/                # Page layouts
-│   ├── default.vue        # Public pages layout
-│   └── app.vue            # Authenticated app layout
-│
-├── middleware/             # Route middleware
-│   └── auth.ts            # Authentication guard
-│
-├── pages/                  # File-based routing
-│   ├── index.vue          # Landing page
-│   ├── login.vue          # Login page
-│   ├── signup.vue         # Registration page
-│   ├── app/               # Authenticated routes
-│   │   ├── index.vue      # Dashboard
-│   │   ├── library/       # Entry management
-│   │   ├── projects/      # Project management
-│   │   ├── subscription.vue
-│   │   └── settings/      # User settings
-│   └── shared/            # Public shared content
-│       └── [token].vue    # Shared project view
+├── app/                    # Nuxt 4 client source (srcDir)
+│   ├── app.vue            # Root Vue component
+│   ├── app.config.ts      # Nuxt UI theme configuration
+│   ├── components/        # Vue components
+│   │   ├── app/           # Application-wide components
+│   │   ├── citation/      # Citation formatting components
+│   │   ├── companion/     # Research Companion AI components
+│   │   ├── mindmap/       # D3.js mind map components
+│   │   └── veritas/       # Credibility score components
+│   ├── composables/       # Vue composables (shared logic)
+│   │   ├── useAuth.ts     # Authentication state
+│   │   ├── useSubscription.ts # Subscription management
+│   │   ├── useVoiceInput.ts   # Web Speech API wrapper
+│   │   └── useMindMap.ts  # D3.js visualization logic
+│   ├── layouts/           # Page layouts
+│   │   ├── default.vue    # Public pages layout
+│   │   └── app.vue        # Authenticated app layout
+│   ├── middleware/         # Route middleware
+│   │   └── auth.ts        # Authentication guard
+│   └── pages/             # File-based routing
+│       ├── index.vue      # Landing page
+│       ├── login.vue      # Login page
+│       ├── signup.vue     # Registration page
+│       ├── app/           # Authenticated routes
+│       │   ├── index.vue  # Dashboard
+│       │   ├── library/   # Entry management
+│       │   ├── projects/  # Project management
+│       │   ├── subscription.vue
+│       │   └── settings/  # User settings
+│       └── shared/        # Public shared content
+│           └── [token].vue # Shared project view
 │
 ├── server/                 # Nitro server
 │   ├── api/               # API endpoints
@@ -205,19 +202,18 @@ annobib/
 │   ├── types/             # TypeScript interfaces
 │   └── validation/        # Zod schemas
 │
-├── public/                 # Static assets
 ├── scripts/               # Utility scripts
 │
-├── k8s/                   # Kubernetes manifests
-│   ├── base/              # Base resources
-│   └── overlays/          # Environment patches
-│       ├── staging/
-│       └── production/
-│
-├── terraform/             # Infrastructure as Code
-│   ├── main.tf            # GCP resources
-│   ├── variables.tf       # Input variables
-│   └── environments/      # Environment configs
+├── infra/                 # All infrastructure
+│   ├── cloudbuild/        # CI/CD pipelines
+│   ├── docker/            # Dockerfile, docker-compose
+│   ├── k8s/               # Kubernetes manifests
+│   │   ├── base/          # Base resources
+│   │   └── overlays/      # Environment patches
+│   └── terraform/         # Infrastructure as Code
+│       ├── main.tf        # GCP resources
+│       ├── variables.tf   # Input variables
+│       └── environments/  # Environment configs
 │
 └── tests/                 # Test files
     ├── unit/              # Vitest unit tests

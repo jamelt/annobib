@@ -34,6 +34,8 @@ steps:
     id: 'docker-build'
     args:
       - 'build'
+      - '-f'
+      - 'infra/docker/Dockerfile'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
       - '-t'
