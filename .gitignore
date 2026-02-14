@@ -51,6 +51,12 @@ drizzle/meta
 public/sw.js
 public/workbox-*.js
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
 # Work files
 AnnoBib_Email_Setup_Guide.docx
 \~$*
