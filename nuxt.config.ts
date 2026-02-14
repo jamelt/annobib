@@ -90,7 +90,6 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/": { prerender: true },
     "/app/**": { ssr: false },
   },
 

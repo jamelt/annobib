@@ -1,0 +1,53 @@
+---
+description: Infrastructure conventions for AnnoBib
+globs: infra/**
+---
+
+# Infrastructure Context
+
+All infrastructure code lives under `infra/`.
+
+## Layout
+
+```
+infra/
+├── cloudbuild/          CI/CD pipelines (Cloud Build)
+│   ├── ci.yaml          PR checks: lint, typecheck, test, Docker build
+│   ├── staging.yaml     Push to main: build, migrate, deploy to staging GKE, E2E
+│   ├── production.yaml  Tag push: promote image from staging, migrate, deploy to prod GKE
+│   └── preview/         Ephemeral PR preview environments
+├── docker/
+│   ├── Dockerfile       Multi-stage Node 24 Alpine build
+│   └── docker-compose.yml  Local Postgres (dev + test)
+├── k8s/                 Kustomize-based Kubernetes manifests
+│   ├── base/            Shared resources (deployment, service, ingress, HPA, etc.)
+│   └── overlays/        staging/ and production/ patches
+└── terraform/           GCP provisioning (VPC, GKE, Cloud SQL, monitoring)
+    ├── environments/    staging.tfvars, production.tfvars
+    └── modules/         Reusable modules (monitoring)
+```
+
+## Conventions
+
+- The `Dockerfile` lives at `infra/docker/Dockerfile`. Cloud Build references it with `-f infra/docker/Dockerfile` and the project root as build context.
+- `docker compose` commands require `-f infra/docker/docker-compose.yml`.
+- Kubernetes manifests use Kustomize. Base resources are in `infra/k8s/base/`, environment-specific patches in `infra/k8s/overlays/{staging,production}/`.
+- Terraform state is stored in GCS bucket `annobib-terraform-state`.
+- Terraform uses variable files per environment: `infra/terraform/environments/{staging,production}.tfvars`.
+- Cloud Build triggers reference config files by their `infra/cloudbuild/` path.
+
+## GCP Projects
+
+- Staging: `annobib-staging`
+- Production: `annobib-production`
+
+## Operations
+
+All ops commands are in `infra/scripts/ops.sh`, exposed as `pnpm ops:<command> -- [ENV]`.
+Run `pnpm ops` to see all available commands.
+
+## Deployment Flow
+
+1. PR opened -> Cloud Build runs `infra/cloudbuild/ci.yaml` (lint, typecheck, test, Docker build)
+2. Merged to main -> `infra/cloudbuild/staging.yaml` (build, push, migrate, deploy to staging, E2E)
+3. Tag pushed (v*) -> `infra/cloudbuild/production.yaml` (promote staging image, migrate, deploy to prod)

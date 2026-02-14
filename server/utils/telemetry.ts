@@ -7,14 +7,8 @@ import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { diag, DiagConsoleLogger, DiagLogLevel, trace, metrics, SpanStatusCode } from '@opentelemetry/api'
 
-const config = useRuntimeConfig()
-
 const isProduction = process.env.NODE_ENV === 'production'
 const isGCP = !!process.env.GOOGLE_CLOUD_PROJECT
-
-if (isProduction && process.env.OTEL_DEBUG === 'true') {
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
-}
 
 let sdk: NodeSDK | null = null
 
@@ -107,38 +101,59 @@ export async function withSpan<T>(
   })
 }
 
-const meter = getMeter()
+let _metrics: {
+  httpRequestDuration: ReturnType<ReturnType<typeof getMeter>['createHistogram']>
+  httpRequestTotal: ReturnType<ReturnType<typeof getMeter>['createCounter']>
+  dbQueryDuration: ReturnType<ReturnType<typeof getMeter>['createHistogram']>
+  aiApiDuration: ReturnType<ReturnType<typeof getMeter>['createHistogram']>
+  activeUsers: ReturnType<ReturnType<typeof getMeter>['createUpDownCounter']>
+  entryCount: ReturnType<ReturnType<typeof getMeter>['createObservableGauge']>
+  projectCount: ReturnType<ReturnType<typeof getMeter>['createObservableGauge']>
+} | null = null
 
-export const httpRequestDuration = meter.createHistogram('http_request_duration_ms', {
-  description: 'Duration of HTTP requests in milliseconds',
-  unit: 'ms',
-})
+function getMetrics() {
+  if (!_metrics) {
+    if (isProduction && process.env.OTEL_DEBUG === 'true') {
+      diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO)
+    }
+    const meter = getMeter()
+    _metrics = {
+      httpRequestDuration: meter.createHistogram('http_request_duration_ms', {
+        description: 'Duration of HTTP requests in milliseconds',
+        unit: 'ms',
+      }),
+      httpRequestTotal: meter.createCounter('http_request_total', {
+        description: 'Total number of HTTP requests',
+      }),
+      dbQueryDuration: meter.createHistogram('db_query_duration_ms', {
+        description: 'Duration of database queries in milliseconds',
+        unit: 'ms',
+      }),
+      aiApiDuration: meter.createHistogram('ai_api_duration_ms', {
+        description: 'Duration of AI API calls in milliseconds',
+        unit: 'ms',
+      }),
+      activeUsers: meter.createUpDownCounter('active_users', {
+        description: 'Number of active users',
+      }),
+      entryCount: meter.createObservableGauge('entry_count', {
+        description: 'Total number of entries in the system',
+      }),
+      projectCount: meter.createObservableGauge('project_count', {
+        description: 'Total number of projects in the system',
+      }),
+    }
+  }
+  return _metrics
+}
 
-export const httpRequestTotal = meter.createCounter('http_request_total', {
-  description: 'Total number of HTTP requests',
-})
-
-export const dbQueryDuration = meter.createHistogram('db_query_duration_ms', {
-  description: 'Duration of database queries in milliseconds',
-  unit: 'ms',
-})
-
-export const aiApiDuration = meter.createHistogram('ai_api_duration_ms', {
-  description: 'Duration of AI API calls in milliseconds',
-  unit: 'ms',
-})
-
-export const activeUsers = meter.createUpDownCounter('active_users', {
-  description: 'Number of active users',
-})
-
-export const entryCount = meter.createObservableGauge('entry_count', {
-  description: 'Total number of entries in the system',
-})
-
-export const projectCount = meter.createObservableGauge('project_count', {
-  description: 'Total number of projects in the system',
-})
+export const httpRequestDuration = { record: (...args: any[]) => getMetrics().httpRequestDuration.record(...args) }
+export const httpRequestTotal = { add: (...args: any[]) => getMetrics().httpRequestTotal.add(...args) }
+export const dbQueryDuration = { record: (...args: any[]) => getMetrics().dbQueryDuration.record(...args) }
+export const aiApiDuration = { record: (...args: any[]) => getMetrics().aiApiDuration.record(...args) }
+export const activeUsers = { add: (...args: any[]) => getMetrics().activeUsers.add(...args) }
+export const entryCount = { addCallback: (...args: any[]) => getMetrics().entryCount.addCallback(...args) }
+export const projectCount = { addCallback: (...args: any[]) => getMetrics().projectCount.addCallback(...args) }
 
 export function recordHttpRequest(
   method: string,

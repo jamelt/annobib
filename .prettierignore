@@ -1,0 +1,8 @@
+.output
+.nuxt
+.nitro
+node_modules
+dist
+pnpm-lock.yaml
+*.min.js
+*.min.css

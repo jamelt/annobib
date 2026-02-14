@@ -1,10 +1,4 @@
 import pino from 'pino'
-import { createRequire } from 'node:module'
-
-if (typeof globalThis.require === 'undefined') {
-  // @ts-expect-error pino transports use require() internally
-  globalThis.require = createRequire(import.meta.url)
-}
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isGCP = !!process.env.GOOGLE_CLOUD_PROJECT
@@ -18,24 +12,9 @@ function getGcpSeverity(level: number): string {
   return 'DEFAULT'
 }
 
-const gcpTransport = {
-  target: 'pino/file',
-  options: { destination: 1 },
-  level: 'info',
-}
-
-const devTransport = {
-  target: 'pino-pretty',
-  options: {
-    colorize: true,
-    translateTime: 'SYS:standard',
-    ignore: 'pid,hostname',
-  },
-}
-
-export const logger = pino({
+export const logger: pino.Logger = pino({
   level: process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug'),
-  
+
   ...(isGCP && {
     messageKey: 'message',
     formatters: {
@@ -48,7 +27,7 @@ export const logger = pino({
       log(object: Record<string, unknown>) {
         const { err, error, ...rest } = object as { err?: Error; error?: Error; [key: string]: unknown }
         const errorObj = err || error
-        
+
         if (errorObj && errorObj instanceof Error) {
           return {
             ...rest,
@@ -60,20 +39,18 @@ export const logger = pino({
             '@type': 'type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent',
           }
         }
-        
+
         return rest
       },
     },
   }),
-  
-  transport: isProduction ? gcpTransport : devTransport,
-  
+
   base: {
     service: 'annobib-app',
     version: process.env.APP_VERSION || '1.0.0',
     environment: process.env.NODE_ENV || 'development',
   },
-  
+
   redact: {
     paths: [
       'req.headers.authorization',
@@ -89,7 +66,7 @@ export const logger = pino({
     ],
     censor: '[REDACTED]',
   },
-  
+
   serializers: {
     req: (req) => ({
       method: req.method,

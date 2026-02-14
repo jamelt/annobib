@@ -1,0 +1,39 @@
+---
+description: Project-wide conventions for AnnoBib
+globs:
+---
+
+# AnnoBib Project Context
+
+AnnoBib is a bibliography and annotation management app for researchers, students, and professors.
+
+## Stack
+
+- **Frontend:** Nuxt 4 (Vue 3, Composition API, `<script setup>`), Nuxt UI, Tailwind CSS, Pinia, D3.js
+- **Backend:** Nitro (Node.js), Drizzle ORM, PostgreSQL 18 (pgvector, uuid-ossp), Zod validation
+- **AI:** OpenAI (GPT-4o, Whisper, text-embedding-3-small)
+- **Payments:** Stripe (subscriptions and webhooks)
+- **Infra:** GCP (GKE, Cloud SQL, Cloud Build, Terraform), Kubernetes with Kustomize
+
+## Project Layout
+
+```
+app/           -> Nuxt 4 client source (srcDir). Components, composables, pages, layouts, middleware, assets.
+server/        -> Nitro server. API routes, database layer (Drizzle), services, plugins.
+shared/        -> Code auto-imported into both client and server. Types, validation schemas, subscription helpers.
+infra/         -> All infrastructure. cloudbuild/, docker/, k8s/, terraform/.
+docs/          -> Project documentation.
+scripts/       -> Automation (migrations, seeds, admin tools, backups).
+tests/         -> Unit (Vitest), integration (Vitest), E2E (Playwright), mocks (MSW).
+```
+
+## Conventions
+
+- Use `<script setup lang="ts">` for all Vue components.
+- Use composables (`use*.ts`) for shared reactive logic; place in `app/composables/`.
+- Server API routes follow Nuxt file-based convention: `server/api/<resource>/<action>.<method>.ts`.
+- All validation schemas go in `shared/validation/` using Zod.
+- Shared TypeScript types go in `shared/types/`.
+- Use `~/` alias for imports within `app/` (resolves to srcDir).
+- Use `pnpm` as the package manager.
+- Prefer `errors.New`, `errors.Wrap`, and `errors.Errorf` from `github.com/pkg/errors` in any Go code.
