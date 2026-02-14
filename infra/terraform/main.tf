@@ -159,6 +159,7 @@ module "gke" {
   subnetwork         = module.vpc.subnets_names[0]
   ip_range_pods      = "pods"
   ip_range_services  = "services"
+  deletion_protection = false
 
   enable_private_endpoint = false
   enable_private_nodes    = var.enable_private_nodes
