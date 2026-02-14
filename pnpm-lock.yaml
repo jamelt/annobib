@@ -152,8 +152,8 @@ devDependencies:
     specifier: ^3.23.0
     version: 3.23.0(@playwright/test@1.58.1)(@vitest/ui@1.6.1)(@vue/test-utils@2.4.6)(happy-dom@13.10.1)(jsdom@24.1.3)(typescript@5.9.3)(vitest@1.6.1)
   '@oxc-minify/binding-darwin-arm64':
-    specifier: 0.110.0
-    version: 0.110.0
+    specifier: 0.112.0
+    version: 0.112.0
   '@oxc-parser/binding-darwin-arm64':
     specifier: 0.112.0
     version: 0.112.0
@@ -4494,6 +4494,15 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+    dev: false
+    optional: true
+
+  /@oxc-minify/binding-darwin-arm64@0.112.0:
+    resolution: {integrity: sha512-hDslO3uVHza3kB9zkcsi25JzN65Gj5ZYty0OvylS11Mhg9ydCYxAzfQ/tISHW/YmV1NRUJX8+GGqM1cKmrHaTA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [arm64]
+    os: [darwin]
+    dev: true
 
   /@oxc-minify/binding-darwin-x64@0.110.0:
     resolution: {integrity: sha512-U0AqabqaooDOpYmeeOye8wClv8PSScELXgOfYqyqgrwH9J9KrpCE1jL8Rlqgz68QbL4mPw3V6sKiiHssI4CLeQ==}
