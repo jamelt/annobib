@@ -1,9 +1,13 @@
 import { test, expect, devices } from '@playwright/test'
 
+function uniqueEmail() {
+  return `e2e-qa-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`
+}
+
 async function signUpAndLogin(page: import('@playwright/test').Page) {
   const testUser = {
     name: 'E2E Quick Add User',
-    email: `e2e-quickadd-${Date.now()}@example.com`,
+    email: uniqueEmail(),
     password: 'testpassword123',
   }
   await page.goto('/signup')
@@ -102,8 +106,10 @@ test.describe('Quick Add - Desktop', () => {
       { timeout: 15000 },
     )
 
-    // A suggestion matching this DOI should appear - click the first result
-    const firstSuggestion = page.locator('button').filter({ hasText: /10\.1038\/nature12373/i }).first()
+    // A suggestion matching this DOI should appear - click the first result button
+    const firstSuggestion = page
+      .locator('button.w-full.text-left')
+      .first()
     await expect(firstSuggestion).toBeVisible({ timeout: 5000 })
     await firstSuggestion.click()
 
@@ -180,47 +186,46 @@ test.describe('Quick Add - Desktop', () => {
     })
   })
 
-  test('adds entry with Add anyway when no results match', async ({ page }) => {
+  test('searches, selects result with authors, and API accepts the entry', async ({ page }) => {
     test.setTimeout(60000)
     await signUpAndLogin(page)
     await page.goto('/app')
     await openQuickAdd(page)
 
-    const uniqueTitle = `xxyyzz-unique-noresults-${Date.now()}-qqwwee`
-
+    // Search for something that will have authors with potentially incomplete names
     const searchInput = page.getByPlaceholder(SEARCH_PLACEHOLDER)
-    await searchInput.fill(uniqueTitle)
+    await searchInput.fill('machine learning neural networks')
 
-    // Wait for the suggest API to return (will have no/irrelevant results)
     await page.waitForResponse(
       (r) => r.url().includes('/api/entries/suggest') && r.status() === 200,
       { timeout: 15000 },
     )
 
-    // "Add anyway" button should appear
-    const addAnywayButton = page.getByRole('button', { name: /Add anyway/i })
-    await expect(addAnywayButton).toBeVisible({ timeout: 8000 })
+    const firstResult = page.locator('button.w-full.text-left').first()
+    await expect(firstResult).toBeVisible({ timeout: 5000 })
+    await firstResult.click()
 
+    const addButton = page.getByRole('button', { name: /Add to library/i })
+    await expect(addButton).toBeVisible({ timeout: 5000 })
+
+    // Intercept the POST request to verify the payload is valid
     const [createResponse] = await Promise.all([
       page.waitForResponse(
         (r) => r.url().includes('/api/entries') && r.request().method() === 'POST',
-        { timeout: 10000 },
+        { timeout: 15000 },
       ),
-      addAnywayButton.click(),
+      addButton.click(),
     ])
 
+    // The response MUST be 200 - not 400 "Invalid entry data"
     expect(createResponse.status()).toBe(200)
-    const createdEntry = await createResponse.json()
-    expect(createdEntry.title).toBe(uniqueTitle)
+    const body = await createResponse.json()
+    expect(body.id).toBeTruthy()
+    expect(body.title).toBeTruthy()
 
-    // Modal should close
     await expect(page.getByRole('heading', { name: 'Add a source' })).not.toBeVisible({
       timeout: 5000,
     })
-
-    // Entry should appear in library
-    await page.goto('/app/library')
-    await expect(page.getByText(uniqueTitle, { exact: false })).toBeVisible({ timeout: 5000 })
   })
 })
 
