@@ -75,11 +75,11 @@ steps:
       - 'run'
       - '--filename=infra/k8s/overlays/staging'
       - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
-      - '--location=${_REGION}'
+      - '--location=${_STAGING_ZONE}'
       - '--cluster=${_STAGING_CLUSTER}'
     waitFor: ['validate-migrations']
     env:
-      - 'CLOUDSDK_COMPUTE_REGION=${_REGION}'
+      - 'CLOUDSDK_COMPUTE_ZONE=${_STAGING_ZONE}'
 
   - name: 'node:24'
     id: 'test-e2e'
@@ -93,6 +93,7 @@ steps:
 
 substitutions:
   _REGION: 'us-central1'
+  _STAGING_ZONE: 'us-central1-a'
   _APP_NAME: 'annobib'
   _STAGING_CLUSTER: 'annobib-staging-gke'
   _STAGING_URL: ''
