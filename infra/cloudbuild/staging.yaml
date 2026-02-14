@@ -124,17 +124,17 @@ steps:
       - 'HOME=/tmp'
     waitFor: ['migrate-staging']
 
-  - name: 'gcr.io/cloud-builders/gke-deploy'
+  - name: 'gcr.io/cloud-builders/gcloud'
     id: 'deploy-staging'
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - '--filename=infra/k8s/overlays/staging'
-      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
-      - '--location=${_STAGING_ZONE}'
-      - '--cluster=${_STAGING_CLUSTER}'
+      - '-c'
+      - |
+        gcloud container clusters get-credentials ${_STAGING_CLUSTER} --zone ${_STAGING_ZONE} --project ${PROJECT_ID}
+        sed -i "s/newTag: latest/newTag: ${SHORT_SHA}/" infra/k8s/overlays/staging/kustomization.yaml
+        kubectl apply -k infra/k8s/overlays/staging
+        kubectl -n annobib-staging rollout status deployment/annobib-app --timeout=300s
     waitFor: ['validate-migrations']
-    env:
-      - 'CLOUDSDK_COMPUTE_ZONE=${_STAGING_ZONE}'
 
   - name: 'mcr.microsoft.com/playwright:v1.58.2'
     id: 'test-e2e'
