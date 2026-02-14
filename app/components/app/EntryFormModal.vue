@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import type { EntryType, Author } from '~/shared/types'
+import type { EntryType, Author, Entry } from '~/shared/types'
 import { ENTRY_TYPE_LABELS } from '~/shared/types'
+import { getErrorMessage, getFieldErrors } from '~/utils/error-handler'
 
 const props = defineProps<{
   open: boolean
-  entry?: any
+  entry?: Entry
 }>()
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
-  created: [entry: any]
-  updated: [entry: any]
+  created: [entry: Entry]
+  updated: [entry: Entry]
 }>()
 
 const isOpen = computed({
@@ -21,7 +22,7 @@ const isOpen = computed({
 const isEditing = computed(() => !!props.entry)
 
 const { data: projects } = await useFetch('/api/projects')
-const { data: tags } = await useFetch('/api/tags')
+const { data: _tags } = await useFetch('/api/tags')
 
 const form = reactive({
   entryType: 'book' as EntryType,
@@ -72,8 +73,8 @@ watch(
         metadata: { ...entry.metadata },
         notes: entry.notes || '',
         isFavorite: entry.isFavorite,
-        projectIds: entry.projects?.map((p: any) => p.id) || [],
-        tagIds: entry.tags?.map((t: any) => t.id) || [],
+        projectIds: entry.projects?.map((p) => p.id) || [],
+        tagIds: entry.tags?.map((t) => t.id) || [],
       })
     }
   },
@@ -157,11 +158,12 @@ async function handleSubmit() {
 
     isOpen.value = false
     resetForm()
-  } catch (error: any) {
-    if (error.data?.data?.fieldErrors) {
-      errors.value = error.data.data.fieldErrors
+  } catch (error: unknown) {
+    const fieldErrors = getFieldErrors(error)
+    if (fieldErrors) {
+      errors.value = fieldErrors
     } else {
-      errors.value.general = error.data?.message || 'An error occurred'
+      errors.value.general = getErrorMessage(error)
     }
   } finally {
     isSubmitting.value = false

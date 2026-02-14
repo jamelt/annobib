@@ -3,7 +3,6 @@ import { test, expect } from '@playwright/test'
 test.describe('Dropdown Menus', () => {
   let entryId: string
   let projectId: string
-  let tagId: string
 
   test.beforeEach(async ({ page }) => {
     const testUser = {

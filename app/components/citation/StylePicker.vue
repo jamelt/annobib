@@ -1,14 +1,4 @@
 <script setup lang="ts">
-interface CitationStyle {
-  id: string
-  name: string
-  shortName?: string
-  category?: string
-  fields?: string[]
-  description?: string
-  isDefault: boolean
-}
-
 const props = defineProps<{
   modelValue: string
   defaultStyleId?: string

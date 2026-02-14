@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import {
   getAllPlansForDisplay,
-  getTierUI,
-  getTierDisplayName,
-  TIER_IDS,
   type SubscriptionTier,
   SUBSCRIPTION_PLANS,
 } from '~/shared/subscriptions'
@@ -199,7 +196,7 @@ async function handleResetPassword() {
       { method: 'POST' },
     )
     resetPasswordResult.value = result.temporaryPassword
-  } catch (e: any) {
+  } catch {
     resetPasswordResult.value = null
   } finally {
     resettingPassword.value = false
@@ -896,7 +893,10 @@ watch(search, () => {
               <UButton
                 label="Done"
                 color="primary"
-                @click="isResetPasswordOpen = false; resetPasswordResult = null"
+                @click="
+                  isResetPasswordOpen = false
+                  resetPasswordResult = null
+                "
               />
             </div>
           </template>

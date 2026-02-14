@@ -5,15 +5,8 @@ import {
   formatBibliography,
   formatInTextCitation,
   formatSubsequentCitation,
-  type CitationItem,
 } from './csl-processor'
-import {
-  fetchStyleXml,
-  getDefaultStyles,
-  getStyleById,
-  getEnUsLocale,
-  type DefaultStyle,
-} from './default-styles'
+import { fetchStyleXml, getStyleById, getEnUsLocale } from './default-styles'
 
 export interface FormattedCitation {
   entryId: string

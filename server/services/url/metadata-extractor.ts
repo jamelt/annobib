@@ -73,7 +73,7 @@ export async function extractMetadataFromUrl(url: string): Promise<ExtractedMeta
   }
 }
 
-function extractSchemaOrg(root: any, html: string): Partial<ExtractedMetadata> | null {
+function extractSchemaOrg(root: any, _html: string): Partial<ExtractedMetadata> | null {
   const ldJsonScripts = root.querySelectorAll('script[type="application/ld+json"]')
   const metadata: Partial<ExtractedMetadata> = {}
 
@@ -250,7 +250,7 @@ function extractHtmlMeta(root: any): Partial<ExtractedMetadata> {
 function extractSiteSpecific(
   url: string,
   root: any,
-  html: string,
+  _html: string,
 ): Partial<ExtractedMetadata> | null {
   const hostname = new URL(url).hostname.toLowerCase()
 
@@ -296,7 +296,7 @@ function extractArxiv(root: any): Partial<ExtractedMetadata> {
   return metadata
 }
 
-function extractYouTube(root: any): Partial<ExtractedMetadata> {
+function extractYouTube(_root: any): Partial<ExtractedMetadata> {
   return {
     entryType: 'video',
     siteName: 'YouTube',

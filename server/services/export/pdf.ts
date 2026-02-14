@@ -56,12 +56,6 @@ export async function generatePdf(
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'networkidle0' })
 
-    const paperDimensions = {
-      letter: { width: '8.5in', height: '11in' },
-      a4: { width: '210mm', height: '297mm' },
-      legal: { width: '8.5in', height: '14in' },
-    }
-
     const pdf = await page.pdf({
       format: opts.paperSize === 'letter' ? 'Letter' : opts.paperSize === 'a4' ? 'A4' : 'Legal',
       margin: {

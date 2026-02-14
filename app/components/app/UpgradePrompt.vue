@@ -7,7 +7,7 @@ const props = defineProps<{
   inline?: boolean
 }>()
 
-const { tier, hasFeature, startCheckout } = useSubscription()
+const { hasFeature, startCheckout } = useSubscription()
 
 const isVisible = computed(() => !hasFeature(props.feature))
 

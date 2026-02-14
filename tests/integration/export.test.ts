@@ -3,7 +3,7 @@ import { generateBibtex, parseBibtex } from '~/server/services/export/bibtex'
 import { generateDocx } from '~/server/services/export/docx'
 import { generateBibliographyHtml, sortEntries } from '~/server/services/export/pdf'
 import type { PdfExportOptions } from '~/server/services/export/pdf'
-import type { Entry, Author, Annotation } from '~/shared/types'
+import type { Entry, Annotation } from '~/shared/types'
 
 function makeEntry(overrides: Partial<Entry> = {}): Entry {
   return {

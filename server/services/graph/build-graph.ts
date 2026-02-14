@@ -1,7 +1,6 @@
 import { db } from '~/server/database/client'
 import { entries, entryProjects, entryTags, tags, annotations } from '~/server/database/schema'
 import { eq, inArray, and } from 'drizzle-orm'
-import type { Entry } from '~/shared/types'
 
 export interface GraphNode {
   id: string

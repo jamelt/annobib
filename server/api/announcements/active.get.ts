@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { announcements } from '~/server/database/schema'
-import { eq, and, lte, or, isNull, gte, sql } from 'drizzle-orm'
+import { eq, and, lte, or, isNull, gte } from 'drizzle-orm'
 
 export default defineEventHandler(async () => {
   const now = new Date()

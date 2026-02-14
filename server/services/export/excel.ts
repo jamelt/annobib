@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs'
-import type { Entry, ExcelColumnConfig, ExcelExportOptions, Author } from '~/shared/types'
+import type { Entry, Author } from '~/shared/types'
 import { ENTRY_TYPE_LABELS } from '~/shared/types'
 import { systemPresets, type ExcelExportPreset } from './excel-presets'
 

@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
-import { sql, eq, inArray } from 'drizzle-orm'
-import { entries, entryProjects, tags, entryTags } from '~/server/database/schema'
+import { sql, eq } from 'drizzle-orm'
+import { entryProjects, entryTags } from '~/server/database/schema'
 
 export interface GraphNode {
   id: string
@@ -218,7 +218,7 @@ export async function getTopicClusters(projectId: string): Promise<
   }))
 }
 
-export async function syncProjectToGraph(projectId: string, userId: string): Promise<void> {
+export async function syncProjectToGraph(projectId: string, _userId: string): Promise<void> {
   const projectEntries = await db.query.entryProjects.findMany({
     where: eq(entryProjects.projectId, projectId),
     with: {

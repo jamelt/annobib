@@ -144,7 +144,7 @@ function calculatePeerReviewScore(
   entry: Entry,
   ssData: Awaited<ReturnType<typeof getSemanticScholarData>>,
   oaData: Awaited<ReturnType<typeof getOpenAlexData>>,
-  crData: Awaited<ReturnType<typeof getCrossRefData>>,
+  _crData: Awaited<ReturnType<typeof getCrossRefData>>,
 ): { score: number; evidence: string; source: string } {
   const peerReviewedTypes = ['journal_article', 'conference_paper']
 

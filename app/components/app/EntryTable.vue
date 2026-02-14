@@ -22,6 +22,8 @@ const props = withDefaults(
   {
     loading: false,
     selectable: true,
+    projectId: undefined,
+    tags: undefined,
     showProjectColumn: false,
     sortBy: 'createdAt',
     sortOrder: 'desc',
@@ -57,7 +59,7 @@ watch(selectedIds, (ids) => {
   emit('update:selectedIds', ids)
 })
 
-function formatAuthors(authors: any[] | null) {
+function formatAuthors(authors: Author[] | null) {
   if (!authors || authors.length === 0) return 'Unknown'
   if (authors.length === 1) {
     return `${authors[0].lastName}, ${authors[0].firstName}`
@@ -130,8 +132,16 @@ function navigateToEntry(entryId: string) {
   router.push(`/app/library/${entryId}`)
 }
 
+interface MenuItem {
+  label: string
+  icon: string
+  onSelect: () => void
+  disabled?: boolean
+  class?: string
+}
+
 function getRowActions(entry: EntryRow) {
-  const items: any[][] = [
+  const items: MenuItem[][] = [
     [
       {
         label: 'View Details',
@@ -421,7 +431,7 @@ const columns = computed(() => {
   return cols
 })
 
-function handleRowSelect(row: any) {
+function handleRowSelect(row: EntryRow | { original?: EntryRow }) {
   const entry = row?.original ?? row
   if (entry?.id) {
     navigateToEntry(entry.id)

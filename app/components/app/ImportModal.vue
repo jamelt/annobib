@@ -25,7 +25,7 @@ const previewCount = ref<number | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const { data: projects } = useFetch<Project[]>('/api/projects', { lazy: true })
-const { data: tags } = useFetch<Tag[]>('/api/tags', { lazy: true })
+const { data: _tags } = useFetch<Tag[]>('/api/tags', { lazy: true })
 
 const canImport = computed(() => bibtexContent.value.trim().length > 0)
 

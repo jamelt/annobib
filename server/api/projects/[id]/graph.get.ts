@@ -1,5 +1,4 @@
 import { db } from '~/server/database/client'
-import { projects } from '~/server/database/schema'
 import { buildProjectGraph, filterGraphByType } from '~/server/services/graph/build-graph'
 import { requireLightOrProTier } from '~/server/utils/auth'
 import { buildProjectWhere } from '~/server/utils/project-query'

@@ -11,7 +11,7 @@ const parseSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
+  await requireAuth(event)
   const body = await readBody(event)
 
   const parsed = parseSchema.safeParse(body)

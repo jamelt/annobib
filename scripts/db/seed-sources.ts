@@ -5,7 +5,7 @@ import { sql } from 'drizzle-orm'
 import { randomUUID } from 'crypto'
 import { project1Config } from './seed-data/project1-sources'
 import { project2Config } from './seed-data/project2-sources'
-import type { SeedEntry, SeedProjectConfig } from './seed-data/types'
+import type { SeedProjectConfig } from './seed-data/types'
 
 const connectionString =
   process.env.DATABASE_URL || 'postgresql://annobib:annobib@localhost:5432/annobib'

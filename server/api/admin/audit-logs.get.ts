@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { adminAuditLogs, users } from '~/server/database/schema'
-import { eq, desc, count, sql, and } from 'drizzle-orm'
+import { eq, desc, count, and } from 'drizzle-orm'
 import { requireAdmin } from '~/server/utils/auth'
 import { z } from 'zod'
 

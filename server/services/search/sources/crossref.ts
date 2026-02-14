@@ -58,8 +58,8 @@ async function fetchCrossrefWorks(params: URLSearchParams): Promise<EntrySuggest
 
     if (!response.ok) return []
 
-    const data: any = await response.json()
-    const items: any[] = data?.message?.items ?? []
+    const data = (await response.json()) as { message?: { items?: unknown[] } }
+    const items = data?.message?.items ?? []
 
     return items
       .map((item) => crossrefWorkToSuggestion(item))
@@ -67,6 +67,22 @@ async function fetchCrossrefWorks(params: URLSearchParams): Promise<EntrySuggest
   } catch {
     return []
   }
+}
+
+interface CrossRefWork {
+  title?: string | string[]
+  author?: Array<{ family?: string; given?: string }>
+  published?: { 'date-parts'?: number[][] }
+  DOI?: string
+  publisher?: string
+  'container-title'?: string | string[]
+  volume?: string
+  issue?: string
+  page?: string
+  type?: string
+  abstract?: string
+  URL?: string
+  [key: string]: unknown
 }
 
 export async function lookupByDoi(doi: string): Promise<EntrySuggestion | null> {
@@ -83,7 +99,7 @@ export async function lookupByDoi(doi: string): Promise<EntrySuggestion | null> 
 
     if (!response.ok) return null
 
-    const data: any = await response.json()
+    const data = (await response.json()) as { message?: CrossRefWork }
     const work = data?.message
     if (!work) return null
 
@@ -93,12 +109,12 @@ export async function lookupByDoi(doi: string): Promise<EntrySuggestion | null> 
   }
 }
 
-export function crossrefWorkToSuggestion(work: any): EntrySuggestion | null {
+export function crossrefWorkToSuggestion(work: CrossRefWork): EntrySuggestion | null {
   const title: string | undefined = Array.isArray(work.title) ? work.title[0] : work.title
   if (!title) return null
 
   const authors: Author[] = Array.isArray(work.author)
-    ? work.author.map((a: any) => {
+    ? work.author.map((a) => {
         const given = String(a.given ?? '').trim()
         const family = String(a.family ?? '').trim()
         return {

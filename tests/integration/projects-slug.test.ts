@@ -182,7 +182,7 @@ describe('Project Slug and ID Query Helper', () => {
   })
 
   it('handles hyphenated slugs correctly', async () => {
-    const [project] = await db
+    await db
       .insert(schema.projects)
       .values({
         userId: testUserId,
@@ -200,7 +200,7 @@ describe('Project Slug and ID Query Helper', () => {
   })
 
   it('handles numeric slugs correctly', async () => {
-    const [project] = await db
+    await db
       .insert(schema.projects)
       .values({
         userId: testUserId,

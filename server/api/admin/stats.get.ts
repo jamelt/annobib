@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { users, entries, projects, subscriptions, feedback } from '~/server/database/schema'
-import { eq, count, sql, and, gte } from 'drizzle-orm'
+import { eq, count, gte } from 'drizzle-orm'
 import { requireAdmin } from '~/server/utils/auth'
 import { SUBSCRIPTION_PLANS, TIER_IDS, type SubscriptionTier } from '~/shared/subscriptions'
 

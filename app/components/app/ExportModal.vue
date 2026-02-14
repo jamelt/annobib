@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
-import type { ExcelColumnConfig, ExcelExportOptions } from '~/shared/types'
+import type { ExcelColumnConfig } from '~/shared/types'
 import type { SubscriptionTier } from '~/shared/subscriptions'
 
 const isMobile = useMediaQuery('(max-width: 640px)')
@@ -76,7 +76,6 @@ const modalMaxWidth = computed(() => (showPreview.value ? 'sm:max-w-6xl' : 'sm:m
 
 const systemPresets = computed(() => presetsData.value?.systemPresets || [])
 const userPresets = computed(() => presetsData.value?.userPresets || [])
-const availableColumns = computed(() => presetsData.value?.availableColumns || [])
 
 const selectedPresetId = ref('standard')
 const customColumns = ref<ExcelColumnConfig[]>([])

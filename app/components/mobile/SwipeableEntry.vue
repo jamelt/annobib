@@ -5,7 +5,7 @@ interface Props {
   entry: Entry
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<{
   (e: 'edit'): void
   (e: 'delete'): void

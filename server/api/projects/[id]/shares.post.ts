@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { type, email, permission, expiresInDays } = parsed.data
+  const { type, email, permission } = parsed.data
 
   if (type === 'user') {
     if (!email) {

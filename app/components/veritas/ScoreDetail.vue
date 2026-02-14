@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { VeritasFactor } from '~/shared/types'
-
 interface Props {
   entryId: string
 }

@@ -181,7 +181,6 @@ export function calculateAuthorScore(
 
   if (hIndices.length === 0) return 50
 
-  const avgHIndex = hIndices.reduce((a, b) => a + b, 0) / hIndices.length
   const maxHIndex = Math.max(...hIndices)
 
   let score = 50

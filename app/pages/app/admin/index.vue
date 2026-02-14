@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  getAllPlansForDisplay,
-  getTierUI,
-  getTierDisplayName,
-  type SubscriptionTier,
-} from '~/shared/subscriptions'
+import { getAllPlansForDisplay } from '~/shared/subscriptions'
 
 definePageMeta({
   layout: 'app',

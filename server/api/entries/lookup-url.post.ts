@@ -8,7 +8,7 @@ const lookupSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
+  await requireAuth(event)
   const body = await readBody(event)
 
   const parsed = lookupSchema.safeParse(body)
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
         const html = await response.text()
         metadata = await enhanceMetadataWithAI(url, metadata, html)
       }
-    } catch (error) {
+    } catch {
       metadata = await enhanceMetadataWithAI(url, metadata)
     }
   }

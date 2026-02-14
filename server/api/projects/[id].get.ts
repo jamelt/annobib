@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { projects, entryProjects, entries } from '~/server/database/schema'
+import { entryProjects, entries } from '~/server/database/schema'
 import { eq, desc } from 'drizzle-orm'
 import { buildProjectWhere } from '~/server/utils/project-query'
 

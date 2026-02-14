@@ -2,7 +2,6 @@
 const { user, logout } = useAuth()
 const {
   open: openQuickAdd,
-  close: closeQuickAdd,
   isOpen: isQuickAddOpen,
   defaultProjectId: quickAddProjectId,
 } = useQuickAdd()
@@ -511,7 +510,10 @@ const announcementBannerColors: Record<string, string> = {
                   <button
                     type="button"
                     class="w-full group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
-                    @click="isDark = !isDark; isUserMenuOpen = false"
+                    @click="
+                      isDark = !isDark
+                      isUserMenuOpen = false
+                    "
                   >
                     <UIcon
                       :name="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
@@ -522,7 +524,10 @@ const announcementBannerColors: Record<string, string> = {
                   <button
                     type="button"
                     class="w-full group flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
-                    @click="isFeedbackOpen = true; isUserMenuOpen = false"
+                    @click="
+                      isFeedbackOpen = true
+                      isUserMenuOpen = false
+                    "
                   >
                     <UIcon
                       name="i-heroicons-chat-bubble-left-ellipsis"

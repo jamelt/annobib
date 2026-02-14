@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { annotations, entries, entryProjects, projects } from '~/server/database/schema'
+import { annotations, entries, entryProjects } from '~/server/database/schema'
 import { eq, desc, asc, sql, ilike, and, inArray } from 'drizzle-orm'
 
 const SORT_FIELDS = {

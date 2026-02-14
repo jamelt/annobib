@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Entry, Annotation, Tag } from '~/shared/types'
+import type { Entry, Annotation } from '~/shared/types'
 import { ENTRY_TYPE_LABELS, ANNOTATION_TYPE_LABELS } from '~/shared/types'
 
 definePageMeta({

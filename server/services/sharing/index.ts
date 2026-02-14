@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { projectShares, projects, users } from '~/server/database/schema'
-import { eq, and, or, isNotNull } from 'drizzle-orm'
+import { eq, and, or } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 import type { SharePermission } from '~/shared/types'
 import { buildProjectWhere } from '~/server/utils/project-query'

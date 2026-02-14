@@ -155,7 +155,7 @@ Guidelines:
 export async function generateFollowUpQuestions(
   query: string,
   answer: string,
-  projectId: string,
+  _projectId: string,
 ): Promise<string[]> {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',

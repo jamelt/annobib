@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { tags, entries, projects } from '~/server/database/schema'
+import { projects } from '~/server/database/schema'
 import { eq, sql, and } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
@@ -20,10 +20,6 @@ export default defineEventHandler(async (event) => {
 
   const entryScope = projectId
     ? sql`JOIN entry_projects ep ON ep.entry_id = t1.entry_id AND ep.project_id = ${projectId}`
-    : sql``
-
-  const entryScope2 = projectId
-    ? sql`JOIN entry_projects ep ON ep.entry_id = t2.entry_id AND ep.project_id = ${projectId}`
     : sql``
 
   const coOccurrence = await db.execute(sql`

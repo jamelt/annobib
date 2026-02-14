@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Entry, Tag, Project } from '~/shared/types'
+import type { Tag, Project } from '~/shared/types'
 import { ENTRY_TYPE_LABELS } from '~/shared/types'
 
 definePageMeta({

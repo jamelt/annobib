@@ -15,15 +15,6 @@ vi.mock('~/composables/useSubscription', () => ({
   }),
 }))
 
-const mockEntry = {
-  id: '123',
-  title: 'Test Entry',
-  entryType: 'book',
-  authors: [{ firstName: 'John', lastName: 'Doe' }],
-  year: 2024,
-  metadata: {},
-}
-
 describe('EntryFormModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()

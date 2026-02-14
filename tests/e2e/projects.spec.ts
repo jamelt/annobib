@@ -62,7 +62,7 @@ test.describe('Projects Flow', () => {
     await expect(page.locator('text=0 entries')).toBeVisible()
   })
 
-  test('creates project and accesses via direct URL with slug', async ({ page, context }) => {
+  test('creates project and accesses via direct URL with slug', async ({ page }) => {
     await page.goto('/signup')
     await page.waitForLoadState('networkidle')
 

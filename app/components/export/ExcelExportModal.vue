@@ -152,7 +152,7 @@ function toggleColumn(columnId: string) {
   }
 }
 
-function updateColumnOrder(event: any) {
+function updateColumnOrder(_event: unknown) {
   enabledColumns.value.forEach((col, index) => {
     col.order = index
   })

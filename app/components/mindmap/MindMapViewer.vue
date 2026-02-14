@@ -5,6 +5,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  projectId: undefined,
   scope: 'project',
 })
 
@@ -53,7 +54,7 @@ const { update, zoomToFit, exportSVG, hoveredNode } = useMindMap(containerRef, {
     selectedNode.value = node
     showNodeDetails.value = true
   },
-  onNodeHover: (node) => {},
+  onNodeHover: (_node: unknown) => {},
 })
 
 watch(

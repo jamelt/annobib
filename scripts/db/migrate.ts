@@ -58,7 +58,7 @@ async function ensureExtensions(db: ReturnType<typeof drizzle>) {
   console.log('Extensions ready')
 }
 
-async function runMigrations(db: ReturnType<typeof drizzle>, client: postgres.Sql) {
+async function runMigrations(db: ReturnType<typeof drizzle>, _client: postgres.Sql) {
   console.log('Running migrations...')
 
   try {
@@ -77,7 +77,7 @@ async function runMigrations(db: ReturnType<typeof drizzle>, client: postgres.Sq
   }
 }
 
-async function rollbackMigration(db: ReturnType<typeof drizzle>, client: postgres.Sql) {
+async function rollbackMigration(db: ReturnType<typeof drizzle>, _client: postgres.Sql) {
   console.log('Rolling back last migration...')
 
   const migrations = await db.execute<MigrationRecord>(
@@ -144,7 +144,7 @@ async function showStatus(db: ReturnType<typeof drizzle>) {
   }
 }
 
-async function validateMigrations(db: ReturnType<typeof drizzle>, client: postgres.Sql) {
+async function validateMigrations(_db: ReturnType<typeof drizzle>, _client: postgres.Sql) {
   console.log('Validating migrations...')
 
   const fs = await import('fs')

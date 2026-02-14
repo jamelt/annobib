@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { citationStyles } from '~/server/database/schema'
-import { eq, and, count } from 'drizzle-orm'
+import { eq, count } from 'drizzle-orm'
 import { requireLightOrProTier } from '~/server/utils/auth'
 import { getTierLimits } from '~/shared/subscriptions'
 import { z } from 'zod'

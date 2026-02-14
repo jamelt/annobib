@@ -12,7 +12,7 @@ interface AnnotationRow {
   createdAt: string | Date
   updatedAt: string | Date
   entryTitle: string
-  entryAuthors: any[]
+  entryAuthors: Author[]
   entryYear: number | null
   entryType: string
 }
@@ -52,7 +52,7 @@ const typeColorMap: Record<string, string> = {
   custom: 'neutral',
 }
 
-function formatAuthors(authors: any[] | null) {
+function formatAuthors(authors: Author[] | null) {
   if (!authors || authors.length === 0) return 'Unknown'
   if (authors.length === 1) {
     return `${authors[0].lastName}, ${authors[0].firstName}`
@@ -247,8 +247,8 @@ const columns = computed<TableColumn<AnnotationRow>[]>(() => [
   },
 ])
 
-function handleRowSelect(row: any) {
-  const annotation = row?.original ?? row
+function handleRowSelect(row: AnnotationRow | { original?: AnnotationRow }) {
+  const annotation = 'original' in row ? row.original : row
   if (annotation?.entryId) {
     navigateToEntry(annotation.entryId)
   }

@@ -37,7 +37,7 @@ try {
     try {
       execSync(`kill ${pid}`, { stdio: 'ignore' })
       console.log(`  ✓ Killed PID ${pid}`)
-    } catch (err) {
+    } catch {
       console.log(`  ⚠️  Could not kill PID ${pid} (may have already exited)`)
     }
   }

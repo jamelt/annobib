@@ -1,6 +1,23 @@
-import type { Entry, Author } from '~/shared/types'
+import type { Entry } from '~/shared/types'
 
-let CSL: any = null
+interface CSLEngine {
+  updateItems(ids: string[]): void
+  processCitationCluster(
+    citation: unknown,
+    pre: unknown[],
+    post: unknown[],
+  ): [Record<string, unknown>, unknown[]]
+  makeBibliography(): [{ bibstart: string; bibend: string }, string[]]
+  makeCitationCluster(citations: unknown[]): string
+}
+
+type CSLConstructor = new (
+  sys: { retrieveLocale: (lang: string) => string; retrieveItem: (id: string) => unknown },
+  style: string,
+  lang?: string,
+) => CSLEngine
+
+let CSL: CSLConstructor | null = null
 
 async function getCSL() {
   if (!CSL) {
@@ -111,7 +128,7 @@ export async function createCitationProcessor(
   styleXml: string,
   localeXml: string,
   items: CitationItem[],
-): Promise<any> {
+): Promise<CSLEngine> {
   const CSLModule = await getCSL()
 
   const itemsById: Record<string, CitationItem> = {}
@@ -128,7 +145,7 @@ export async function createCitationProcessor(
   return engine
 }
 
-export function formatBibliography(engine: any, itemIds: string[]): string[] {
+export function formatBibliography(engine: CSLEngine, itemIds: string[]): string[] {
   engine.updateItems(itemIds)
   const result = engine.makeBibliography()
 
@@ -145,7 +162,11 @@ export function formatBibliography(engine: any, itemIds: string[]): string[] {
   return entries.map((entry: string) => entry.trim())
 }
 
-export function formatCitation(engine: any, itemIds: string[], noteIndex: number = 0): string {
+export function formatCitation(
+  engine: CSLEngine,
+  itemIds: string[],
+  noteIndex: number = 0,
+): string {
   const citation = {
     citationItems: itemIds.map((id) => ({ id })),
     properties: { noteIndex },
@@ -161,11 +182,11 @@ export function formatCitation(engine: any, itemIds: string[], noteIndex: number
   return ''
 }
 
-export function formatInTextCitation(engine: any, itemId: string): string {
+export function formatInTextCitation(engine: CSLEngine, itemId: string): string {
   return formatCitation(engine, [itemId], 1)
 }
 
-export function formatSubsequentCitation(engine: any, itemId: string): string {
+export function formatSubsequentCitation(engine: CSLEngine, itemId: string): string {
   const firstCitationId = `cite-first-${itemId}`
   const firstCitation = {
     citationID: firstCitationId,

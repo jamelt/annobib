@@ -20,19 +20,15 @@ const {
   recentSearches,
   recentlyVisited,
   pinnedSearches,
-  contextProjectId,
   isSlashCommand,
   matchedCommands,
   flatResults,
   totalResults,
-  qualifierSuggestions,
   open,
   close,
-  addToRecentSearches,
   clearRecentSearches,
   pinSearch,
   unpinSearch,
-  trackVisited,
   navigateToResult,
   executeCommand,
   moveUp,
@@ -69,10 +65,6 @@ const ANNOTATION_TYPE_ICONS: Record<string, string> = {
 
 const showRecents = computed(() => {
   return !query.value.trim() && !isSlashCommand.value
-})
-
-const showQualifierHints = computed(() => {
-  return qualifierSuggestions.value.length > 0 && !isSlashCommand.value
 })
 
 const hasResults = computed(() => {

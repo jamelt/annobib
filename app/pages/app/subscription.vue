@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import {
   getAllPlansForDisplay,
-  getTier,
   getTierDisplayName,
-  isPaidTier,
-  DEFAULT_TIER,
   type SubscriptionTier,
 } from '~/shared/subscriptions'
 
@@ -20,7 +17,6 @@ const {
   subscription,
   limits,
   products,
-  isFree,
   isPaid,
   isCanceled,
   periodEnd,

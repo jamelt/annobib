@@ -112,10 +112,10 @@ async function handleSave() {
     isOpen.value = false
     content.value = ''
     annotationType.value = 'descriptive'
-  } catch (err: any) {
+  } catch (err: unknown) {
     toast.add({
       title: 'Failed to save annotation',
-      description: err.data?.message || 'Please try again.',
+      description: getErrorMessage(err, 'Please try again.'),
       color: 'error',
     })
   } finally {

@@ -1,5 +1,5 @@
 import { db } from '~/server/database/client'
-import { users, entries, projects, subscriptions, feedback } from '~/server/database/schema'
+import { users, entries, projects, feedback } from '~/server/database/schema'
 import { eq, count } from 'drizzle-orm'
 import { requireAdminOrSupport } from '~/server/utils/auth'
 

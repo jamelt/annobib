@@ -1,6 +1,6 @@
 import { db } from '~/server/database/client'
 import { users } from '~/server/database/schema'
-import { eq, and, like } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { z } from 'zod'
 import { enforceRateLimit } from '~/server/utils/rate-limit'
 

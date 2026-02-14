@@ -261,7 +261,7 @@ export async function ingestPlainText(
 }
 
 export async function deleteChunksForSource(sourceId: string, projectId: string): Promise<number> {
-  const result = await db
+  await db
     .delete(documentChunks)
     .where(
       and(

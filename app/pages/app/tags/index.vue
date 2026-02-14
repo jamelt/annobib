@@ -17,7 +17,6 @@ const {
   optimisticRemove,
   optimisticRestore,
   permanentDelete,
-  TAG_COLORS,
 } = useTags()
 
 const isEditModalOpen = ref(false)
