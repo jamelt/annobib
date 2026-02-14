@@ -53,23 +53,47 @@ steps:
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app'
     waitFor: ['docker-build']
 
+  - name: 'alpine:3'
+    id: 'download-sql-proxy'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - 'wget -q -O /workspace/cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.21.0/cloud-sql-proxy.linux.amd64 && chmod +x /workspace/cloud-sql-proxy'
+    waitFor: ['-']
+
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
     id: 'migrate-staging'
     dir: '/app'
-    entrypoint: 'node'
-    args: ['./node_modules/.bin/tsx', 'scripts/db/migrate.ts', 'up']
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        /workspace/cloud-sql-proxy ${_CLOUD_SQL_CONNECTION} --port 5433 &
+        sleep 3
+        node ./node_modules/.bin/tsx scripts/db/migrate.ts up
+        RESULT=$$?
+        kill $$(pgrep cloud-sql-proxy) 2>/dev/null || true
+        exit $$RESULT
+    secretEnv: ['DATABASE_URL']
     env:
-      - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
       - 'HOME=/tmp'
-    waitFor: ['docker-push']
+    waitFor: ['docker-push', 'download-sql-proxy']
 
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
     id: 'validate-migrations'
     dir: '/app'
-    entrypoint: 'node'
-    args: ['./node_modules/.bin/tsx', 'scripts/db/migrate.ts', 'validate']
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        /workspace/cloud-sql-proxy ${_CLOUD_SQL_CONNECTION} --port 5433 &
+        sleep 3
+        node ./node_modules/.bin/tsx scripts/db/migrate.ts validate
+        RESULT=$$?
+        kill $$(pgrep cloud-sql-proxy) 2>/dev/null || true
+        exit $$RESULT
+    secretEnv: ['DATABASE_URL']
     env:
-      - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
       - 'HOME=/tmp'
     waitFor: ['migrate-staging']
 
@@ -101,7 +125,12 @@ substitutions:
   _APP_NAME: 'annobib'
   _STAGING_CLUSTER: 'annobib-staging-gke'
   _STAGING_URL: ''
-  _STAGING_DATABASE_URL: ''
+  _CLOUD_SQL_CONNECTION: 'annobib-staging:us-central1:annobib-staging-db'
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/annobib-staging/secrets/staging-database-url/versions/latest
+      env: 'DATABASE_URL'
 
 options:
   machineType: 'E2_HIGHCPU_8'
