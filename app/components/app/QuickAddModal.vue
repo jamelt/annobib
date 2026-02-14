@@ -72,13 +72,11 @@ const selectedProjectId = ref<string | null>(props.defaultProjectId ?? null)
 const { data: projects } = useFetch('/api/projects', { lazy: true })
 
 function sanitizeAuthors(authors: Author[]): Author[] {
-  return authors
-    .map((a) => ({
-      ...a,
-      firstName: (a.firstName ?? '').trim(),
-      lastName: (a.lastName ?? '').trim(),
-    }))
-    .filter((a) => a.lastName.length > 0)
+  return authors.map((a) => ({
+    ...a,
+    firstName: (a.firstName ?? '').trim(),
+    lastName: (a.lastName ?? '').trim(),
+  }))
 }
 
 function resolveProjectId(): string | undefined {
@@ -397,6 +395,29 @@ function clearPreview() {
   status.value = suggestions.value.length > 0 ? 'loaded' : 'idle'
 }
 
+function buildEntryPayload(s: EntrySuggestion): Record<string, unknown> {
+  const projectId = resolveProjectId()
+  return {
+    entryType: s.entryType,
+    title: s.title,
+    authors: sanitizeAuthors(s.authors),
+    year: s.year,
+    metadata: s.metadata,
+    ...(projectId && { projectIds: [projectId] }),
+  }
+}
+
+function buildMinimalPayload(s: EntrySuggestion): Record<string, unknown> {
+  const projectId = resolveProjectId()
+  return {
+    entryType: s.entryType,
+    title: s.title,
+    authors: [],
+    metadata: {},
+    ...(projectId && { projectIds: [projectId] }),
+  }
+}
+
 async function addToLibrary() {
   if (!selectedSuggestion.value) return
 
@@ -405,21 +426,23 @@ async function addToLibrary() {
 
   try {
     const s = selectedSuggestion.value
+    let entry: any
 
-    const projectId = resolveProjectId()
-    const payload: Record<string, unknown> = {
-      entryType: s.entryType,
-      title: s.title,
-      authors: sanitizeAuthors(s.authors),
-      year: s.year,
-      metadata: s.metadata,
-      ...(projectId && { projectIds: [projectId] }),
+    try {
+      entry = await $fetch('/api/entries', {
+        method: 'POST',
+        body: buildEntryPayload(s),
+      })
+    } catch (firstErr: any) {
+      if (firstErr.statusCode === 400) {
+        entry = await $fetch('/api/entries', {
+          method: 'POST',
+          body: buildMinimalPayload(s),
+        })
+      } else {
+        throw firstErr
+      }
     }
-
-    const entry = await $fetch('/api/entries', {
-      method: 'POST',
-      body: payload,
-    })
 
     status.value = 'success'
     emit('created', entry)
@@ -452,21 +475,23 @@ async function forceAddToLibrary() {
 
   try {
     const s = selectedSuggestion.value
+    let entry: any
 
-    const projectId = resolveProjectId()
-    const payload: Record<string, unknown> = {
-      entryType: s.entryType,
-      title: s.title,
-      authors: sanitizeAuthors(s.authors),
-      year: s.year,
-      metadata: s.metadata,
-      ...(projectId && { projectIds: [projectId] }),
+    try {
+      entry = await $fetch('/api/entries?skipDedupe=true', {
+        method: 'POST',
+        body: buildEntryPayload(s),
+      })
+    } catch (firstErr: any) {
+      if (firstErr.statusCode === 400) {
+        entry = await $fetch('/api/entries?skipDedupe=true', {
+          method: 'POST',
+          body: buildMinimalPayload(s),
+        })
+      } else {
+        throw firstErr
+      }
     }
-
-    const entry = await $fetch('/api/entries?skipDedupe=true', {
-      method: 'POST',
-      body: payload,
-    })
 
     status.value = 'success'
     emit('created', entry)

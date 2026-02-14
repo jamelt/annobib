@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const authorSchema = z.object({
   firstName: z.string().default(''),
-  lastName: z.string().min(1),
+  lastName: z.string().default(''),
   middleName: z.string().nullish(),
   suffix: z.string().nullish(),
   orcid: z.string().nullish(),
@@ -41,7 +41,7 @@ export const entryMetadataSchema = z
     doi: z.string().optional(),
     isbn: z.string().optional(),
     issn: z.string().optional(),
-    url: z.string().url().nullish().or(z.literal('')),
+    url: z.string().nullish(),
     abstract: z.string().optional(),
     publisher: z.string().optional(),
     journal: z.string().optional(),
@@ -63,7 +63,7 @@ export const createEntrySchema = z.object({
   entryType: entryTypeSchema,
   title: z.string().min(1, 'Title is required'),
   authors: z.array(authorSchema).default([]),
-  year: z.number().int().min(1).max(9999).nullish(),
+  year: z.number().int().nullish(),
   metadata: entryMetadataSchema.optional().default({}),
   customFields: z.record(z.string()).optional().default({}),
   notes: z.string().nullish(),

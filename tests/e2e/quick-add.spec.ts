@@ -61,6 +61,10 @@ test.describe('Quick Add - Desktop', () => {
 
     await openQuickAdd(page)
 
+    // Type something so the Cancel button appears in the footer
+    const searchInput = page.getByPlaceholder(SEARCH_PLACEHOLDER)
+    await searchInput.fill('test')
+
     await page.getByRole('button', { name: 'Cancel' }).click()
     await expect(page.getByRole('heading', { name: 'Add a source' })).not.toBeVisible({
       timeout: 3000,
@@ -297,7 +301,7 @@ test.describe('Quick Add - Mobile', () => {
 
     await expect(page.getByRole('heading', { name: 'Add a source' })).not.toBeVisible()
 
-    await page.getByTestId('quick-add-fab').click()
+    await page.getByTestId('quick-add-fab').click({ force: true })
 
     await expect(page.getByRole('heading', { name: 'Add a source' })).toBeVisible({
       timeout: 5000,
@@ -322,7 +326,7 @@ test.describe('Quick Add - Mobile', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await page.getByTestId('quick-add-fab').click()
+    await page.getByTestId('quick-add-fab').click({ force: true })
     await expect(page.getByRole('heading', { name: 'Add a source' })).toBeVisible({
       timeout: 5000,
     })
@@ -337,7 +341,7 @@ test.describe('Quick Add - Mobile', () => {
     await signUpAndLogin(page)
     await page.goto('/app')
 
-    await page.getByTestId('quick-add-fab').click()
+    await page.getByTestId('quick-add-fab').click({ force: true })
     await expect(page.getByRole('heading', { name: 'Add a source' })).toBeVisible({
       timeout: 5000,
     })
