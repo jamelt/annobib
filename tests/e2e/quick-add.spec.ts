@@ -208,7 +208,6 @@ test.describe('Quick Add - Desktop', () => {
     const addButton = page.getByRole('button', { name: /Add to library/i })
     await expect(addButton).toBeVisible({ timeout: 5000 })
 
-    // Intercept the POST request to verify the payload is valid
     const [createResponse] = await Promise.all([
       page.waitForResponse(
         (r) => r.url().includes('/api/entries') && r.request().method() === 'POST',
@@ -217,7 +216,6 @@ test.describe('Quick Add - Desktop', () => {
       addButton.click(),
     ])
 
-    // The response MUST be 200 - not 400 "Invalid entry data"
     expect(createResponse.status()).toBe(200)
     const body = await createResponse.json()
     expect(body.id).toBeTruthy()
@@ -226,6 +224,48 @@ test.describe('Quick Add - Desktop', () => {
     await expect(page.getByRole('heading', { name: 'Add a source' })).not.toBeVisible({
       timeout: 5000,
     })
+  })
+
+  test('adds a book by plain text search (The Warmth of Other Suns)', async ({ page }) => {
+    test.setTimeout(60000)
+    await signUpAndLogin(page)
+    await page.goto('/app')
+    await openQuickAdd(page)
+
+    const searchInput = page.getByPlaceholder(SEARCH_PLACEHOLDER)
+    await searchInput.fill('the warmth of other suns by wilkerson')
+
+    await page.waitForResponse(
+      (r) => r.url().includes('/api/entries/suggest') && r.status() === 200,
+      { timeout: 15000 },
+    )
+
+    const firstResult = page.locator('button.w-full.text-left').first()
+    await expect(firstResult).toBeVisible({ timeout: 5000 })
+    await firstResult.click()
+
+    const addButton = page.getByRole('button', { name: /Add to library/i })
+    await expect(addButton).toBeVisible({ timeout: 5000 })
+
+    const [createResponse] = await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().includes('/api/entries') && r.request().method() === 'POST',
+        { timeout: 15000 },
+      ),
+      addButton.click(),
+    ])
+
+    expect(createResponse.status()).toBe(200)
+    const body = await createResponse.json()
+    expect(body.id).toBeTruthy()
+    expect(body.title).toContain('Warmth')
+
+    await expect(page.getByRole('heading', { name: 'Add a source' })).not.toBeVisible({
+      timeout: 5000,
+    })
+
+    await page.goto('/app/library')
+    await expect(page.getByText('Warmth', { exact: false })).toBeVisible({ timeout: 5000 })
   })
 })
 
