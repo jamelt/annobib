@@ -55,18 +55,20 @@ steps:
 
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
     id: 'migrate-staging'
-    entrypoint: 'npx'
-    args: ['tsx', 'scripts/db/migrate.ts', 'up']
+    entrypoint: 'node'
+    args: ['./node_modules/.bin/tsx', 'scripts/db/migrate.ts', 'up']
     env:
       - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
+      - 'HOME=/tmp'
     waitFor: ['docker-push']
 
   - name: '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_APP_NAME}/${_APP_NAME}-app:${SHORT_SHA}'
     id: 'validate-migrations'
-    entrypoint: 'npx'
-    args: ['tsx', 'scripts/db/migrate.ts', 'validate']
+    entrypoint: 'node'
+    args: ['./node_modules/.bin/tsx', 'scripts/db/migrate.ts', 'validate']
     env:
       - 'DATABASE_URL=${_STAGING_DATABASE_URL}'
+      - 'HOME=/tmp'
     waitFor: ['migrate-staging']
 
   - name: 'gcr.io/cloud-builders/gke-deploy'
