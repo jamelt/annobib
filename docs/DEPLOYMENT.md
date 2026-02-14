@@ -5,6 +5,7 @@ This document describes how to deploy AnnoBib to Google Cloud Platform using Kub
 ## Overview
 
 AnnoBib uses:
+
 - **GKE** (Google Kubernetes Engine) for container orchestration
 - **Cloud SQL** for managed PostgreSQL
 - **Cloud Storage** for file uploads
@@ -107,15 +108,15 @@ terraform apply -var-file="environments/production.tfvars"
 
 ### Key Resources Created
 
-| Resource | Purpose |
-|----------|---------|
-| GKE Cluster | Container orchestration |
-| Cloud SQL Instance | PostgreSQL database |
-| VPC Network | Private networking |
-| Service Account | Workload identity |
-| Artifact Registry | Docker images |
-| Cloud Storage Bucket | File uploads |
-| Secret Manager | Sensitive configuration |
+| Resource             | Purpose                 |
+| -------------------- | ----------------------- |
+| GKE Cluster          | Container orchestration |
+| Cloud SQL Instance   | PostgreSQL database     |
+| VPC Network          | Private networking      |
+| Service Account      | Workload identity       |
+| Artifact Registry    | Docker images           |
+| Cloud Storage Bucket | File uploads            |
+| Secret Manager       | Sensitive configuration |
 
 ---
 
@@ -124,6 +125,7 @@ terraform apply -var-file="environments/production.tfvars"
 ### Cloud SQL Configuration
 
 Terraform creates a Cloud SQL instance with:
+
 - PostgreSQL 18
 - Private IP only
 - Automated backups
@@ -254,27 +256,27 @@ spec:
   template:
     spec:
       containers:
-      - name: app
-        image: us-central1-docker.pkg.dev/project/annobib/app:latest
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: app
+          image: us-central1-docker.pkg.dev/project/annobib/app:latest
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '1000m'
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 #### HorizontalPodAutoscaler
@@ -292,12 +294,12 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
 ```
 
 #### Ingress
@@ -312,16 +314,16 @@ metadata:
     networking.gke.io/managed-certificates: annobib-cert
 spec:
   rules:
-  - host: app.annobib.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: annobib-app
-            port:
-              number: 80
+    - host: app.annobib.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: annobib-app
+                port:
+                  number: 80
 ```
 
 ---
@@ -390,9 +392,9 @@ kind: ConfigMap
 metadata:
   name: annobib-config
 data:
-  NODE_ENV: "production"
-  NUXT_PUBLIC_APP_URL: "https://app.annobib.com"
-  LOG_LEVEL: "info"
+  NODE_ENV: 'production'
+  NUXT_PUBLIC_APP_URL: 'https://app.annobib.com'
+  LOG_LEVEL: 'info'
 ```
 
 ### Secrets (Sensitive)
@@ -406,21 +408,21 @@ metadata:
   name: annobib-secrets
 type: Opaque
 stringData:
-  DATABASE_URL: "sm://project-id/annobib-database-url/latest"
-  STRIPE_SECRET_KEY: "sm://project-id/stripe-secret-key/latest"
-  OPENAI_API_KEY: "sm://project-id/openai-api-key/latest"
+  DATABASE_URL: 'sm://project-id/annobib-database-url/latest'
+  STRIPE_SECRET_KEY: 'sm://project-id/stripe-secret-key/latest'
+  OPENAI_API_KEY: 'sm://project-id/openai-api-key/latest'
 ```
 
 ### Required Environment Variables
 
-| Variable | Description | Source |
-|----------|-------------|--------|
-| DATABASE_URL | PostgreSQL connection string | Secret Manager |
-| NUXT_PUBLIC_APP_URL | Public application URL | ConfigMap |
-| STRIPE_SECRET_KEY | Stripe API key | Secret Manager |
+| Variable              | Description                   | Source         |
+| --------------------- | ----------------------------- | -------------- |
+| DATABASE_URL          | PostgreSQL connection string  | Secret Manager |
+| NUXT_PUBLIC_APP_URL   | Public application URL        | ConfigMap      |
+| STRIPE_SECRET_KEY     | Stripe API key                | Secret Manager |
 | STRIPE_WEBHOOK_SECRET | Stripe webhook signing secret | Secret Manager |
-| OPENAI_API_KEY | OpenAI API key | Secret Manager |
-| NUXT_SESSION_SECRET | Session encryption key | Secret Manager |
+| OPENAI_API_KEY        | OpenAI API key                | Secret Manager |
+| NUXT_SESSION_SECRET   | Session encryption key        | Secret Manager |
 
 ---
 
@@ -429,6 +431,7 @@ stringData:
 ### Rolling Update Strategy
 
 The deployment uses rolling updates with:
+
 - `maxSurge: 1` - One extra pod during update
 - `maxUnavailable: 0` - Always maintain full capacity
 
@@ -507,6 +510,7 @@ Response:
 ### Cloud Monitoring
 
 Key metrics to monitor:
+
 - Request latency (p50, p95, p99)
 - Error rate
 - CPU/Memory utilization
@@ -516,6 +520,7 @@ Key metrics to monitor:
 ### Alerting
 
 Configure alerts in Cloud Monitoring for:
+
 - Error rate > 1%
 - Latency p95 > 2s
 - Pod restarts > 5/hour
@@ -528,6 +533,7 @@ Configure alerts in Cloud Monitoring for:
 ### Horizontal Pod Autoscaling
 
 Automatically scales based on CPU utilization:
+
 - Min replicas: 2 (production)
 - Max replicas: 10 (production)
 - Target CPU: 70%
@@ -539,11 +545,11 @@ Adjust resource requests/limits in deployment patch:
 ```yaml
 resources:
   requests:
-    memory: "1Gi"
-    cpu: "500m"
+    memory: '1Gi'
+    cpu: '500m'
   limits:
-    memory: "2Gi"
-    cpu: "2000m"
+    memory: '2Gi'
+    cpu: '2000m'
 ```
 
 ### Database Scaling
@@ -584,12 +590,12 @@ kubectl debug -it pod/annobib-app-xxx --image=busybox
 
 ### Common Issues
 
-| Issue | Check | Solution |
-|-------|-------|----------|
-| Pod CrashLoopBackOff | `kubectl describe pod` | Check logs, fix app error |
-| ImagePullBackOff | Image name, credentials | Verify image exists, check IAM |
-| Connection refused | Service, Ingress | Check service selector, endpoints |
-| Database timeout | Network, credentials | Check VPC, verify connection string |
+| Issue                | Check                   | Solution                            |
+| -------------------- | ----------------------- | ----------------------------------- |
+| Pod CrashLoopBackOff | `kubectl describe pod`  | Check logs, fix app error           |
+| ImagePullBackOff     | Image name, credentials | Verify image exists, check IAM      |
+| Connection refused   | Service, Ingress        | Check service selector, endpoints   |
+| Database timeout     | Network, credentials    | Check VPC, verify connection string |
 
 ---
 
@@ -609,10 +615,10 @@ spec:
     matchLabels:
       app: annobib-app
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: ingress-nginx
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
 ```
 
 ### Workload Identity

@@ -51,17 +51,17 @@ spec:
                   key: DATABASE_URL
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: '256Mi'
+              cpu: '100m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
           args:
-            - "--structured-logs"
-            - "--port=5432"
-            - "$(DB_CONNECTION_NAME)"
+            - '--structured-logs'
+            - '--port=5432'
+            - '$(DB_CONNECTION_NAME)'
           envFrom:
             - configMapRef:
                 name: annobib-config
@@ -110,17 +110,17 @@ spec:
                   key: DATABASE_URL
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: '128Mi'
+              cpu: '50m'
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '200m'
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
           args:
-            - "--structured-logs"
-            - "--port=5432"
-            - "$(DB_CONNECTION_NAME)"
+            - '--structured-logs'
+            - '--port=5432'
+            - '$(DB_CONNECTION_NAME)'
           envFrom:
             - configMapRef:
                 name: annobib-config

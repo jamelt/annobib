@@ -7,11 +7,14 @@ This document describes all API endpoints in AnnoBib. All endpoints are prefixed
 Most endpoints require authentication via session cookie. The `requireAuth(event)` utility validates sessions and returns the current user.
 
 ### Headers
+
 - Session cookie is set automatically on login/register
 - No manual Authorization header required for browser clients
 
 ### Error Responses
+
 All endpoints return consistent error format:
+
 ```json
 {
   "statusCode": 401,
@@ -24,9 +27,11 @@ All endpoints return consistent error format:
 ## Auth Endpoints
 
 ### POST /api/auth/register
+
 Create a new user account.
 
 **Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -36,6 +41,7 @@ Create a new user account.
 ```
 
 **Response:** `201 Created`
+
 ```json
 {
   "user": {
@@ -50,9 +56,11 @@ Create a new user account.
 ---
 
 ### POST /api/auth/login
+
 Authenticate and create session.
 
 **Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -61,6 +69,7 @@ Authenticate and create session.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "user": {
@@ -75,9 +84,11 @@ Authenticate and create session.
 ---
 
 ### POST /api/auth/logout
+
 End current session.
 
 **Response:** `200 OK`
+
 ```json
 {
   "success": true
@@ -89,6 +100,7 @@ End current session.
 ## Entry Endpoints
 
 ### GET /api/entries
+
 List user's entries with pagination and filtering.
 
 **Query Parameters:**
@@ -104,6 +116,7 @@ List user's entries with pagination and filtering.
 | `order` | string | Sort order (asc, desc) |
 
 **Response:** `200 OK`
+
 ```json
 {
   "entries": [...],
@@ -119,16 +132,16 @@ List user's entries with pagination and filtering.
 ---
 
 ### POST /api/entries
+
 Create a new entry.
 
 **Body:**
+
 ```json
 {
   "entryType": "book",
   "title": "The Great Book",
-  "authors": [
-    { "firstName": "John", "lastName": "Doe" }
-  ],
+  "authors": [{ "firstName": "John", "lastName": "Doe" }],
   "publicationDate": "2024-01-15",
   "publisher": "Academic Press",
   "isbn": "978-3-16-148410-0",
@@ -138,6 +151,7 @@ Create a new entry.
 ```
 
 **Response:** `201 Created`
+
 ```json
 {
   "entry": { ... }
@@ -147,9 +161,11 @@ Create a new entry.
 ---
 
 ### GET /api/entries/[id]
+
 Get a single entry by ID.
 
 **Response:** `200 OK`
+
 ```json
 {
   "entry": {
@@ -165,11 +181,13 @@ Get a single entry by ID.
 ---
 
 ### PUT /api/entries/[id]
+
 Update an entry.
 
 **Body:** Partial entry object with fields to update.
 
 **Response:** `200 OK`
+
 ```json
 {
   "entry": { ... }
@@ -179,9 +197,11 @@ Update an entry.
 ---
 
 ### DELETE /api/entries/[id]
+
 Delete an entry.
 
 **Response:** `200 OK`
+
 ```json
 {
   "success": true
@@ -191,9 +211,11 @@ Delete an entry.
 ---
 
 ### POST /api/entries/lookup-url
+
 Extract metadata from a URL.
 
 **Body:**
+
 ```json
 {
   "url": "https://example.com/article",
@@ -202,6 +224,7 @@ Extract metadata from a URL.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "metadata": {
@@ -220,9 +243,11 @@ Extract metadata from a URL.
 ## Annotation Endpoints
 
 ### GET /api/entries/[id]/annotations
+
 Get all annotations for an entry.
 
 **Response:** `200 OK`
+
 ```json
 {
   "annotations": [
@@ -239,9 +264,11 @@ Get all annotations for an entry.
 ---
 
 ### POST /api/entries/[id]/annotations
+
 Create an annotation.
 
 **Body:**
+
 ```json
 {
   "type": "summary",
@@ -260,9 +287,11 @@ Create an annotation.
 **Requires:** Pro tier
 
 ### GET /api/entries/[id]/veritas
+
 Get or calculate Veritas credibility score.
 
 **Response:** `200 OK`
+
 ```json
 {
   "score": {
@@ -282,15 +311,19 @@ Get or calculate Veritas credibility score.
 ---
 
 ### POST /api/entries/[id]/veritas
+
 Refresh or manually override score.
 
 **Body:**
+
 ```json
 {
   "refresh": true
 }
 ```
+
 Or for manual override:
+
 ```json
 {
   "override": {
@@ -305,9 +338,11 @@ Or for manual override:
 ## Project Endpoints
 
 ### GET /api/projects
+
 List user's projects.
 
 **Response:** `200 OK`
+
 ```json
 {
   "projects": [
@@ -324,9 +359,11 @@ List user's projects.
 ---
 
 ### POST /api/projects
+
 Create a project.
 
 **Body:**
+
 ```json
 {
   "name": "My Research",
@@ -339,9 +376,11 @@ Create a project.
 ---
 
 ### GET /api/projects/[id]
+
 Get project with entries.
 
 **Response:** `200 OK`
+
 ```json
 {
   "project": {
@@ -356,6 +395,7 @@ Get project with entries.
 ---
 
 ### GET /api/projects/[id]/graph
+
 Get graph data for mind map visualization.
 
 **Requires:** Light or Pro tier
@@ -368,6 +408,7 @@ Get graph data for mind map visualization.
 | `showSimilar` | boolean | Include similarity edges |
 
 **Response:** `200 OK`
+
 ```json
 {
   "nodes": [
@@ -384,9 +425,11 @@ Get graph data for mind map visualization.
 ## Sharing Endpoints
 
 ### GET /api/projects/[id]/shares
+
 List all shares for a project.
 
 **Response:** `200 OK`
+
 ```json
 {
   "shares": [
@@ -407,9 +450,11 @@ List all shares for a project.
 ---
 
 ### POST /api/projects/[id]/shares
+
 Create a share.
 
 **Body (user share):**
+
 ```json
 {
   "email": "colleague@university.edu",
@@ -418,6 +463,7 @@ Create a share.
 ```
 
 **Body (public link):**
+
 ```json
 {
   "public": true,
@@ -431,6 +477,7 @@ Create a share.
 ---
 
 ### DELETE /api/projects/[id]/shares/[shareId]
+
 Remove a share.
 
 **Response:** `200 OK`
@@ -438,9 +485,11 @@ Remove a share.
 ---
 
 ### GET /api/shared/[token]
+
 Public endpoint to view shared project.
 
 **Response:** `200 OK`
+
 ```json
 {
   "project": {
@@ -457,9 +506,11 @@ Public endpoint to view shared project.
 ## Citation Endpoints
 
 ### GET /api/citation/styles
+
 List available citation styles.
 
 **Response:** `200 OK`
+
 ```json
 {
   "default": [
@@ -483,11 +534,13 @@ List available citation styles.
 ---
 
 ### POST /api/citation/styles
+
 Create a custom citation style.
 
 **Requires:** Light (max 3) or Pro tier
 
 **Body:**
+
 ```json
 {
   "name": "Custom IEEE",
@@ -502,9 +555,11 @@ Create a custom citation style.
 ---
 
 ### POST /api/citation/format
+
 Format entries as citations.
 
 **Body:**
+
 ```json
 {
   "entryIds": ["uuid1", "uuid2"],
@@ -514,6 +569,7 @@ Format entries as citations.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "bibliography": "<div class=\"csl-bib-body\">...</div>",
@@ -527,9 +583,11 @@ Format entries as citations.
 ---
 
 ### POST /api/citation/preview
+
 Preview a citation style.
 
 **Body:**
+
 ```json
 {
   "styleId": "mla9"
@@ -537,6 +595,7 @@ Preview a citation style.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "preview": {
@@ -551,9 +610,11 @@ Preview a citation style.
 ## Export Endpoints
 
 ### GET /api/export/presets
+
 Get available Excel export presets.
 
 **Response:** `200 OK`
+
 ```json
 {
   "presets": [
@@ -573,9 +634,11 @@ Get available Excel export presets.
 ---
 
 ### POST /api/export/presets
+
 Create a custom export preset.
 
 **Body:**
+
 ```json
 {
   "name": "My Preset",
@@ -590,9 +653,11 @@ Create a custom export preset.
 ---
 
 ### POST /api/export/excel
+
 Generate Excel file.
 
 **Body:**
+
 ```json
 {
   "entryIds": ["uuid1", "uuid2"],
@@ -606,11 +671,13 @@ Generate Excel file.
 ---
 
 ### POST /api/export/pdf
+
 Generate PDF file.
 
 **Requires:** Light or Pro tier
 
 **Body:**
+
 ```json
 {
   "entryIds": ["uuid1", "uuid2"],
@@ -625,9 +692,11 @@ Generate PDF file.
 ---
 
 ### POST /api/export/bibtex
+
 Generate BibTeX file.
 
 **Body:**
+
 ```json
 {
   "entryIds": ["uuid1", "uuid2"]
@@ -641,6 +710,7 @@ Generate BibTeX file.
 ## Voice Endpoints
 
 ### POST /api/voice/transcribe
+
 Transcribe audio using Whisper API.
 
 **Requires:** Light (10 min/mo) or Pro (60 min/mo) tier
@@ -648,6 +718,7 @@ Transcribe audio using Whisper API.
 **Body:** `multipart/form-data` with `audio` file
 
 **Response:** `200 OK`
+
 ```json
 {
   "text": "Transcribed text here",
@@ -659,9 +730,11 @@ Transcribe audio using Whisper API.
 ---
 
 ### POST /api/voice/parse
+
 Parse voice transcript into structured data.
 
 **Body:**
+
 ```json
 {
   "transcript": "Add a book called The Great Gatsby by F. Scott Fitzgerald",
@@ -670,6 +743,7 @@ Parse voice transcript into structured data.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "type": "entry",
@@ -688,9 +762,11 @@ Parse voice transcript into structured data.
 **Requires:** Pro tier
 
 ### GET /api/companion/[projectId]/persona
+
 Get or generate research persona.
 
 **Response:** `200 OK`
+
 ```json
 {
   "persona": {
@@ -709,9 +785,11 @@ Get or generate research persona.
 ---
 
 ### GET /api/companion/[projectId]/conversations
+
 List conversation history.
 
 **Response:** `200 OK`
+
 ```json
 {
   "conversations": [
@@ -729,9 +807,11 @@ List conversation history.
 ---
 
 ### POST /api/companion/[projectId]/chat
+
 Send a message and get AI response.
 
 **Body:**
+
 ```json
 {
   "message": "What are the main themes in my sources?",
@@ -741,20 +821,16 @@ Send a message and get AI response.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "message": {
     "id": "uuid",
     "role": "assistant",
     "content": "Based on your sources...",
-    "citations": [
-      { "entryId": "uuid", "chunk": "relevant text" }
-    ],
+    "citations": [{ "entryId": "uuid", "chunk": "relevant text" }],
     "confidence": 85,
-    "followUpQuestions": [
-      "Would you like me to elaborate on...",
-      "Have you considered..."
-    ]
+    "followUpQuestions": ["Would you like me to elaborate on...", "Have you considered..."]
   },
   "conversationId": "uuid"
 }
@@ -765,9 +841,11 @@ Send a message and get AI response.
 ## Subscription Endpoints
 
 ### GET /api/subscription
+
 Get current subscription status.
 
 **Response:** `200 OK`
+
 ```json
 {
   "tier": "light",
@@ -788,9 +866,11 @@ Get current subscription status.
 ---
 
 ### POST /api/subscription/checkout
+
 Create Stripe checkout session.
 
 **Body:**
+
 ```json
 {
   "tier": "pro",
@@ -799,6 +879,7 @@ Create Stripe checkout session.
 ```
 
 **Response:** `200 OK`
+
 ```json
 {
   "url": "https://checkout.stripe.com/..."
@@ -808,9 +889,11 @@ Create Stripe checkout session.
 ---
 
 ### POST /api/subscription/portal
+
 Create Stripe customer portal session.
 
 **Response:** `200 OK`
+
 ```json
 {
   "url": "https://billing.stripe.com/..."
@@ -822,9 +905,11 @@ Create Stripe customer portal session.
 ## Webhook Endpoints
 
 ### POST /api/webhooks/stripe
+
 Stripe webhook handler (signature verified).
 
 Handles events:
+
 - `checkout.session.completed`
 - `customer.subscription.created`
 - `customer.subscription.updated`
@@ -837,9 +922,11 @@ Handles events:
 ## Health Check
 
 ### GET /api/health
+
 Application health status.
 
 **Response:** `200 OK`
+
 ```json
 {
   "status": "healthy",
@@ -852,22 +939,23 @@ Application health status.
 
 ## Error Codes
 
-| Status | Description |
-|--------|-------------|
-| 400 | Bad Request - Invalid input |
-| 401 | Unauthorized - Authentication required |
-| 403 | Forbidden - Insufficient permissions or tier |
-| 404 | Not Found - Resource doesn't exist |
-| 409 | Conflict - Resource already exists |
-| 422 | Unprocessable Entity - Validation failed |
-| 429 | Too Many Requests - Rate limited |
-| 500 | Internal Server Error |
+| Status | Description                                  |
+| ------ | -------------------------------------------- |
+| 400    | Bad Request - Invalid input                  |
+| 401    | Unauthorized - Authentication required       |
+| 403    | Forbidden - Insufficient permissions or tier |
+| 404    | Not Found - Resource doesn't exist           |
+| 409    | Conflict - Resource already exists           |
+| 422    | Unprocessable Entity - Validation failed     |
+| 429    | Too Many Requests - Rate limited             |
+| 500    | Internal Server Error                        |
 
 ---
 
 ## Rate Limiting
 
 Currently implemented per-endpoint for expensive operations:
+
 - Voice transcription: Based on monthly tier limits
 - AI annotations: Based on monthly tier limits
 - Veritas calculations: 100/day for Pro users

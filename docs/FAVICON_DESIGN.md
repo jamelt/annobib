@@ -11,6 +11,7 @@ The AnnoBib favicon features a stylized quotation mark design that embodies both
 After evaluating five distinct approaches, the quotation mark design was selected based on Apple's design principles:
 
 **Evaluated Options:**
+
 1. Abstract Book with Annotation Mark (7/10)
 2. "A" Monogram with Academic Flourish (6/10)
 3. Open Book Pages as Abstract Geometry (8.5/10)
@@ -28,6 +29,7 @@ After evaluating five distinct approaches, the quotation mark design was selecte
 ## Design Specifications
 
 ### Visual Characteristics
+
 - **Primary Shape**: Stylized quotation marks (closing quotes)
 - **Color**: Indigo gradient (#4F46E5 → #6366F1)
 - **Style**: SF Symbols-inspired geometry
@@ -35,6 +37,7 @@ After evaluating five distinct approaches, the quotation mark design was selecte
 - **Background**: Clean white with subtle rounded corners
 
 ### Apple Design Principles Applied
+
 - ✅ **Clarity**: Instantly recognizable symbol
 - ✅ **Simplicity**: Pure geometric forms
 - ✅ **Delight**: Subtle dual meaning creates engagement
@@ -43,6 +46,7 @@ After evaluating five distinct approaches, the quotation mark design was selecte
 ## Technical Implementation
 
 ### File Structure
+
 ```
 public/
 ├── favicon.ico               # Multi-resolution (16, 32, 48px)
@@ -64,6 +68,7 @@ public/
 ```
 
 ### Supported Platforms
+
 - ✅ Modern browsers (Chrome, Firefox, Safari, Edge)
 - ✅ iOS/iPadOS (apple-touch-icon)
 - ✅ Android (PWA manifest icons)
@@ -71,6 +76,7 @@ public/
 - ✅ Browser tabs and bookmarks
 
 ### Best Practices Followed
+
 1. **Multi-resolution favicon.ico**: Ensures crisp display at any size
 2. **Apple touch icon**: Optimized for iOS home screen
 3. **PWA manifest icons**: Complete set for all Android sizes
@@ -80,6 +86,7 @@ public/
 ## Color Psychology
 
 **Indigo (#4F46E5)**
+
 - Conveys intelligence, wisdom, and trust
 - Associated with academic rigor and scholarly work
 - Professional without being cold or corporate
@@ -88,12 +95,14 @@ public/
 ## Future Considerations
 
 ### Potential Variations
+
 - Dark mode variant (lighter tones for dark backgrounds)
 - Monochrome version for print materials
 - Animated version for splash screens
 - Badge variants for notification counts
 
 ### Usage Guidelines
+
 - Maintain minimum clear space around icon
 - Never distort or skew the proportions
 - Use official colors only (no recoloring)

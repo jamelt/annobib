@@ -3,12 +3,14 @@
 ## Test Results Summary
 
 ### E2E Tests Created
+
 - **Location:** `tests/e2e/immediate-update.spec.ts`
 - **Tests:** 8 comprehensive tests
 - **Status:** 1/8 passing (auth issues affecting others)
 
 ### Integration Tests Created
-- **Location:** `tests/integration/immediate-updates.test.ts`  
+
+- **Location:** `tests/integration/immediate-updates.test.ts`
 - **Tests:** Multiple database-level tests
 - **Purpose:** Verify data layer refresh behavior
 
@@ -18,6 +20,7 @@ The **PASSING test** ("project appears immediately after creation without manual
 ✅ **Single project creation DOES update immediately** - no manual refresh needed!
 
 This suggests the issue might be:
+
 1. **Intermittent** - happens sometimes but not always
 2. **Related to specific conditions** - multiple rapid creations, timing, caching
 3. **User perception** - the list might update but scroll position or something else makes it seem like it didn't
@@ -25,6 +28,7 @@ This suggests the issue might be:
 ## Test Observations
 
 ### What Works ✅
+
 ```typescript
 // This test PASSED
 test('project appears immediately after creation without manual refresh', async ({ page }) => {
@@ -44,6 +48,7 @@ test('project appears immediately after creation without manual refresh', async 
 ```
 
 ### What Needs Investigation
+
 1. **Multiple rapid creations** - Does the second/third project show up?
 2. **Entry creation** - Same behavior for library entries?
 3. **Dashboard statistics** - Do counts update?
@@ -53,54 +58,72 @@ test('project appears immediately after creation without manual refresh', async 
 Both handlers correctly call `refresh()`:
 
 **Projects:**
+
 ```typescript
 async function handleProjectCreated() {
   isCreateModalOpen.value = false
-  await refresh()  // ✅ This is called
+  await refresh() // ✅ This is called
 }
 ```
 
 **Library:**
+
 ```typescript
 async function handleEntryCreated() {
   isAddModalOpen.value = false
-  await refresh()  // ✅ This is called
+  await refresh() // ✅ This is called
 }
 ```
 
 ## Potential Issues to Investigate
 
 ### 1. Race Condition
+
 The modal closes before refresh completes:
+
 ```typescript
-isCreateModalOpen.value = false  // Closes immediately
-await refresh()  // Might take time
+isCreateModalOpen.value = false // Closes immediately
+await refresh() // Might take time
 ```
 
 **Possible Fix:**
+
 ```typescript
-await refresh()  // Wait for refresh first
-isCreateModalOpen.value = false  // Then close modal
+await refresh() // Wait for refresh first
+isCreateModalOpen.value = false // Then close modal
 ```
 
 ### 2. useFetch Caching
+
 Nuxt's `useFetch` might be caching aggressively:
+
 ```typescript
 const { data: projects, pending, refresh } = await useFetch<Project[]>('/api/projects')
 ```
 
 **Possible Fix:**
+
 ```typescript
-const { data: projects, pending, refresh } = await useFetch<Project[]>('/api/projects', {
-  getCachedData: () => null,  // Disable caching
+const {
+  data: projects,
+  pending,
+  refresh,
+} = await useFetch<Project[]>('/api/projects', {
+  getCachedData: () => null, // Disable caching
 })
 ```
 
 ### 3. Query Parameter Changes
+
 If the list has filters/search, the refresh might not include the new item:
+
 ```typescript
-const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
-  query: queryParams,  // If this has filters, new item might not match
+const {
+  data: entriesData,
+  pending,
+  refresh,
+} = await useFetch('/api/entries', {
+  query: queryParams, // If this has filters, new item might not match
   watch: [queryParams],
 })
 ```
@@ -110,6 +133,7 @@ const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
 ### Fix 1: Ensure Refresh Completes Before Closing Modal
 
 **projects/index.vue:**
+
 ```diff
  async function handleProjectCreated() {
 -  isCreateModalOpen.value = false
@@ -119,6 +143,7 @@ const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
 ```
 
 **library/index.vue:**
+
 ```diff
  async function handleEntryCreated() {
 -  isAddModalOpen.value = false
@@ -130,9 +155,10 @@ const { data: entriesData, pending, refresh } = await useFetch('/api/entries', {
 ### Fix 2: Add Loading Feedback
 
 Show that the refresh is happening:
+
 ```typescript
 async function handleProjectCreated() {
-  pending.value = true  // Show loading state
+  pending.value = true // Show loading state
   await refresh()
   pending.value = false
   isCreateModalOpen.value = false
@@ -142,12 +168,13 @@ async function handleProjectCreated() {
 ### Fix 3: Optimistic Update
 
 Add the new item immediately, then refresh for server truth:
+
 ```typescript
 async function handleProjectCreated(project: Project) {
   // Add immediately for instant feedback
   projects.value = [project, ...(projects.value || [])]
   isCreateModalOpen.value = false
-  
+
   // Then sync with server
   await refresh()
 }
@@ -184,6 +211,7 @@ To properly test and expose the issue:
 ## User Experience Impact
 
 **Current Behavior (as reported):**
+
 - User creates project/entry
 - Modal closes
 - User doesn't see new item
@@ -191,13 +219,15 @@ To properly test and expose the issue:
 - Item appears
 
 **Expected Behavior:**
-- User creates project/entry  
+
+- User creates project/entry
 - Loading indicator (optional)
 - Modal closes
 - New item is visible immediately
 - No manual refresh needed
 
 **What We Found:**
+
 - Single creation DOES work (test passed!)
 - May be issue with:
   - Multiple rapid creations
@@ -208,6 +238,7 @@ To properly test and expose the issue:
 ## Conclusion
 
 The code structure is correct, and basic functionality works (as proven by passing test). The issue may be related to:
+
 - Timing of modal close vs refresh completion
 - User expectations during the brief refresh period
 - Edge cases with multiple rapid creations

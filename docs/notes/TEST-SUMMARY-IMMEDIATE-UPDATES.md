@@ -3,11 +3,13 @@
 ## Quick Start
 
 ### Run E2E Tests
+
 ```bash
 pnpm test:e2e tests/e2e/immediate-update.spec.ts --project=chromium
 ```
 
 ### Run Integration Tests
+
 ```bash
 # Ensure database is running first
 pnpm db:setup
@@ -25,6 +27,7 @@ pnpm vitest run tests/integration/immediate-updates.test.ts
 **Solution:** Reordered operations to refresh data BEFORE closing the modal.
 
 **Files Changed:**
+
 - `pages/app/projects/index.vue` - Fixed project creation/update handlers
 - `pages/app/library/index.vue` - Fixed entry creation/import handlers
 
@@ -34,18 +37,19 @@ pnpm vitest run tests/integration/immediate-updates.test.ts
 
 **8 comprehensive tests:**
 
-| Test | What It Validates |
-|------|-------------------|
-| 1. Project appears immediately | Single project creation shows up right away |
-| 2. Multiple projects appear | Rapid creation of 3 projects all show up |
-| 3. Entry appears in library | Single entry creation shows up right away |
-| 4. Multiple entries appear | Rapid creation of 3 entries all show up |
-| 5. Dashboard project creation | Project created from dashboard appears in list |
-| 6. Quick add entry | Entry via Cmd+K appears in library |
-| 7. Project count updates | Dashboard stat updates after creation |
-| 8. Entry count updates | Dashboard stat updates after creation |
+| Test                           | What It Validates                              |
+| ------------------------------ | ---------------------------------------------- |
+| 1. Project appears immediately | Single project creation shows up right away    |
+| 2. Multiple projects appear    | Rapid creation of 3 projects all show up       |
+| 3. Entry appears in library    | Single entry creation shows up right away      |
+| 4. Multiple entries appear     | Rapid creation of 3 entries all show up        |
+| 5. Dashboard project creation  | Project created from dashboard appears in list |
+| 6. Quick add entry             | Entry via Cmd+K appears in library             |
+| 7. Project count updates       | Dashboard stat updates after creation          |
+| 8. Entry count updates         | Dashboard stat updates after creation          |
 
 **Test Status:**
+
 - ✅ 1/8 initially passing (proves single creation works!)
 - 🔄 Other tests have auth/selector issues (unrelated to bug)
 - 📝 Tests document expected behavior thoroughly
@@ -55,12 +59,14 @@ pnpm vitest run tests/integration/immediate-updates.test.ts
 **Database-level tests:**
 
 **Projects List Updates:**
+
 - Newly created project appears in query
 - Projects ordered by creation date (desc)
 - Project with entries shows correct count
 - Archived projects filtered correctly
 
 **Entries List Updates:**
+
 - Newly created entry appears in query
 - Entries ordered by creation date (desc)
 - Entry with tags shows associations
@@ -68,6 +74,7 @@ pnpm vitest run tests/integration/immediate-updates.test.ts
 - Multiple entries in sequence appear in order
 
 **Pagination and Counts:**
+
 - Total count updates immediately
 - Pagination reflects new items correctly
 
@@ -104,6 +111,7 @@ pnpm test tests/integration/immediate-updates.test.ts
 The quickest way to verify:
 
 1. **Test Projects:**
+
    ```
    - Go to http://localhost:3000/app/projects
    - Click "New Project"
@@ -113,6 +121,7 @@ The quickest way to verify:
    ```
 
 2. **Test Entries:**
+
    ```
    - Go to http://localhost:3000/app/library
    - Click "Add Entry"
@@ -130,6 +139,7 @@ The quickest way to verify:
 ## Expected Behavior
 
 ### Before Fix ❌
+
 ```
 1. Click "Create Project"
 2. Modal closes
@@ -139,6 +149,7 @@ The quickest way to verify:
 ```
 
 ### After Fix ✅
+
 ```
 1. Click "Create Project"
 2. Brief loading (modal stays open)
@@ -150,6 +161,7 @@ The quickest way to verify:
 ## Test Coverage
 
 ### What Tests Cover ✅
+
 - Single item creation
 - Multiple rapid creations
 - Different creation paths (modal, quick add, dashboard)
@@ -160,6 +172,7 @@ The quickest way to verify:
 - Associations (tags, projects)
 
 ### What Tests Don't Cover ⚠️
+
 - Network errors during creation
 - Browser offline scenarios
 - Concurrent creation by multiple users
@@ -208,16 +221,19 @@ pnpm test:e2e && pnpm test
 ## Need Help?
 
 **E2E tests failing?**
+
 - Make sure dev server is running (`pnpm dev`)
 - Check browser console in Playwright UI mode
 - Look at screenshots in `test-results/`
 
 **Integration tests failing?**
+
 - Verify database connection (`pnpm db:setup`)
 - Check `DATABASE_URL` environment variable
 - Make sure migrations are up to date
 
 **Still having issues?**
+
 - Check the error context files in test results
 - Run with `--debug` flag for more info
 - Look at the analysis document for insights

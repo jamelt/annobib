@@ -3,9 +3,9 @@ kind: ConfigMap
 metadata:
   name: annobib-config
 data:
-  NODE_ENV: "production"
-  NUXT_PUBLIC_APP_URL: ""
-  LOG_LEVEL: "info"
-  GOOGLE_CLOUD_PROJECT: "annobib-prod"
-  GCS_BUCKET_NAME: "annobib-production-uploads"
-  DB_CONNECTION_NAME: "annobib-prod:us-central1:annobib-production-db"
+  NODE_ENV: 'production'
+  NUXT_PUBLIC_APP_URL: ''
+  LOG_LEVEL: 'info'
+  GOOGLE_CLOUD_PROJECT: 'annobib-prod'
+  GCS_BUCKET_NAME: 'annobib-production-uploads'
+  DB_CONNECTION_NAME: 'annobib-prod:us-central1:annobib-production-db'

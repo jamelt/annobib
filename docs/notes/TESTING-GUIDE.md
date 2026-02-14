@@ -19,11 +19,13 @@ The bug was caused by PostgreSQL attempting to cast slug strings (like `"my-proj
 **Status:** 3/4 passing
 
 **Run command:**
+
 ```bash
 pnpm test:e2e tests/e2e/projects.spec.ts --project=chromium
 ```
 
 **What they test:**
+
 - ✅ Creating a project and opening it immediately
 - ✅ Accessing projects via slug URLs after page reload
 - ✅ All API operations (GET, PUT) work with slugs
@@ -36,6 +38,7 @@ pnpm test:e2e tests/e2e/projects.spec.ts --project=chromium
 **Location:** `tests/integration/projects-slug.test.ts`
 
 **Setup required:**
+
 ```bash
 # Ensure your dev database is running
 pnpm db:setup
@@ -45,11 +48,13 @@ export DATABASE_URL="postgres://your-connection-string"
 ```
 
 **Run command:**
+
 ```bash
 pnpm vitest run tests/integration/projects-slug.test.ts
 ```
 
 **What they test:**
+
 - Fetching projects by UUID using helper
 - Fetching projects by slug using helper
 - Handling invalid UUID formats
@@ -65,6 +70,7 @@ pnpm vitest run tests/integration/projects-slug.test.ts
 The quickest way to verify the fix:
 
 1. **Start your dev server:**
+
    ```bash
    pnpm dev
    ```
@@ -94,6 +100,7 @@ The quickest way to verify the fix:
 The fix has been applied to:
 
 ### API Endpoints (6 files)
+
 - ✅ `server/api/projects/[id].get.ts` - Get project
 - ✅ `server/api/projects/[id].put.ts` - Update project
 - ✅ `server/api/projects/[id].delete.ts` - Delete project
@@ -102,9 +109,11 @@ The fix has been applied to:
 - ✅ `server/api/projects/[id]/entries/[entryId].delete.ts` - Remove entry
 
 ### Service Functions (1 file)
+
 - ✅ `server/services/sharing/index.ts` - All sharing functions
 
 ### Helper Function (1 new file)
+
 - ✅ `server/utils/project-query.ts` - UUID detection and query builder
 
 ## Quick Validation Checklist
@@ -148,6 +157,7 @@ pnpm test:coverage
 ## Success Criteria
 
 ✅ The bug is fixed when:
+
 1. Users can create a project and immediately open it
 2. Projects are accessible via both UUID and slug URLs
 3. All CRUD operations work with slugs

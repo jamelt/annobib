@@ -18,6 +18,7 @@ AnnoBib is a modern bibliography management application built for researchers, s
 ## Technology Stack
 
 ### Frontend
+
 - **Nuxt 3** - Vue.js meta-framework with SSR/SSG support
 - **Vue 3** - Composition API with `<script setup>` syntax
 - **Nuxt UI** - Component library built on Tailwind CSS
@@ -26,6 +27,7 @@ AnnoBib is a modern bibliography management application built for researchers, s
 - **D3.js** - Data visualization for mind maps
 
 ### Backend
+
 - **Nitro** - Nuxt's server engine (Node.js)
 - **Drizzle ORM** - Type-safe SQL query builder
 - **PostgreSQL 18** - Primary database with extensions:
@@ -34,18 +36,21 @@ AnnoBib is a modern bibliography management application built for researchers, s
 - **Zod** - Runtime schema validation
 
 ### AI/ML Services
+
 - **OpenAI API**
   - GPT-4/GPT-4o - Text generation, parsing, analysis
   - Whisper - Speech-to-text transcription
   - text-embedding-3-small - Vector embeddings
 
 ### External APIs
+
 - **Stripe** - Payment processing and subscriptions
 - **Semantic Scholar** - Academic citation data
 - **OpenAlex** - Open scholarly metadata
 - **CrossRef** - DOI resolution and metadata
 
 ### Infrastructure
+
 - **Docker** - Containerization
 - **Kubernetes** - Container orchestration
 - **Google Cloud Platform**
@@ -225,7 +230,9 @@ annobib/
 ## Core Concepts
 
 ### Entries
+
 The central data model. An entry represents any bibliographic source (book, article, website, etc.). Entries:
+
 - Belong to a user
 - Can be associated with multiple projects
 - Can have multiple tags
@@ -233,14 +240,18 @@ The central data model. An entry represents any bibliographic source (book, arti
 - May have a Veritas credibility score
 
 ### Projects
+
 Collections of entries for organizing research. Projects:
+
 - Belong to a user
 - Can be shared with other users or publicly
 - Have their own mind map visualization
 - Can have a Research Companion persona
 
 ### Annotations
+
 Notes attached to entries. Types include:
+
 - Summary
 - Quote
 - Comment
@@ -250,6 +261,7 @@ Notes attached to entries. Types include:
 - Key Finding
 
 ### Tags
+
 User-defined labels for categorizing entries across projects.
 
 ---
@@ -257,6 +269,7 @@ User-defined labels for categorizing entries across projects.
 ## Data Flow
 
 ### Entry Creation Flow
+
 ```
 User Input → Validation (Zod) → API Route → Service Layer → Database
      ↓
@@ -268,6 +281,7 @@ Optional: Embedding Generation for RAG (async)
 ```
 
 ### Citation Formatting Flow
+
 ```
 Entry Selection → Citation Style Selection → CSL Processor
      ↓
@@ -277,6 +291,7 @@ Formatted Bibliography + In-text Citation
 ```
 
 ### Research Companion Flow
+
 ```
 User Query → Embedding Generation → Vector Search (pgvector)
      ↓
@@ -292,11 +307,13 @@ Citation Extraction → Follow-up Suggestions
 ## Authentication & Authorization
 
 ### Authentication
+
 - Session-based authentication using `nuxt-auth-utils`
 - Password hashing (bcrypt in production)
 - OAuth support ready (Auth0/Clerk integration points)
 
 ### Authorization Levels
+
 1. **Public** - No authentication required
 2. **Authenticated** - Valid session required
 3. **Owner** - Must own the resource
@@ -304,35 +321,36 @@ Citation Extraction → Follow-up Suggestions
 5. **Tier-gated** - Requires specific subscription tier
 
 ### Middleware
+
 ```typescript
 // Route protection
 definePageMeta({
-  middleware: 'auth'  // Requires authentication
+  middleware: 'auth', // Requires authentication
 })
 
 // API protection
-const user = await requireAuth(event)        // Throws if not authenticated
-const user = await optionalAuth(event)       // Returns null if not authenticated
-requireProTier(user)                         // Throws if not Pro tier
-requireLightOrProTier(user)                  // Throws if Free tier
+const user = await requireAuth(event) // Throws if not authenticated
+const user = await optionalAuth(event) // Returns null if not authenticated
+requireProTier(user) // Throws if not Pro tier
+requireLightOrProTier(user) // Throws if Free tier
 ```
 
 ---
 
 ## Subscription Tiers
 
-| Feature | Free | Light ($9/mo) | Pro ($19/mo) |
-|---------|------|---------------|--------------|
-| Entries | 50 | 500 | Unlimited |
-| Projects | 3 | 15 | Unlimited |
-| PDF Export | No | Yes | Yes |
-| Custom Citation Styles | 0 | 3 | Unlimited |
-| Collaborators/Project | 0 | 3 | Unlimited |
-| AI Annotations | 0 | 5/mo | 50/mo |
-| Voice Transcription | 0 | 10 min/mo | 60 min/mo |
-| Research Companion | No | No | Yes |
-| Veritas Score | No | No | Yes |
-| Mind Maps | No | Basic | Full |
+| Feature                | Free | Light ($9/mo) | Pro ($19/mo) |
+| ---------------------- | ---- | ------------- | ------------ |
+| Entries                | 50   | 500           | Unlimited    |
+| Projects               | 3    | 15            | Unlimited    |
+| PDF Export             | No   | Yes           | Yes          |
+| Custom Citation Styles | 0    | 3             | Unlimited    |
+| Collaborators/Project  | 0    | 3             | Unlimited    |
+| AI Annotations         | 0    | 5/mo          | 50/mo        |
+| Voice Transcription    | 0    | 10 min/mo     | 60 min/mo    |
+| Research Companion     | No   | No            | Yes          |
+| Veritas Score          | No   | No            | Yes          |
+| Mind Maps              | No   | Basic         | Full         |
 
 Tier limits are defined in `server/utils/auth.ts` as `TIER_LIMITS`.
 
@@ -341,21 +359,25 @@ Tier limits are defined in `server/utils/auth.ts` as `TIER_LIMITS`.
 ## External Integrations
 
 ### Stripe
+
 - Webhook handler at `/api/webhooks/stripe`
 - Events: checkout.session.completed, subscription.updated/deleted, invoice.payment_succeeded/failed
 - Customer portal for self-service billing
 
 ### OpenAI
+
 - GPT-4/GPT-4o for text generation
 - Whisper for audio transcription
 - text-embedding-3-small for vector embeddings
 
 ### Academic APIs
+
 - **Semantic Scholar**: Citation counts, h-index, influential citations
 - **OpenAlex**: Institutional data, DOAJ status, retraction checks
 - **CrossRef**: DOI metadata, publisher information
 
 ### CSL Repository
+
 - Citation styles fetched from official GitHub repository
 - Cached in memory for performance
 
@@ -364,24 +386,31 @@ Tier limits are defined in `server/utils/auth.ts` as `TIER_LIMITS`.
 ## Key Design Decisions
 
 ### 1. Full-Stack Nuxt
+
 Chose Nuxt 3 for unified frontend/backend in TypeScript, reducing context switching and enabling code sharing.
 
 ### 2. PostgreSQL with pgvector
+
 Single database for both relational data and vector search, avoiding separate vector database infrastructure.
 
 ### 3. Service Layer Pattern
+
 Business logic extracted into services (`server/services/`) keeping API routes thin and testable.
 
 ### 4. Composables for Shared Logic
+
 Vue composables encapsulate reusable client-side logic (auth state, voice input, D3 visualization).
 
 ### 5. Feature Gating via Middleware
+
 Subscription tier checks centralized in auth utilities, applied consistently across API routes.
 
 ### 6. D3.js over Cytoscape
+
 Chose D3.js for mind maps due to native SVG output (copy/paste friendly) and lighter weight.
 
 ### 7. CSL for Citations
+
 Industry-standard Citation Style Language ensures compatibility with thousands of existing styles.
 
 ---

@@ -76,9 +76,9 @@ spec:
         - name: cloud-sql-proxy
           image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
           args:
-            - "--structured-logs"
-            - "--port=5432"
-            - "$(DB_CONNECTION_NAME)"
+            - '--structured-logs'
+            - '--port=5432'
+            - '$(DB_CONNECTION_NAME)'
           envFrom:
             - configMapRef:
                 name: annobib-config

@@ -10,22 +10,20 @@
 
 **Root Cause:** The original `UDropdown` implementation had the correct structure, but this was an isolated component rendering issue. The dropdown was correctly defined with `onSelect` callbacks (which is the correct API for Nuxt UI), but the component may not have been rendering properly due to initial setup issues.
 
-**Solution:** 
+**Solution:**
 Ensured the dropdown uses the standard Nuxt UI pattern with inline items array and `onSelect` callbacks (matching the pattern used successfully throughout the rest of the application).
 
 **Files Changed:**
+
 - `pages/app/library/[id].vue`
 
 **Final Working Code:**
+
 ```vue
 <UDropdown
   :items="[
-    [
-      { label: 'Copy citation', icon: 'i-heroicons-clipboard-document', onSelect: copyCitation },
-    ],
-    [
-      { label: 'Delete', icon: 'i-heroicons-trash', onSelect: () => isDeleteModalOpen = true },
-    ],
+    [{ label: 'Copy citation', icon: 'i-heroicons-clipboard-document', onSelect: copyCitation }],
+    [{ label: 'Delete', icon: 'i-heroicons-trash', onSelect: () => (isDeleteModalOpen = true) }],
   ]"
 >
   <UButton
@@ -37,6 +35,7 @@ Ensured the dropdown uses the standard Nuxt UI pattern with inline items array a
 ```
 
 **Key Points:**
+
 - Use `onSelect` (not `click` or `onClick`) for Nuxt UI dropdown item callbacks
 - Items array structure: `[[group1items], [group2items]]` for separated menu groups
 - Arrow functions work correctly for simple ref assignments: `() => isDeleteModalOpen = true`
@@ -51,14 +50,17 @@ Ensured the dropdown uses the standard Nuxt UI pattern with inline items array a
 **Root Cause:** The `UModal` component was using the incorrect v-model syntax. It was using `v-model="isDeleteModalOpen"` instead of `v-model:open="isDeleteModalOpen"`, and the content wasn't wrapped in a `<template #content>` block.
 
 **Solution:** Fixed the modal implementation to match Nuxt UI's expected API:
+
 1. Changed `v-model="isDeleteModalOpen"` to `v-model:open="isDeleteModalOpen"`
 2. Wrapped the modal content in `<template #content>` block
 3. This ensures the modal renders as an overlay instead of inline content
 
 **Files Changed:**
+
 - `pages/app/library/[id].vue`
 
 **Code Change:**
+
 ```vue
 // Before (broken - renders on page)
 <UModal v-model="isDeleteModalOpen">
@@ -98,11 +100,11 @@ Created comprehensive end-to-end tests to verify entry detail page functionality
    - ✅ Should open edit modal when Edit button is clicked
    - ✅ Edit modal should contain entry data
 
-3. **Dropdown Menu Tests:** *(Critical - addresses reported issue)*
+3. **Dropdown Menu Tests:** _(Critical - addresses reported issue)_
    - ✅ Should copy citation when dropdown menu item is clicked
    - ✅ Should show success toast after copying citation
 
-4. **Delete Functionality Tests:** *(Critical - addresses reported issue)*
+4. **Delete Functionality Tests:** _(Critical - addresses reported issue)_
    - ✅ Should open delete confirmation modal when delete is clicked from dropdown
    - ✅ Should display proper confirmation message with entry title
    - ✅ Should cancel delete when cancel button is clicked
@@ -128,6 +130,7 @@ Created comprehensive end-to-end tests to verify entry detail page functionality
 ### Test Setup
 
 Each test:
+
 1. Creates a fresh test user via signup
 2. Creates a test entry with full metadata
 3. Creates a test project
@@ -172,6 +175,7 @@ npm run test:e2e -- library-entry-detail --debug
 ### Automated Testing
 
 The E2E test suite covers:
+
 - ✅ Dropdown menu functionality
 - ✅ Delete modal workflow
 - ✅ Delete confirmation and cancellation
@@ -190,16 +194,17 @@ The `UDropdown` component expects menu items with this structure:
 interface DropdownItem {
   label: string
   icon?: string
-  onSelect?: (e: Event) => void | Promise<void>  // Use "onSelect" for click handlers
+  onSelect?: (e: Event) => void | Promise<void> // Use "onSelect" for click handlers
   disabled?: boolean
   color?: 'primary' | 'error' | 'warning' | 'success' | 'neutral'
   type?: 'link' | 'label' | 'separator' | 'checkbox'
-  to?: string  // For navigation items
+  to?: string // For navigation items
   // ... other properties
 }
 ```
 
 **Items Structure:** The items prop accepts a 2D array where each sub-array represents a separated group:
+
 ```typescript
 :items="[
   [{ label: 'Group 1 Item 1' }, { label: 'Group 1 Item 2' }],
@@ -212,6 +217,7 @@ interface DropdownItem {
 ### Modal State Management
 
 The delete modal uses Vue's reactivity system with Nuxt UI's modal API:
+
 ```typescript
 const isDeleteModalOpen = ref(false)  // Initially closed
 
@@ -229,6 +235,7 @@ click: () => isDeleteModalOpen = true
 ```
 
 **Important:** Nuxt UI's `UModal` requires:
+
 1. `v-model:open` (not just `v-model`)
 2. Content wrapped in `<template #content>` block
 
@@ -252,16 +259,19 @@ When `isDeleteModalOpen` is `false`, the modal is hidden. When `true`, it appear
 **Root Cause:** The button was wrapped in a `UDropdown` with a `trailing-icon`, creating a confusing UX where it wasn't clear if clicking would trigger an action or open a menu. Additionally, the single button trying to serve dual purposes (primary action + dropdown) wasn't working properly.
 
 **Solution:** Converted to a **split button pattern**:
+
 1. **Main button** ("Add Entry") - directly opens Quick Add modal for the project
 2. **Chevron button** (separate) - opens dropdown menu with two options:
    - "New Entry" → Opens Quick Add modal
    - "From Library" → Opens modal to add existing entries from library
 
 **Files Changed:**
+
 - `pages/app/projects/[id]/index.vue`
 - `tests/e2e/dropdown-menus.spec.ts` (added tests)
 
 **Code Change:**
+
 ```vue
 <!-- Before (broken - single button with trailing icon) -->
 <UDropdown :items="[...]">
@@ -296,13 +306,15 @@ When `isDeleteModalOpen` is `false`, the modal is hidden. When `true`, it appear
 ```
 
 **Key Implementation Details:**
+
 - **UFieldGroup** properly groups buttons together with unified styling
 - **square** prop on chevron button makes it a compact square shape
 - **@click** on main button provides immediate Quick Add action
 - **UDropdown** wraps the chevron button for menu access
 - **:popper placement** ensures menu opens in the correct position
 
-**UX Improvement:** 
+**UX Improvement:**
+
 - **Visual Unity:** `UFieldGroup` creates a single, unified button group appearance
 - **Clear Actions:** Main button provides immediate Quick Add, chevron provides options
 - **Standard Pattern:** Familiar split button pattern used across many applications

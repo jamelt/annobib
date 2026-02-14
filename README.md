@@ -125,6 +125,7 @@ pnpm typecheck        # Run type checking
 ## API Routes
 
 ### Entries
+
 - `GET /api/entries` - List entries with search/filter
 - `POST /api/entries` - Create entry
 - `GET /api/entries/:id` - Get entry details
@@ -132,29 +133,32 @@ pnpm typecheck        # Run type checking
 - `DELETE /api/entries/:id` - Delete entry
 
 ### Annotations
+
 - `GET /api/entries/:id/annotations` - List annotations
 - `POST /api/entries/:id/annotations` - Create annotation
 
 ### Projects
+
 - `GET /api/projects` - List projects
 - `POST /api/projects` - Create project
 - `GET /api/projects/:id` - Get project with entries
 
 ### Tags
+
 - `GET /api/tags` - List tags
 - `POST /api/tags` - Create tag
 
 ## Subscription Tiers
 
-| Feature | Free | Light ($9/mo) | Pro ($19/mo) |
-|---------|------|---------------|--------------|
-| Entries | 50 | 500 | Unlimited |
-| Projects | 3 | 15 | Unlimited |
-| Export formats | BibTeX | PDF, Excel, BibTeX | All |
-| Custom citation styles | - | 3 | Unlimited |
-| AI features | - | Basic | Full |
-| Research Companion | - | - | Yes |
-| Collaboration | - | 3/project | Unlimited |
+| Feature                | Free   | Light ($9/mo)      | Pro ($19/mo) |
+| ---------------------- | ------ | ------------------ | ------------ |
+| Entries                | 50     | 500                | Unlimited    |
+| Projects               | 3      | 15                 | Unlimited    |
+| Export formats         | BibTeX | PDF, Excel, BibTeX | All          |
+| Custom citation styles | -      | 3                  | Unlimited    |
+| AI features            | -      | Basic              | Full         |
+| Research Companion     | -      | -                  | Yes          |
+| Collaboration          | -      | 3/project          | Unlimited    |
 
 ## Environment Variables
 

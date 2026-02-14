@@ -3,12 +3,14 @@
 ## What Was Created
 
 ### New Files
+
 - `public/favicon.ico` - Multi-resolution favicon (16, 32, 48px)
 - `public/apple-touch-icon.png` - 180x180 iOS icon
 - `public/icons/icon-*.png` - Complete PWA icon set (16px to 512px)
 - `public/icons/shortcut-*.png` - PWA shortcut icons
 
 ### Updated Files
+
 - `nuxt.config.ts` - Added comprehensive favicon meta tags
 - `docs/FAVICON_DESIGN.md` - Complete design documentation
 
@@ -43,6 +45,7 @@ git commit -m "Add professional favicon and PWA icons with comprehensive documen
 ## Preview
 
 To see the favicon in action:
+
 1. Start the dev server: `pnpm dev`
 2. Visit http://localhost:3000
 3. Check the browser tab for the quotation mark icon
@@ -51,6 +54,7 @@ To see the favicon in action:
 ## Design Philosophy
 
 The quotation mark design perfectly captures AnnoBib's essence:
+
 - 📚 **Bibliography**: Citations and sources
 - ✍️ **Annotation**: Highlighting and note-taking
 - 🎯 **Unique**: No competitors use this approach
@@ -59,6 +63,7 @@ The quotation mark design perfectly captures AnnoBib's essence:
 ## Need Changes?
 
 To modify the favicon:
+
 1. Edit or regenerate the source 512x512 PNG
 2. Run ImageMagick commands to resize:
    ```bash

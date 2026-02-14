@@ -9,27 +9,26 @@ When creating a project and immediately trying to open it, users encountered a "
 The application supports accessing projects via both UUID and human-readable slugs (e.g., `/app/projects/my-project-slug` or `/app/projects/uuid`). However, there were **two critical issues**:
 
 ### Issue 1: Using Slug as UUID in Queries
+
 After looking up a project by ID/slug, the code continued to use the URL parameter (which could be a slug) in subsequent database queries that expected a UUID:
 
 ```typescript
 // ❌ WRONG: Using projectId (could be a slug) against UUID column
-const entries = await db
-  .select()
-  .from(entryProjects)
-  .where(eq(entryProjects.projectId, projectId))  // projectId could be "my-project-slug"
+const entries = await db.select().from(entryProjects).where(eq(entryProjects.projectId, projectId)) // projectId could be "my-project-slug"
 ```
 
 This caused entries to not be fetched correctly, leading to empty or failed project loads.
 
 ### Issue 2: PostgreSQL UUID Type Casting Error
+
 When using an `OR` condition to check both ID and slug columns:
 
 ```typescript
 // ❌ WRONG: PostgreSQL tries to cast slug to UUID and fails
 where: and(
   or(
-    eq(projects.id, projectId),     // projects.id is UUID type
-    eq(projects.slug, projectId),   // projects.slug is text type
+    eq(projects.id, projectId), // projects.id is UUID type
+    eq(projects.slug, projectId), // projects.slug is text type
   ),
   eq(projects.userId, user.id),
 )
@@ -54,39 +53,40 @@ export function buildProjectWhere(projectIdOrSlug: string, userId: string): SQL 
 
   return and(
     isUUID
-      ? or(
-          eq(projects.id, projectIdOrSlug),
-          eq(projects.slug, projectIdOrSlug),
-        )
-      : eq(projects.slug, projectIdOrSlug),  // Only check slug column
+      ? or(eq(projects.id, projectIdOrSlug), eq(projects.slug, projectIdOrSlug))
+      : eq(projects.slug, projectIdOrSlug), // Only check slug column
     eq(projects.userId, userId),
   )!
 }
 ```
 
 This ensures:
+
 1. **No UUID casting errors**: Only checks the UUID column when the parameter is actually a UUID
 2. **Always use resolved project.id**: After fetching the project, all subsequent queries use `project.id` (the actual UUID) instead of the URL parameter
 
 ## Files Changed
 
 ### New Files
+
 - `server/utils/project-query.ts` - Helper function for consistent project lookups
 - `tests/e2e/projects.spec.ts` - Comprehensive E2E tests (updated)
 - `tests/integration/projects-slug.test.ts` - Integration tests for slug functionality
 - `scripts/test-project-api.ts` - Diagnostic script
 
 ### Modified API Endpoints
+
 All endpoints now use the `buildProjectWhere` helper and resolve to `project.id`:
 
 1. `server/api/projects/[id].get.ts` - Get project details
-2. `server/api/projects/[id].put.ts` - Update project  
+2. `server/api/projects/[id].put.ts` - Update project
 3. `server/api/projects/[id].delete.ts` - Delete project
 4. `server/api/projects/[id]/graph.get.ts` - Get project graph
 5. `server/api/projects/[id]/entries/index.post.ts` - Add entry to project
 6. `server/api/projects/[id]/entries/[entryId].delete.ts` - Remove entry from project
 
 ### Modified Services
+
 - `server/services/sharing/index.ts` - All sharing functions:
   - `shareProjectWithUser()`
   - `createPublicLink()`
@@ -96,6 +96,7 @@ All endpoints now use the `buildProjectWhere` helper and resolve to `project.id`
 ## Testing
 
 ### E2E Tests (Playwright)
+
 Created comprehensive tests that verify:
 
 ```bash
@@ -105,11 +106,12 @@ pnpm test:e2e tests/e2e/projects.spec.ts --project=chromium
 **Results: 3/4 passing** ✅
 
 1. ✅ Creates a project and can open it immediately
-2. ✅ Creates project and accesses via direct URL with slug  
+2. ✅ Creates project and accesses via direct URL with slug
 3. ✅ Creates project and tests all API operations with slug
 4. ❌ Creates project from dashboard (auth issue, unrelated to bug)
 
 ### Manual Testing Script
+
 ```bash
 npx tsx scripts/test-project-api.ts
 ```
@@ -119,24 +121,26 @@ Tests direct database operations with both UUID and slug lookups.
 ## Before & After
 
 ### Before Fix
+
 ```
 User creates "My Project"
   → Slug: "my-project"
   → ID: "abc-123-def-456"
-  
+
 User clicks project card
   → Navigates to /app/projects/my-project
-  → API tries: eq(projects.id, "my-project") 
+  → API tries: eq(projects.id, "my-project")
   → PostgreSQL: ❌ invalid input syntax for type uuid
   → Result: "Project not found"
 ```
 
 ### After Fix
+
 ```
 User creates "My Project"
-  → Slug: "my-project"  
+  → Slug: "my-project"
   → ID: "abc-123-def-456"
-  
+
 User clicks project card
   → Navigates to /app/projects/my-project
   → Helper checks: not a UUID, so only check slug
@@ -172,8 +176,9 @@ All operations should work seamlessly regardless of whether you accessed the pro
 ## Related Issues
 
 This fix ensures proper functionality for:
+
 - Project viewing
-- Project editing  
+- Project editing
 - Project deletion
 - Entry management within projects
 - Project sharing

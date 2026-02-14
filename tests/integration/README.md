@@ -5,8 +5,9 @@ Integration tests verify that different parts of the system work together correc
 ## Requirements
 
 These tests require a running PostgreSQL database. The tests will use:
+
 1. `TEST_DATABASE_URL` environment variable if set
-2. Otherwise, falls back to `DATABASE_URL` 
+2. Otherwise, falls back to `DATABASE_URL`
 3. Or uses the default development database connection
 
 ## Running Integration Tests
@@ -43,12 +44,14 @@ pnpm test tests/integration/
 ### `projects-slug.test.ts`
 
 Tests the `buildProjectWhere` helper function that allows projects to be queried by either:
+
 - UUID (e.g., `abc-123-def-456`)
 - Slug (e.g., `my-research-project`)
 
 This ensures the bug fix for "Project not found" is working correctly at the database query level.
 
 **Tests:**
+
 - Fetching projects by UUID
 - Fetching projects by slug
 - Handling invalid UUID formats
@@ -60,6 +63,7 @@ This ensures the bug fix for "Project not found" is working correctly at the dat
 ### `projects.test.ts`
 
 Tests general project database operations:
+
 - Project creation
 - Entry associations
 - Project retrieval with related data

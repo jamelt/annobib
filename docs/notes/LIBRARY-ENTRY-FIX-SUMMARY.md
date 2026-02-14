@@ -9,20 +9,22 @@ The issue where newly created library entries don't appear immediately has been 
 **File:** `pages/app/library/index.vue`
 
 **What changed:**
+
 ```typescript
 // ✅ FIXED: Refresh happens BEFORE closing modal
 async function handleEntryCreated() {
-  await refresh()                   // Wait for list to refresh
-  isAddModalOpen.value = false     // Then close the modal
+  await refresh() // Wait for list to refresh
+  isAddModalOpen.value = false // Then close the modal
 }
 ```
 
 **Previously was:**
+
 ```typescript
 // ❌ OLD: Modal closed before refresh completed
 async function handleEntryCreated() {
-  isAddModalOpen.value = false     // Closed immediately  
-  await refresh()                   // Refreshed after
+  isAddModalOpen.value = false // Closed immediately
+  await refresh() // Refreshed after
 }
 ```
 
@@ -31,6 +33,7 @@ async function handleEntryCreated() {
 ### Manual Testing (Easiest Way)
 
 1. **Start your dev server:**
+
    ```bash
    pnpm dev
    ```
@@ -44,7 +47,6 @@ async function handleEntryCreated() {
      - Last Name: "Doe"
      - Click "Add Author"
    - Click "Create Entry"
-   
 3. **✅ Expected Result:**
    - The entry form modal will close
    - "Test Book" appears in your library list **immediately**
@@ -66,16 +68,19 @@ pnpm dev
 ## E2E Tests Created
 
 ### Test File
+
 **Location:** `tests/e2e/library-entry-creation.spec.ts`
 
 ### What the tests cover:
+
 1. ✅ Single entry appears immediately without reload
 2. ✅ Multiple entries created in sequence all appear
 3. ✅ Entry appears in correct position (newest first)
-4. ✅ Entry with tags appears immediately  
+4. ✅ Entry with tags appears immediately
 5. ✅ Empty state transitions to list view correctly
 
 ### Running the tests:
+
 ```bash
 pnpm test:e2e tests/e2e/library-entry-creation.spec.ts --project=chromium
 ```
@@ -85,6 +90,7 @@ pnpm test:e2e tests/e2e/library-entry-creation.spec.ts --project=chromium
 ## What This Fixes
 
 ### Before ❌
+
 ```
 User creates entry "My Book"
   ↓
@@ -100,6 +106,7 @@ User presses F5 to reload page
 ```
 
 ### After ✅
+
 ```
 User creates entry "My Book"
   ↓
@@ -115,6 +122,7 @@ Modal closes
 ## Additional Improvements
 
 The same fix was also applied to:
+
 - ✅ Project creation (`pages/app/projects/index.vue`)
 - ✅ Entry import (`pages/app/library/index.vue`)
 - ✅ Project updates (`pages/app/projects/index.vue`)
@@ -137,6 +145,7 @@ The key is that `await refresh()` comes **BEFORE** `isAddModalOpen.value = false
 ## Technical Details
 
 **Why this works:**
+
 1. When you create an entry, the modal emits a `created` event
 2. The parent page's `handleEntryCreated()` function is called
 3. This function now:
@@ -147,6 +156,7 @@ The key is that `await refresh()` comes **BEFORE** `isAddModalOpen.value = false
 4. Result: User sees the updated list immediately
 
 **Performance:**
+
 - The delay is minimal (typically 100-300ms for the API call)
 - Users barely notice the brief loading state
 - The perceived performance is much better than before
@@ -184,9 +194,10 @@ The key is that `await refresh()` comes **BEFORE** `isAddModalOpen.value = false
 ## Support
 
 If you're still experiencing issues after verifying the fix is in place, check:
+
 - Network connectivity
 - API server is running
-- Database connection is working  
+- Database connection is working
 - No errors in browser console
 - No errors in server logs
 
