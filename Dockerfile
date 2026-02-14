@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Enable corepack for pnpm
 RUN corepack enable
@@ -20,7 +20,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm build
 
 # Production stage
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 RUN corepack enable
 
