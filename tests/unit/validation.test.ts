@@ -29,20 +29,26 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true)
     })
 
-    it('should reject an author without firstName', () => {
+    it('should default firstName to empty string when omitted', () => {
       const result = authorSchema.safeParse({
         lastName: 'Doe',
       })
 
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.firstName).toBe('')
+      }
     })
 
-    it('should reject an author without lastName', () => {
+    it('should default lastName to empty string when omitted', () => {
       const result = authorSchema.safeParse({
         firstName: 'John',
       })
 
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.lastName).toBe('')
+      }
     })
   })
 
@@ -99,14 +105,24 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(false)
     })
 
-    it('should reject an entry with invalid year', () => {
+    it('should accept an entry with any integer year', () => {
       const result = createEntrySchema.safeParse({
         entryType: 'book',
         title: 'Test',
         year: 10000,
       })
 
-      expect(result.success).toBe(false)
+      expect(result.success).toBe(true)
+    })
+
+    it('should accept an entry with null year', () => {
+      const result = createEntrySchema.safeParse({
+        entryType: 'book',
+        title: 'Test',
+        year: null,
+      })
+
+      expect(result.success).toBe(true)
     })
   })
 
