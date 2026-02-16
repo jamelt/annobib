@@ -429,11 +429,10 @@ function getFlatIndex(type: string, itemId: string): number {
                   >
                     Pinned
                   </p>
-                  <button
+                  <div
                     v-for="item in pinnedSearches"
                     :key="'pin-' + item.query"
-                    type="button"
-                    class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+                    class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group cursor-pointer"
                     @click="executeRecentSearch(item)"
                   >
                     <UIcon
@@ -449,7 +448,7 @@ function getFlatIndex(type: string, itemId: string): number {
                     >
                       <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5 text-gray-400" />
                     </button>
-                  </button>
+                  </div>
                 </div>
 
                 <!-- Recent searches -->
@@ -468,11 +467,10 @@ function getFlatIndex(type: string, itemId: string): number {
                       Clear
                     </button>
                   </div>
-                  <button
+                  <div
                     v-for="item in recentSearches.slice(0, 5)"
                     :key="'recent-' + item.query"
-                    type="button"
-                    class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
+                    class="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group cursor-pointer"
                     @click="executeRecentSearch(item)"
                   >
                     <UIcon name="i-heroicons-clock" class="w-4 h-4 text-gray-400 shrink-0" />
@@ -488,7 +486,7 @@ function getFlatIndex(type: string, itemId: string): number {
                     >
                       <UIcon name="i-heroicons-bookmark" class="w-3.5 h-3.5 text-gray-400" />
                     </button>
-                  </button>
+                  </div>
                 </div>
 
                 <!-- Recently visited -->
