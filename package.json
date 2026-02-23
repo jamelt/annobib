@@ -86,7 +86,7 @@
     "nanoid": "^5.1.6",
     "node-html-parser": "^7.0.2",
     "nuxt": "^4.3.1",
-    "nuxt-auth-utils": "^0.5.28",
+    "nuxt-auth-utils": "^0.5.29",
     "openai": "^6.22.0",
     "pdf-parse": "^2.4.5",
     "pg": "^8.18.0",
