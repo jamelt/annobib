@@ -5,6 +5,8 @@
 
 # App namespace
 resource "kubernetes_namespace" "app" {
+  count = var.enabled ? 1 : 0
+
   metadata {
     name = "${var.app_name}-${var.environment}"
 
@@ -20,6 +22,7 @@ resource "kubernetes_namespace" "app" {
 # --- Ingress NGINX ---
 
 resource "helm_release" "ingress_nginx" {
+  count            = var.enabled ? 1 : 0
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
@@ -54,6 +57,7 @@ resource "helm_release" "ingress_nginx" {
 # --- cert-manager ---
 
 resource "helm_release" "cert_manager" {
+  count            = var.enabled ? 1 : 0
   name             = "cert-manager"
   repository       = "https://charts.jetstack.io"
   chart            = "cert-manager"
@@ -72,6 +76,8 @@ resource "helm_release" "cert_manager" {
 
 # Let's Encrypt ClusterIssuer (depends on cert-manager CRDs)
 resource "kubectl_manifest" "letsencrypt_issuer" {
+  count = var.enabled ? 1 : 0
+
   yaml_body = <<-YAML
     apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
@@ -95,6 +101,7 @@ resource "kubectl_manifest" "letsencrypt_issuer" {
 # --- External Secrets Operator ---
 
 resource "helm_release" "external_secrets" {
+  count            = var.enabled ? 1 : 0
   name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
@@ -108,6 +115,8 @@ resource "helm_release" "external_secrets" {
 
 # ClusterSecretStore for GCP Secret Manager (depends on ESO CRDs)
 resource "kubectl_manifest" "gcp_secret_store" {
+  count = var.enabled ? 1 : 0
+
   yaml_body = <<-YAML
     apiVersion: external-secrets.io/v1beta1
     kind: ClusterSecretStore
@@ -125,5 +134,5 @@ resource "kubectl_manifest" "gcp_secret_store" {
 # --- Outputs ---
 
 output "ingress_nginx_namespace" {
-  value = helm_release.ingress_nginx.namespace
+  value = var.enabled ? helm_release.ingress_nginx[0].namespace : ""
 }

@@ -13,3 +13,4 @@ monthly_budget_amount = 100
 billing_account_id    = "017288-4240B4-B91A93"
 regional_cluster      = false
 enable_private_nodes  = false
+enabled               = false

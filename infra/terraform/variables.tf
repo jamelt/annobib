@@ -99,3 +99,9 @@ variable "enable_private_nodes" {
   type        = bool
   default     = true
 }
+
+variable "enabled" {
+  description = "When false, expensive resources (GKE, Cloud SQL, LB) are destroyed to save costs."
+  type        = bool
+  default     = true
+}

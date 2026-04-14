@@ -30,39 +30,39 @@ terraform {
 }
 
 provider "google" {
-  project                     = var.project_id
-  region                      = var.region
-  user_project_override       = true
-  billing_project             = var.project_id
+  project               = var.project_id
+  region                = var.region
+  user_project_override = true
+  billing_project       = var.project_id
 }
 
 provider "google-beta" {
-  project                     = var.project_id
-  region                      = var.region
-  user_project_override       = true
-  billing_project             = var.project_id
+  project               = var.project_id
+  region                = var.region
+  user_project_override = true
+  billing_project       = var.project_id
 }
 
 data "google_client_config" "default" {}
 
 provider "kubernetes" {
-  host                   = "https://${module.gke.endpoint}"
+  host                   = var.enabled ? "https://${module.gke[0].endpoint}" : "https://localhost"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  cluster_ca_certificate = var.enabled ? base64decode(module.gke[0].ca_certificate) : ""
 }
 
 provider "helm" {
   kubernetes {
-    host                   = "https://${module.gke.endpoint}"
+    host                   = var.enabled ? "https://${module.gke[0].endpoint}" : "https://localhost"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+    cluster_ca_certificate = var.enabled ? base64decode(module.gke[0].ca_certificate) : ""
   }
 }
 
 provider "kubectl" {
-  host                   = "https://${module.gke.endpoint}"
+  host                   = var.enabled ? "https://${module.gke[0].endpoint}" : "https://localhost"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  cluster_ca_certificate = var.enabled ? base64decode(module.gke[0].ca_certificate) : ""
   load_config_file       = false
 }
 
@@ -125,14 +125,14 @@ module "vpc" {
 
 # Cloud NAT (only needed when nodes are private and lack public IPs)
 resource "google_compute_router" "nat_router" {
-  count   = var.enable_private_nodes ? 1 : 0
+  count   = var.enabled && var.enable_private_nodes ? 1 : 0
   name    = "${local.name}-router"
   region  = var.region
   network = module.vpc.network_self_link
 }
 
 resource "google_compute_router_nat" "nat" {
-  count                              = var.enable_private_nodes ? 1 : 0
+  count                              = var.enabled && var.enable_private_nodes ? 1 : 0
   name                               = "${local.name}-nat"
   router                             = google_compute_router.nat_router[0].name
   region                             = var.region
@@ -149,16 +149,17 @@ resource "google_compute_router_nat" "nat" {
 module "gke" {
   source  = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
   version = "~> 29.0"
+  count   = var.enabled ? 1 : 0
 
-  project_id         = var.project_id
-  name               = "${local.name}-gke"
-  regional           = var.regional_cluster
-  region             = var.region
-  zones              = var.regional_cluster ? var.zones : [var.zones[0]]
-  network            = module.vpc.network_name
-  subnetwork         = module.vpc.subnets_names[0]
-  ip_range_pods      = "pods"
-  ip_range_services  = "services"
+  project_id          = var.project_id
+  name                = "${local.name}-gke"
+  regional            = var.regional_cluster
+  region              = var.region
+  zones               = var.regional_cluster ? var.zones : [var.zones[0]]
+  network             = module.vpc.network_name
+  subnetwork          = module.vpc.subnets_names[0]
+  ip_range_pods       = "pods"
+  ip_range_services   = "services"
   deletion_protection = false
 
   enable_private_endpoint = false
@@ -174,18 +175,18 @@ module "gke" {
 
   node_pools = [
     {
-      name               = "default-pool"
-      machine_type       = var.node_machine_type
-      min_count          = var.node_min_count
-      max_count          = var.node_max_count
-      local_ssd_count    = 0
-      disk_size_gb       = 50
-      disk_type          = "pd-standard"
-      image_type         = "COS_CONTAINERD"
-      auto_repair        = true
-      auto_upgrade       = true
-      preemptible        = false
-      spot               = var.use_spot_instances
+      name            = "default-pool"
+      machine_type    = var.node_machine_type
+      min_count       = var.node_min_count
+      max_count       = var.node_max_count
+      local_ssd_count = 0
+      disk_size_gb    = 50
+      disk_type       = "pd-standard"
+      image_type      = "COS_CONTAINERD"
+      auto_repair     = true
+      auto_upgrade    = true
+      preemptible     = false
+      spot            = var.use_spot_instances
     }
   ]
 
@@ -204,6 +205,7 @@ module "gke" {
 
 # Private Service Access (required for Cloud SQL private IP)
 resource "google_compute_global_address" "private_ip_range" {
+  count         = var.enabled ? 1 : 0
   name          = "${local.name}-private-ip"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
@@ -212,15 +214,17 @@ resource "google_compute_global_address" "private_ip_range" {
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
+  count                   = var.enabled ? 1 : 0
   network                 = module.vpc.network_self_link
   service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_ip_range.name]
+  reserved_peering_ranges = [google_compute_global_address.private_ip_range[0].name]
 }
 
 # Cloud SQL PostgreSQL
 module "cloudsql" {
   source  = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
   version = "~> 18.0"
+  count   = var.enabled ? 1 : 0
 
   project_id       = var.project_id
   name             = "${local.name}-db"
@@ -235,11 +239,11 @@ module "cloudsql" {
     ipv4_enabled        = true
     private_network     = module.vpc.network_self_link
     require_ssl         = true
-    allocated_ip_range  = google_compute_global_address.private_ip_range.name
+    allocated_ip_range  = google_compute_global_address.private_ip_range[0].name
     authorized_networks = []
   }
 
-  module_depends_on = [google_service_networking_connection.private_vpc_connection]
+  module_depends_on = [google_service_networking_connection.private_vpc_connection[0]]
 
   maintenance_window_day          = 7
   maintenance_window_hour         = 2
@@ -367,6 +371,7 @@ resource "google_project_iam_member" "app_storage_admin" {
 }
 
 resource "google_service_account_iam_binding" "workload_identity" {
+  count              = var.enabled ? 1 : 0
   service_account_id = google_service_account.app.name
   role               = "roles/iam.workloadIdentityUser"
 
@@ -485,25 +490,25 @@ resource "google_monitoring_uptime_check_config" "app_health" {
     ignore_changes = [monitored_resource[0].labels["host"]]
   }
 
-  count = var.domain != "" ? 1 : 0
+  count = var.enabled && var.domain != "" ? 1 : 0
 }
 
 # Outputs
 output "gke_cluster_name" {
-  value = module.gke.name
+  value = var.enabled ? module.gke[0].name : ""
 }
 
 output "gke_cluster_endpoint" {
-  value     = module.gke.endpoint
+  value     = var.enabled ? module.gke[0].endpoint : ""
   sensitive = true
 }
 
 output "database_connection_name" {
-  value = module.cloudsql.instance_connection_name
+  value = var.enabled ? module.cloudsql[0].instance_connection_name : ""
 }
 
 output "database_private_ip" {
-  value = module.cloudsql.private_ip_address
+  value = var.enabled ? module.cloudsql[0].private_ip_address : ""
 }
 
 output "uploads_bucket" {
